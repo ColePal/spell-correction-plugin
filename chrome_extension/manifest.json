@@ -1,0 +1,10 @@
+{
+  "name": "Spell Corrector",
+  "description": "Spell Correction Extension Made Using the LMSpell Toolkit.",
+  "version": "1.0",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": "icon.png"
+  }
+}
