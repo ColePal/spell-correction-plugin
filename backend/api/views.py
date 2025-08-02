@@ -1,7 +1,8 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .models import SpellCorrection
+from .models import CorrectionRequest, CorrectedWord, User, Session
+import uuid
 
 
 @api_view(['GET'])
@@ -21,21 +22,42 @@ def spell_check(request):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # placeholder for now - will connect to LMSpell later
+    # create a test user and session
+
+    test_user, created = User.objects.get_or_create(
+        username='test01',
+        defaults={
+            'first_name': 'Test',
+            'last_name': 'User',
+            'email': 'test@example.com'
+        }
+    )
+
+    # Create session
+    session = Session.objects.create(
+        id=str(uuid.uuid4())[:20],
+        user_id=test_user
+    )
+
+    # will connect to LMSpell later
     corrected = text  # just echo for testing
 
-    # store in db
-    correction_obj = SpellCorrection.objects.create(
+    # store correction request
+    correction_request = CorrectionRequest.objects.create(
+        session_id=session,
         original_text=text,
-        corrected_text=corrected,
+        received_text=corrected,
         language=lang
     )
+
+    # just return the response now
 
     response_data = {
         'original': text,
         'corrected': corrected,
         'language': lang,
-        'id': correction_obj.id
+        'session_id': session.id,
+        'request_id': correction_request.id
     }
 
     return Response(response_data)
