@@ -10,6 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+# Add these at the top of your settings.py
+import os
+from dotenv import load_dotenv
+from urllib.parse import urlparse, parse_qsl
+
+load_dotenv()
+
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -78,14 +85,34 @@ WSGI_APPLICATION = 'spellcorrector.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+"""
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'spellcorrector_db',
-        'USER': 'postgres',
-        'PASSWORD': 'password',
-        'HOST': 'localhost',
-        'PORT': '2222',
+        'NAME': '',
+        'USER': 'your_username',
+        'PASSWORD': 'your_password',
+        'HOST': 'your_neon_host',  # e.g., ep-misty-smoke-123456.ap-southeast-1.aws.neon.tech
+        'PORT': '5432',            # or 5433 (check Neon dashboard)
+        'OPTIONS': {
+            'sslmode': 'require',  # Neon requires SSL
+        },
+    }
+}"""
+
+# Code provided by Neon
+tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
+print(tmpPostgres)
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': tmpPostgres.path.replace('/', ''),
+        'USER': tmpPostgres.username,
+        'PASSWORD': tmpPostgres.password,
+        'HOST': tmpPostgres.hostname,
+        'PORT': 5432,
+        'OPTIONS': dict(parse_qsl(tmpPostgres.query)),
     }
 }
 
