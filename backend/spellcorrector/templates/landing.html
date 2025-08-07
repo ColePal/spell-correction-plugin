@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Jumbotron Layout with Sidebar</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <!-- Bootstrap CSS and Icons -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+        <style>
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+            }
+            .main-container {
+                display: flex;
+                height: 100vh;
+                overflow: hidden;
+            }
+            .sidebar {
+                transition: width 0.3s ease;
+                min-height: 100%;
+                position: relative;
+            }
+            .sidebar.collapsed {
+                width: 70px !important;
+            }
+            .sidebar.collapsed .d-sm-inline {
+                display: none !important;
+            }
+            #toggleSidebar {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                z-index: 1050;
+                transition: all 0.3s ease;
+            }
+            .sidebar.collapsed #toggleSidebar {
+                left: 50%;
+                transform: translateX(-50%);
+                right: auto;
+            }
+            .content-area {
+                flex-grow: 1;
+                overflow: hidden;
+                padding: 0;
+                background-color: #f8f9fa;
+                display: flex;
+                flex-direction: column;
+            }
+            .content-row {
+                flex: 1;
+                display: flex;
+                gap: 1rem;
+                padding: 1rem;
+                box-sizing: border-box;
+            }
+            .panel {
+                background-color: white;
+                border-radius: 0.5rem;
+                box-shadow: 0 0 1rem rgba(0, 0, 0, 0.1);
+                padding: 1rem;
+                flex: 1;
+                overflow: auto;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="main-container">
+            <!-- Sidebar -->
+            <nav id="sidebar" class="bg-dark sidebar col-auto col-md-3 col-xl-2 px-0">
+                <button class="btn btn-outline-light btn-sm" id="toggleSidebar">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-4 text-white h-100">
+                    <div class="d-flex w-100 justify-content-start align-items-center mb-3">
+                        <a href="#" class="text-white text-decoration-none">
+                            <span class="fs-5 d-none d-sm-inline">LLM Spell</span>
+                        </a>
+                    </div>
+                    <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link text-white px-0 align-middle">
+                                <i class="fs-4 bi-house"></i>
+                                <span class="ms-1 d-none d-sm-inline">Home</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link text-white px-0 align-middle">
+                                <i class="fs-4 bi-speedometer2"></i>
+                                <span class="ms-1 d-none d-sm-inline">Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link text-white px-0 align-middle">
+                                <i class="fs-4 bi-envelope"></i>
+                                <span class="ms-1 d-none d-sm-inline">Contact</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            <!-- Main Content -->
+            <div class="content-area">
+                <div class="content-row">
+                    <div class="panel w-100">
+                        <h2>Top Panel</h2>
+                        <p>This is the top section.</p>
+                    </div>
+                </div>
+                <div class="content-row">
+                    <div class="panel">
+                        <h2>Left Panel</h2>
+                        <p>This is the left section.</p>
+                    </div>
+                    <div class="panel">
+                        <h2>Right Panel</h2>
+                        <p>This is the right section.</p>
+                    </div>
+                </div>
+                <div class="content-row">
+                    <div class="panel w-100">
+                        <h2>Bottom Panel</h2>
+                        <p>This is the bottom section.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Sidebar Toggle Script -->
+        <script>
+            document.getElementById("toggleSidebar").addEventListener("click", function () {
+                document.getElementById("sidebar").classList.toggle("collapsed");
+            });
+        </script>
+        <!-- Bootstrap JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    </body>
+</html>
