@@ -218,10 +218,18 @@ document.addEventListener('input', (event) => {
 				// get text from popup textbox and inject back into original page textbox
 				else {
 					if (changed_element.id.endsWith('-sctextbox')) {
+						var cursorPos = changed_element.selectionStart
 						let original_element_name = changed_element.id.replace(/-sctextbox$/, '');
 						const original_changed_element_textbox = existingInputsList[original_element_name];
 						original_changed_element_textbox.focus();
 						original_changed_element_textbox.value = changed_element.value;
+						// Tell the textbox to update its values.
+						var event = new Event('input');
+						original_changed_element_textbox.dispatchEvent(event);
+						// When focus changes, make sure cursor index remains same
+						original_changed_element_textbox.setSelectionRange(cursorPos, cursorPos);
+						// Steal back focus
+						changed_element.focus();
 						setTimeout(0);
 					}
 				}
