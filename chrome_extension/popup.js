@@ -1,9 +1,9 @@
-async function main() {
+// Movable Button + Overlay Container
+const toggleButton = document.createElement('div');
+const logo = document.createElement('img');
+const overlayContainer = document.createElement('div');
 
-  // Movable Button + Overlay Container
-  const toggleButton = document.createElement('div');
-  const logo = document.createElement('img');
-  const overlayContainer = document.createElement('div');
+async function main() {
   
   // Where the button first appears on the page
   let starting_point = 'left'
@@ -172,17 +172,73 @@ function highlight_found_fields() {
 
 highlight_found_fields()
 
+const existingInputsList = {};
+
 // Listen for changes user makes to editable text.
 document.addEventListener('input', (event) => {
   const changed_element = event.target;
+  const field_elements_div = overlayContainer.querySelector('div#field-elements'); // div where index.html can be updated.
 
   // If matching a defined valid field type.
   if (changed_element.matches(valid_field_types)) {
-	  // If field is enabled and editable
-	  if (!changed_element.disabled && !changed_element.readOnly) {
-		  console.log("Edited Field:", changed_element);
-		  console.log("Field Text:", changed_element.value);
-		  changed_element.style.backgroundColor = highlight_colour // Highlights the text.
-	  }
+    // If field is enabled and editable
+    if (!changed_element.disabled && !changed_element.readOnly) {
+	
+	    // Print Element Id and Text to console
+        console.log("Edited Field:", changed_element.id);
+        console.log("Field Text:", changed_element.value);
+	    changed_element.style.backgroundColor = highlight_colour // Highlights the text.
+	  
+	    // If div is found
+	    if (field_elements_div) {
+			
+			// Find if changed_element already added to div
+			const changed_element_textbox = field_elements_div.querySelector(('textarea#'+changed_element.id+'-sctextbox'));
+			
+			// Add changed_element to div if not yet in div
+			if (!changed_element_textbox) {
+				if (!field_elements_div.querySelector(('textarea#'+changed_element.id))) {
+					// Title
+					const changed_title = document.createElement('h3');
+					changed_title.id = changed_element.id + '-title';
+					changed_title.textContent = changed_element.id;
+					
+					// Textbox
+					existingInputsList[changed_element.id] = changed_element;
+					const changed_textbox = document.createElement('textarea');
+					changed_textbox.id = changed_element.id + '-sctextbox';
+					changed_textbox.textContent = changed_element.value;
+					changed_textbox.className = "fancy-textbox" 
+
+					// Add Elements to field-elements Div
+					field_elements_div.appendChild(changed_title);	
+					field_elements_div.appendChild(changed_textbox);
+				}
+				
+				// get text from popup textbox and inject back into original page textbox
+				else {
+					if (changed_element.id.endsWith('-sctextbox')) {
+						let original_element_name = changed_element.id.replace(/-sctextbox$/, '');
+						const original_changed_element_textbox = existingInputsList[original_element_name];
+						original_changed_element_textbox.focus();
+						original_changed_element_textbox.value = changed_element.value;
+						setTimeout(0);
+					}
+				}
+				
+				
+		    }
+			else {
+				
+				console.log("Why are you broken");
+				// Just update the value if changed_element already in div
+			    changed_element_textbox.value = changed_element.value; 
+				setTimeout(0);
+		    }
+		
+        }
+	
+	
+    } 
   }
 });
