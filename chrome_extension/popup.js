@@ -183,6 +183,15 @@ document.addEventListener('input', (event) => {
   if (changed_element.matches(valid_field_types)) {
     // If field is enabled and editable
     if (!changed_element.disabled && !changed_element.readOnly) {
+		
+		// if field doesn't have id, set one.
+		if (changed_element.id == ""){
+			let i = 0;
+			while (("textbox"+i.toString()) in existingInputsList) {
+				i += 1;
+			}
+			changed_element.id = "textbox"+i.toString()
+		}
 	
 	    // Print Element Id and Text to console
         console.log("Edited Field:", changed_element.id);
