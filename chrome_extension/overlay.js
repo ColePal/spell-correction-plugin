@@ -229,6 +229,7 @@ document.addEventListener('input', (event) => {
 					changed_title.id = changed_element.id + '-title';
 					changed_title.textContent = changed_element.id;
 					changed_title.className = "fancy-textbox-name" 
+					changed_title.style.userSelect = 'none';
 					
 					// Textbox
 					existingInputsList[changed_element.id] = changed_element;
