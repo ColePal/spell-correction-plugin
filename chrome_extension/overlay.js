@@ -154,7 +154,13 @@ async function main() {
   });
 }
 
-main()
+
+chrome.storage.local.get('extensionToggleButton', function(uservar) {
+    if (uservar.extensionToggleButton) {
+      console.log('Extension Toggle Button:', uservar.extensionToggleButton);
+	  main()
+    }
+  });
 
 
 // Finds all valid textboxes and logs user changes.
