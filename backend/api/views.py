@@ -1,8 +1,13 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from django.shortcuts import render
 from .models import CorrectionRequest, CorrectedWord, User, Session
 import uuid
+
+
+def landing_page(request):
+    return render(request, 'landing.html')
 
 
 @api_view(['GET'])

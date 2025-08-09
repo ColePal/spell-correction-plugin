@@ -66,7 +66,7 @@ ROOT_URLCONF = 'spellcorrector.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -89,7 +89,7 @@ WSGI_APPLICATION = 'spellcorrector.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': '',
+        'NAME': 'spellcorrector',
         'USER': 'your_username',
         'PASSWORD': 'your_password',
         'HOST': 'your_neon_host',  # e.g., ep-misty-smoke-123456.ap-southeast-1.aws.neon.tech
