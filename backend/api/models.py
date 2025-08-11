@@ -18,6 +18,7 @@ class Session(models.Model):
 
 class CorrectionRequest(models.Model):
     # keeping track of corrections
+    id = models.AutoField(primary_key=True)
     session_id = models.ForeignKey(Session, on_delete=models.CASCADE)
     original_text = models.TextField()
     received_text = models.TextField()
