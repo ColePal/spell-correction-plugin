@@ -1,0 +1,418 @@
+[
+  {
+    "id": 1,
+    "query_id": 1,
+    "incorrect_word": "quik",
+    "corrected_word": "quick"
+  },
+  {
+    "id": 2,
+    "query_id": 1,
+    "incorrect_word": "foks",
+    "corrected_word": "fox"
+  },
+  {
+    "id": 3,
+    "query_id": 1,
+    "incorrect_word": "jump",
+    "corrected_word": "jumps"
+  },
+  {
+    "id": 4,
+    "query_id": 1,
+    "incorrect_word": "teh",
+    "corrected_word": "the"
+  },
+  {
+    "id": 5,
+    "query_id": 1,
+    "incorrect_word": "lazi",
+    "corrected_word": "lazy"
+  },
+  {
+    "id": 6,
+    "query_id": 2,
+    "incorrect_word": "seechells",
+    "corrected_word": "seashells"
+  },
+  {
+    "id": 7,
+    "query_id": 2,
+    "incorrect_word": "bye",
+    "corrected_word": "by"
+  },
+  {
+    "id": 8,
+    "query_id": 2,
+    "incorrect_word": "seashor",
+    "corrected_word": "seashore"
+  },
+  {
+    "id": 9,
+    "query_id": 4,
+    "incorrect_word": "goign",
+    "corrected_word": "going"
+  },
+  {
+    "id": 10,
+    "query_id": 4,
+    "incorrect_word": "supermarkit",
+    "corrected_word": "supermarket"
+  },
+  {
+    "id": 11,
+    "query_id": 4,
+    "incorrect_word": "tooday",
+    "corrected_word": "today"
+  },
+  {
+    "id": 12,
+    "query_id": 5,
+    "incorrect_word": "Programing",
+    "corrected_word": "Programming"
+  },
+  {
+    "id": 13,
+    "query_id": 5,
+    "incorrect_word": "Pyhton",
+    "corrected_word": "Python"
+  },
+  {
+    "id": 14,
+    "query_id": 5,
+    "incorrect_word": "adn",
+    "corrected_word": "and"
+  },
+  {
+    "id": 15,
+    "query_id": 5,
+    "incorrect_word": "rewording",
+    "corrected_word": "rewarding"
+  },
+  {
+    "id": 16,
+    "query_id": 6,
+    "incorrect_word": "wether",
+    "corrected_word": "weather"
+  },
+  {
+    "id": 17,
+    "query_id": 6,
+    "incorrect_word": "forcast",
+    "corrected_word": "forecast"
+  },
+  {
+    "id": 18,
+    "query_id": 6,
+    "incorrect_word": "preedicts",
+    "corrected_word": "predicts"
+  },
+  {
+    "id": 19,
+    "query_id": 6,
+    "incorrect_word": "rein",
+    "corrected_word": "rain"
+  },
+  {
+    "id": 20,
+    "query_id": 6,
+    "incorrect_word": "tomorow",
+    "corrected_word": "tomorrow"
+  },
+  {
+    "id": 21,
+    "query_id": 7,
+    "incorrect_word": "Lets",
+    "corrected_word": "Let's"
+  },
+  {
+    "id": 22,
+    "query_id": 7,
+    "incorrect_word": "teh",
+    "corrected_word": "the"
+  },
+  {
+    "id": 23,
+    "query_id": 7,
+    "incorrect_word": "libary",
+    "corrected_word": "library"
+  },
+  {
+    "id": 24,
+    "query_id": 8,
+    "incorrect_word": "wated",
+    "corrected_word": "wanted"
+  },
+  {
+    "id": 25,
+    "query_id": 8,
+    "incorrect_word": "vist",
+    "corrected_word": "visit"
+  },
+  {
+    "id": 26,
+    "query_id": 9,
+    "incorrect_word": "journee",
+    "corrected_word": "journée"
+  },
+  {
+    "id": 27,
+    "query_id": 10,
+    "incorrect_word": "a",
+    "corrected_word": "à"
+  },
+  {
+    "id": 28,
+    "query_id": 10,
+    "incorrect_word": "biblitèque",
+    "corrected_word": "bibliothèque"
+  },
+  {
+    "id": 29,
+    "query_id": 11,
+    "incorrect_word": "vacance",
+    "corrected_word": "vacances"
+  },
+  {
+    "id": 30,
+    "query_id": 12,
+    "incorrect_word": "dias",
+    "corrected_word": "días"
+  },
+  {
+    "id": 31,
+    "query_id": 12,
+    "incorrect_word": "como",
+    "corrected_word": "cómo"
+  },
+  {
+    "id": 32,
+    "query_id": 12,
+    "incorrect_word": "estas",
+    "corrected_word": "estás"
+  },
+  {
+    "id": 33,
+    "query_id": 14,
+    "incorrect_word": "sonne",
+    "corrected_word": "Sonne"
+  },
+  {
+    "id": 34,
+    "query_id": 15,
+    "incorrect_word": "hausaufgaben",
+    "corrected_word": "Hausaufgaben"
+  },
+  {
+    "id": 35,
+    "query_id": 16,
+    "incorrect_word": "sentnce",
+    "corrected_word": "sentence"
+  },
+  {
+    "id": 36,
+    "query_id": 17,
+    "incorrect_word": "arive",
+    "corrected_word": "arrive"
+  },
+  {
+    "id": 37,
+    "query_id": 17,
+    "incorrect_word": "tommorow",
+    "corrected_word": "tomorrow"
+  },
+  {
+    "id": 38,
+    "query_id": 19,
+    "incorrect_word": "Pleese",
+    "corrected_word": "Please"
+  },
+  {
+    "id": 39,
+    "query_id": 19,
+    "incorrect_word": "rember",
+    "corrected_word": "remember"
+  },
+  {
+    "id": 40,
+    "query_id": 19,
+    "incorrect_word": "umbrela",
+    "corrected_word": "umbrella"
+  },
+  {
+    "id": 41,
+    "query_id": 21,
+    "incorrect_word": "goign",
+    "corrected_word": "going"
+  },
+  {
+    "id": 42,
+    "query_id": 21,
+    "incorrect_word": "mountans",
+    "corrected_word": "mountains"
+  },
+  {
+    "id": 43,
+    "query_id": 23,
+    "incorrect_word": "by",
+    "corrected_word": "buy"
+  },
+  {
+    "id": 44,
+    "query_id": 24,
+    "incorrect_word": "remeber",
+    "corrected_word": "remember"
+  },
+  {
+    "id": 45,
+    "query_id": 25,
+    "incorrect_word": "television",
+    "corrected_word": "televisión"
+  },
+  {
+    "id": 46,
+    "query_id": 26,
+    "incorrect_word": "Manana",
+    "corrected_word": "Mañana"
+  },
+  {
+    "id": 47,
+    "query_id": 28,
+    "incorrect_word": "apelerai",
+    "corrected_word": "appellerai"
+  },
+  {
+    "id": 48,
+    "query_id": 30,
+    "incorrect_word": "recived",
+    "corrected_word": "received"
+  },
+  {
+    "id": 49,
+    "query_id": 32,
+    "incorrect_word": "Lets",
+    "corrected_word": "Let's"
+  },
+  {
+    "id": 50,
+    "query_id": 32,
+    "incorrect_word": "restrant",
+    "corrected_word": "restaurant"
+  },
+  {
+    "id": 51,
+    "query_id": 33,
+    "incorrect_word": "tag",
+    "corrected_word": "Tag"
+  },
+  {
+    "id": 52,
+    "query_id": 33,
+    "incorrect_word": "morgen",
+    "corrected_word": "Morgen"
+  },
+  {
+    "id": 53,
+    "query_id": 34,
+    "incorrect_word": "jahr",
+    "corrected_word": "Jahr"
+  },
+  {
+    "id": 54,
+    "query_id": 35,
+    "incorrect_word": "fasinating",
+    "corrected_word": "fascinating"
+  },
+{
+"id": 55,
+"query_id": 37,
+"incorrect_word": "horison",
+"corrected_word": "horizon"
+},
+{
+"id": 56,
+"query_id": 38,
+"incorrect_word": "perfact",
+"corrected_word": "perfect"
+},
+{
+"id": 57,
+"query_id": 40,
+"incorrect_word": "avon",
+"corrected_word": "avons"
+},
+{
+"id": 58,
+"query_id": 40,
+"incorrect_word": "immediatement",
+"corrected_word": "immédiatement"
+},
+{
+"id": 59,
+"query_id": 41,
+"incorrect_word": "lernning",
+"corrected_word": "learning"
+},
+{
+"id": 60,
+"query_id": 42,
+"incorrect_word": "exellent",
+"corrected_word": "excellent"
+},
+{
+"id": 61,
+"query_id": 43,
+"incorrect_word": "wetter",
+"corrected_word": "Wetter"
+},
+{
+"id": 62,
+"query_id": 44,
+"incorrect_word": "regen",
+"corrected_word": "Regen"
+},
+{
+"id": 63,
+"query_id": 45,
+"incorrect_word": "lern",
+"corrected_word": "learn"
+},
+{
+"id": 64,
+"query_id": 48,
+"incorrect_word": "esta",
+"corrected_word": "está"
+},
+{
+"id": 65,
+"query_id": 49,
+"incorrect_word": "planing",
+"corrected_word": "planning"
+},
+{
+"id": 66,
+"query_id": 49,
+"incorrect_word": "moutains",
+"corrected_word": "mountains"
+},
+{
+"id": 67,
+"query_id": 51,
+"incorrect_word": "humar",
+"corrected_word": "humor"
+},
+{
+"id": 68,
+"query_id": 53,
+"incorrect_word": "cinema",
+"corrected_word": "cinéma"
+},
+{
+"id": 69,
+"query_id": 54,
+"incorrect_word": "tres",
+"corrected_word": "très"
+}
+]
+
+

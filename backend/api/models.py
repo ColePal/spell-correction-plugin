@@ -5,13 +5,13 @@ from django.utils import timezone
 
 #PLACEHOLDER UNTIL I WORK OUT DJANGOS SESSION AND USER SYSTEM
 class User(models.Model):
-    username = models.CharField(max_length=6, null=False,primary_key=True)
+    username = models.CharField(max_length=50, null=False,primary_key=True)
     first_name = models.CharField(max_length=50, null=False)
     last_name = models.CharField(max_length=50, null=False)
     email = models.EmailField(max_length=50)
 
 class Session(models.Model):
-    id = models.CharField(max_length=20, null=False, primary_key=True)
+    id = models.AutoField(primary_key=True)
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
 
 # Create your models here.
