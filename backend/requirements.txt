@@ -6,3 +6,8 @@ psycopg2-binary==2.9.10
 python-dotenv==1.1.1
 sqlparse==0.5.3
 tzdata==2025.2
+
+torch>=2.0.0
+transformers>=4.30.0
+sentencepiece==0.1.99  # Needed for MT5 tokenizer (Python 3.13 does not work needs 3.12 or other)
+protobuf>=3.20.0
