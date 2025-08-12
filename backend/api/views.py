@@ -5,7 +5,17 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import render
 from .models import CorrectionRequest, CorrectedWord, User, Session
+from . import lmspell
 import uuid
+
+@api_view(['POST'])
+def spell_check(request):
+    text = request.data.get('text', '')
+
+    # Useing lmspell module
+    result = lmspell.correct_text(text)
+
+    return Response(result)
 
 
 def landing_page(request):
