@@ -56,7 +56,7 @@ def get_model():
     return _model, _tokenizer
 
 
-def correct_text(text, max_length=512):
+def correct_text(text, max_length=1024):
 
     try:
         # Validate input
@@ -67,11 +67,11 @@ def correct_text(text, max_length=512):
                 'error': 'Invalid input text'
             }
 
-        if len(text) > 5000:  # limit
+        if len(text) > 1024:  # limit
             return {
                 'original': text,
                 'corrected': text,
-                'error': 'Text too long. Please limit to 5000 characters.'
+                'error': 'Text too long. Please limit to 1024 characters.'
             }
 
         model, tokenizer = get_model()
