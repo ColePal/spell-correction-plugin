@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Writing Insight Prototype</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            margin: 24px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 160px;
+            font-size: 16px;
+        }
+
+        .row {
+            display: flex;
+            gap: 24px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            flex: 1 1 280px;
+            padding: 12px 14px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+        }
+
+        .mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+
+
+</head>
+<body>
+<h1>Writing Insight (Prototype)</h1>
+
+<p>Type below. Analysis runs after you pause typing (~500ms). No data stored.</p>
+<textarea id="editor" placeholder="Start typing here..."></textarea>
+<div id="status" style="margin:8px 0;color:#666;"></div>
+<div class="row">
+    <div class="card"><h3>Emotion</h3>
+        <div id="emotion" class="mono">—</div>
+    </div>
+    <div class="card"><h3>Formality</h3>
+        <div id="formality" class="mono">—</div>
+    </div>
+    <div class="card"><h3>Readability</h3>
+        <div id="readability" class="mono">—</div>
+    </div>
+</div>
+
+<script>
+  function fleschMeaning(score) {
+    if (score > 100)
+        return "Super easy (child-level simplicity)";
+    if (score >= 90)
+        return "Very easy (5th grade)";
+    if (score >= 80)
+        return "Easy (6th grade)";
+    if (score >= 70)
+        return "Fairly easy (7th grade)";
+    if (score >= 60)
+        return "Standard (8th–9th grade)";
+    if (score >= 50)
+        return "Fairly difficult (10th–12th grade)";
+    if (score >= 30)
+        return "Difficult (college level)";
+    if (score >= 0)
+        return "Very difficult (college graduate)";
+    return "Extremely complex / academic";
+  }
+
+  let timer = null;
+
+  async function analyze(text) {
+    document.getElementById("status").textContent = "Analyzing…";
+
+    const res = await fetch("/api/analyze/", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ text })
+    });
+    const data = await res.json();
+    document.getElementById("status").textContent = "";
+
+    if (!data.ok) {
+      document.getElementById("emotion").textContent = "—";
+      document.getElementById("formality").textContent = "—";
+      document.getElementById("readability").textContent = "—";
+      return;
+    }
+
+    const top = (data.emotion && Array.isArray(data.emotion.top) && data.emotion.top[0]) ? data.emotion.top[0] : null;
+document.getElementById("emotion").textContent =
+  top ? `${top.label}: ${(top.score * 100).toFixed(1)}%` : "—";
+
+
+
+   const f = data.formality;
+   document.getElementById("formality").textContent = `${f.label}`
+
+
+
+    // Readability
+    const fleschNum = Number(data.readability.flesch_reading_ease);
+    document.getElementById("readability").textContent = `Readability: ${fleschNum.toFixed(1)} — ${fleschMeaning(fleschNum)}\n`;
+  }
+
+  document.getElementById("editor").addEventListener("input", () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => analyze(document.getElementById("editor").value), 500);
+  });
+</script>
+</body>
+</html>

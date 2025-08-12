@@ -1,0 +1,434 @@
+[
+  {
+    "id": 1,
+    "session_id": 1,
+    "original_text": "The quik brown foks jump over teh lazi dog.",
+    "received_text": "The quick brown fox jumps over the lazy dog.",
+    "language": "en",
+    "created_at": "2025-08-10T10:15:32Z"
+  },
+  {
+    "id": 2,
+    "session_id": 1,
+    "original_text": "She sells seechells bye the seashor.",
+    "received_text": "She sells seashells by the seashore.",
+    "language": "en",
+    "created_at": "2025-08-10T10:16:05Z"
+  },
+  {
+    "id": 3,
+    "session_id": 1,
+    "original_text": "It is a wonderful day today, isn't it?",
+    "received_text": "It is a wonderful day today, isn't it?",
+    "language": "en",
+    "created_at": "2025-08-10T10:17:01Z"
+  },
+  {
+    "id": 4,
+    "session_id": 1,
+    "original_text": "I am goign to the supermarkit later tooday.",
+    "received_text": "I am going to the supermarket later today.",
+    "language": "en",
+    "created_at": "2025-08-10T10:17:11Z"
+  },
+  {
+    "id": 5,
+    "session_id": 2,
+    "original_text": "Programing in Pyhton is fun adn rewording.",
+    "received_text": "Programming in Python is fun and rewarding.",
+    "language": "en",
+    "created_at": "2025-08-10T10:18:47Z"
+  },
+  {
+    "id": 6,
+    "session_id": 3,
+    "original_text": "The wether forcast preedicts rein tomorow.",
+    "received_text": "The weather forecast predicts rain tomorrow.",
+    "language": "en",
+    "created_at": "2025-08-10T10:19:53Z"
+  },
+  {
+    "id": 7,
+    "session_id": 2,
+    "original_text": "Lets meet at teh libary at 3 pm sharp.",
+    "received_text": "Let's meet at the library at 3 pm sharp.",
+    "language": "en",
+    "created_at": "2025-08-10T10:20:15Z"
+  },
+  {
+    "id": 8,
+    "session_id": 2,
+    "original_text": "I have always wated to vist Italy.",
+    "received_text": "I have always wanted to visit Italy.",
+    "language": "en",
+    "created_at": "2025-08-10T10:21:44Z"
+  },
+  {
+    "id": 9,
+    "session_id": 4,
+    "original_text": "C'est une belle journee aujourd'hui.",
+    "received_text": "C'est une belle journée aujourd'hui.",
+    "language": "fr",
+    "created_at": "2025-08-10T10:22:17Z"
+  },
+  {
+    "id": 10,
+    "session_id": 4,
+    "original_text": "Je vais a la biblitèque ce soir.",
+    "received_text": "Je vais à la bibliothèque ce soir.",
+    "language": "fr",
+    "created_at": "2025-08-10T10:22:58Z"
+  },
+  {
+    "id": 11,
+    "session_id": 4,
+    "original_text": "Nous partons en vacance demain.",
+    "received_text": "Nous partons en vacances demain.",
+    "language": "fr",
+    "created_at": "2025-08-10T10:23:33Z"
+  },
+  {
+    "id": 12,
+    "session_id": 5,
+    "original_text": "Buenos dias, como estas?",
+    "received_text": "Buenos días, ¿cómo estás?",
+    "language": "es",
+    "created_at": "2025-08-10T10:24:12Z"
+  },
+  {
+    "id": 13,
+    "session_id": 5,
+    "original_text": "Me gusta comer paella los fines de semana.",
+    "received_text": "Me gusta comer paella los fines de semana.",
+    "language": "es",
+    "created_at": "2025-08-10T10:24:54Z"
+  },
+  {
+    "id": 14,
+    "session_id": 6,
+    "original_text": "Der Himmel ist blau und die sonne scheint.",
+    "received_text": "Der Himmel ist blau und die Sonne scheint.",
+    "language": "de",
+    "created_at": "2025-08-10T10:25:38Z"
+  },
+  {
+    "id": 15,
+    "session_id": 6,
+    "original_text": "Ich habe meine hausaufgaben vergessen.",
+    "received_text": "Ich habe meine Hausaufgaben vergessen.",
+    "language": "de",
+    "created_at": "2025-08-10T10:26:11Z"
+  },
+  {
+    "id": 16,
+    "session_id": 7,
+    "original_text": "This sentnce has a few errors but is still readable.",
+    "received_text": "This sentence has a few errors but is still readable.",
+    "language": "en",
+    "created_at": "2025-08-10T10:27:05Z"
+  },
+  {
+    "id": 17,
+    "session_id": 7,
+    "original_text": "We will arive tommorow in the afternoon.",
+    "received_text": "We will arrive tomorrow in the afternoon.",
+    "language": "en",
+    "created_at": "2025-08-10T10:27:55Z"
+  },
+  {
+    "id": 18,
+    "session_id": 7,
+    "original_text": "The cake is delicious and moist.",
+    "received_text": "The cake is delicious and moist.",
+    "language": "en",
+    "created_at": "2025-08-10T10:28:23Z"
+  },
+  {
+    "id": 19,
+    "session_id": 8,
+    "original_text": "Pleese rember to bring your umbrela.",
+    "received_text": "Please remember to bring your umbrella.",
+    "language": "en",
+    "created_at": "2025-08-10T10:29:15Z"
+  },
+  {
+    "id": 20,
+    "session_id": 8,
+    "original_text": "Do not forget to turn off the oven.",
+    "received_text": "Do not forget to turn off the oven.",
+    "language": "en",
+    "created_at": "2025-08-10T10:29:48Z"
+  },
+  {
+    "id": 21,
+    "session_id": 8,
+    "original_text": "We are goign hiking in the mountans this weekend.",
+    "received_text": "We are going hiking in the mountains this weekend.",
+    "language": "en",
+    "created_at": "2025-08-10T10:30:12Z"
+  },
+  {
+    "id": 22,
+    "session_id": 9,
+    "original_text": "The children played joyfully in the park.",
+    "received_text": "The children played joyfully in the park.",
+    "language": "en",
+    "created_at": "2025-08-10T10:31:00Z"
+  },
+  {
+    "id": 23,
+    "session_id": 9,
+    "original_text": "I forgot to by milk on my way home.",
+    "received_text": "I forgot to buy milk on my way home.",
+    "language": "en",
+    "created_at": "2025-08-10T10:31:35Z"
+  },
+  {
+    "id": 24,
+    "session_id": 9,
+    "original_text": "Please remeber to lock the door.",
+    "received_text": "Please remember to lock the door.",
+    "language": "en",
+    "created_at": "2025-08-10T10:31:59Z"
+  },
+  {
+    "id": 25,
+    "session_id": 10,
+    "original_text": "Veo la television por la noche.",
+    "received_text": "Veo la televisión por la noche.",
+    "language": "es",
+    "created_at": "2025-08-10T10:32:30Z"
+  },
+  {
+    "id": 26,
+    "session_id": 10,
+    "original_text": "Manana iremos a la playa.",
+    "received_text": "Mañana iremos a la playa.",
+    "language": "es",
+    "created_at": "2025-08-10T10:32:56Z"
+  },
+  {
+    "id": 27,
+    "session_id": 11,
+    "original_text": "Le ciel est clair et les étoiles brillent.",
+    "received_text": "Le ciel est clair et les étoiles brillent.",
+    "language": "fr",
+    "created_at": "2025-08-10T10:33:23Z"
+  },
+  {
+    "id": 28,
+    "session_id": 11,
+    "original_text": "Je t'apelerai demain matin.",
+    "received_text": "Je t'appellerai demain matin.",
+    "language": "fr",
+    "created_at": "2025-08-10T10:33:54Z"
+  },
+  {
+    "id": 29,
+    "session_id": 12,
+    "original_text": "He is very talented and works hard.",
+    "received_text": "He is very talented and works hard.",
+    "language": "en",
+    "created_at": "2025-08-10T10:34:17Z"
+  },
+  {
+    "id": 30,
+    "session_id": 12,
+    "original_text": "I recived your letter yesterday.",
+    "received_text": "I received your letter yesterday.",
+    "language": "en",
+    "created_at": "2025-08-10T10:34:45Z"
+  },
+  {
+    "id": 31,
+    "session_id": 13,
+    "original_text": "The coffee was too hot to drink right away.",
+    "received_text": "The coffee was too hot to drink right away.",
+    "language": "en",
+    "created_at": "2025-08-10T10:35:09Z"
+  },
+  {
+    "id": 32,
+    "session_id": 13,
+    "original_text": "Lets meet for lunch at the new restrant.",
+    "received_text": "Let's meet for lunch at the new restaurant.",
+    "language": "en",
+    "created_at": "2025-08-10T10:35:40Z"
+  },
+  {
+    "id": 33,
+    "session_id": 14,
+    "original_text": "Der tag beginnt früh am morgen.",
+    "received_text": "Der Tag beginnt früh am Morgen.",
+    "language": "de",
+    "created_at": "2025-08-10T10:36:05Z"
+  },
+  {
+    "id": 34,
+    "session_id": 14,
+    "original_text": "Wir werden nächstes jahr reisen.",
+    "received_text": "Wir werden nächstes Jahr reisen.",
+    "language": "de",
+    "created_at": "2025-08-10T10:36:34Z"
+  },
+  {
+    "id": 35,
+    "session_id": 15,
+    "original_text": "She is reading a fasinating book.",
+    "received_text": "She is reading a fascinating book.",
+    "language": "en",
+    "created_at": "2025-08-10T10:37:01Z"
+  },
+  {
+    "id": 36,
+    "session_id": 15,
+    "original_text": "They are playing soccer in the backyard.",
+    "received_text": "They are playing soccer in the backyard.",
+    "language": "en",
+    "created_at": "2025-08-10T10:37:29Z"
+  },
+  {
+    "id": 37,
+    "session_id": 16,
+    "original_text": "The sun set over the horison.",
+    "received_text": "The sun set over the horizon.",
+    "language": "en",
+    "created_at": "2025-08-10T10:37:53Z"
+  },
+  {
+    "id": 38,
+    "session_id": 16,
+    "original_text": "It was a perfact ending to the day.",
+    "received_text": "It was a perfect ending to the day.",
+    "language": "en",
+    "created_at": "2025-08-10T10:38:23Z"
+  },
+  {
+    "id": 39,
+    "session_id": 17,
+    "original_text": "Elle porte une robe rouge.",
+    "received_text": "Elle porte une robe rouge.",
+    "language": "fr",
+    "created_at": "2025-08-10T10:38:51Z"
+  },
+  {
+    "id": 40,
+    "session_id": 17,
+    "original_text": "Nous avon besoin d'aide immediatement.",
+    "received_text": "Nous avons besoin d'aide immédiatement.",
+    "language": "fr",
+    "created_at": "2025-08-10T10:39:19Z"
+  },
+  {
+    "id": 41,
+    "session_id": 18,
+    "original_text": "I have been lernning English for two years.",
+    "received_text": "I have been learning English for two years.",
+    "language": "en",
+    "created_at": "2025-08-10T10:39:46Z"
+  },
+  {
+    "id": 42,
+    "session_id": 18,
+    "original_text": "My sister is an exellent dancer.",
+    "received_text": "My sister is an excellent dancer.",
+    "language": "en",
+    "created_at": "2025-08-10T10:40:12Z"
+  },
+  {
+    "id": 43,
+    "session_id": 19,
+    "original_text": "Das wetter heute ist sehr schön.",
+    "received_text": "Das Wetter heute ist sehr schön.",
+    "language": "de",
+    "created_at": "2025-08-10T10:40:38Z"
+  },
+  {
+    "id": 44,
+    "session_id": 19,
+    "original_text": "Ich liebe es, im regen zu spazieren.",
+    "received_text": "Ich liebe es, im Regen zu spazieren.",
+    "language": "de",
+    "created_at": "2025-08-10T10:41:07Z"
+  },
+  {
+    "id": 45,
+    "session_id": 20,
+    "original_text": "I want to lern how to play the guitar.",
+    "received_text": "I want to learn how to play the guitar.",
+    "language": "en",
+    "created_at": "2025-08-10T10:41:35Z"
+  },
+  {
+    "id": 46,
+    "session_id": 20,
+    "original_text": "She enjoys baking cookies for her friends.",
+    "received_text": "She enjoys baking cookies for her friends.",
+    "language": "en",
+    "created_at": "2025-08-10T10:42:02Z"
+  },
+  {
+    "id": 47,
+    "session_id": 21,
+    "original_text": "Voy a comprar un regalo para mi madre.",
+    "received_text": "Voy a comprar un regalo para mi madre.",
+    "language": "es",
+    "created_at": "2025-08-10T10:42:27Z"
+  },
+  {
+    "id": 48,
+    "session_id": 21,
+    "original_text": "Ella esta muy feliz hoy.",
+    "received_text": "Ella está muy feliz hoy.",
+    "language": "es",
+    "created_at": "2025-08-10T10:42:58Z"
+  },
+  {
+    "id": 49,
+    "session_id": 22,
+    "original_text": "We are planing a trip to the moutains.",
+    "received_text": "We are planning a trip to the mountains.",
+    "language": "en",
+    "created_at": "2025-08-10T10:43:23Z"
+  },
+  {
+    "id": 50,
+    "session_id": 22,
+    "original_text": "The view from the top is amazing.",
+    "received_text": "The view from the top is amazing.",
+    "language": "en",
+    "created_at": "2025-08-10T10:43:47Z"
+  },
+  {
+    "id": 51,
+    "session_id": 23,
+    "original_text": "He has a great sense of humar.",
+    "received_text": "He has a great sense of humor.",
+    "language": "en",
+    "created_at": "2025-08-10T10:44:11Z"
+  },
+  {
+    "id": 52,
+    "session_id": 23,
+    "original_text": "They danced under the stars.",
+    "received_text": "They danced under the stars.",
+    "language": "en",
+    "created_at": "2025-08-10T10:44:37Z"
+  },
+  {
+    "id": 53,
+    "session_id": 24,
+    "original_text": "Aujourd'hui, nous allons au cinema.",
+    "received_text": "Aujourd'hui, nous allons au cinéma.",
+    "language": "fr",
+    "created_at": "2025-08-10T10:45:04Z"
+  },
+  {
+    "id": 54,
+    "session_id": 24,
+    "original_text": "Je suis tres content de te voir.",
+    "received_text": "Je suis très content de te voir.",
+    "language": "fr",
+    "created_at": "2025-08-10T10:45:04Z"
+  }
+]

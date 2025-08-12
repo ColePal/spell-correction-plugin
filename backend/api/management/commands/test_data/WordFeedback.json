@@ -1,0 +1,417 @@
+
+[
+  {
+    "id": 1,
+    "word_id": 1,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 2,
+    "word_id": 2,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 3,
+    "word_id": 3,
+    "accepted": false,
+    "feedback": ""
+  },
+  {
+    "id": 4,
+    "word_id": 4,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 5,
+    "word_id": 5,
+    "accepted": false,
+    "feedback": "'lazi' is slang, prefer to keep it"
+  },
+  {
+    "id": 6,
+    "word_id": 6,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 7,
+    "word_id": 7,
+    "accepted": false,
+    "feedback": "'bye' is semantically correct here"
+  },
+  {
+    "id": 8,
+    "word_id": 8,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 9,
+    "word_id": 9,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 10,
+    "word_id": 10,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 11,
+    "word_id": 11,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 12,
+    "word_id": 12,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 13,
+    "word_id": 13,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 14,
+    "word_id": 14,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 15,
+    "word_id": 15,
+    "accepted": false,
+    "feedback": "'rewording' is the intended meaning here"
+  },
+  {
+    "id": 16,
+    "word_id": 16,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 17,
+    "word_id": 17,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 18,
+    "word_id": 18,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 19,
+    "word_id": 19,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 20,
+    "word_id": 20,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 21,
+    "word_id": 21,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 22,
+    "word_id": 22,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 23,
+    "word_id": 23,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 24,
+    "word_id": 24,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 25,
+    "word_id": 25,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 26,
+    "word_id": 26,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 27,
+    "word_id": 27,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 28,
+    "word_id": 28,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 29,
+    "word_id": 29,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 30,
+    "word_id": 30,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 31,
+    "word_id": 31,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 32,
+    "word_id": 32,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 33,
+    "word_id": 33,
+    "accepted": false,
+    "feedback": ""
+  },
+  {
+    "id": 34,
+    "word_id": 34,
+    "accepted": false,
+    "feedback": "'hausaufgaben' should remain lowercase"
+  },
+  {
+    "id": 35,
+    "word_id": 35,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 36,
+    "word_id": 36,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 37,
+    "word_id": 37,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 38,
+    "word_id": 38,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 39,
+    "word_id": 39,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 40,
+    "word_id": 40,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 41,
+    "word_id": 41,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 42,
+    "word_id": 42,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 43,
+    "word_id": 43,
+    "accepted": false,
+    "feedback": "'by' is incorrect here, should be 'buy'"
+  },
+  {
+    "id": 44,
+    "word_id": 44,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 45,
+    "word_id": 45,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 46,
+    "word_id": 46,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 47,
+    "word_id": 47,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 48,
+    "word_id": 48,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 49,
+    "word_id": 49,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 50,
+    "word_id": 50,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 51,
+    "word_id": 51,
+    "accepted": false,
+    "feedback": ""
+  },
+  {
+    "id": 52,
+    "word_id": 52,
+    "accepted": false,
+    "feedback": "'morgen' should not be capitalized"
+  },
+  {
+    "id": 53,
+    "word_id": 53,
+    "accepted": false,
+    "feedback": "'jahr' should not be capitalized"
+  },
+  {
+    "id": 54,
+    "word_id": 54,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 55,
+    "word_id": 55,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 56,
+    "word_id": 56,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 57,
+    "word_id": 57,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 58,
+    "word_id": 58,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 59,
+    "word_id": 59,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 60,
+    "word_id": 60,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 61,
+    "word_id": 61,
+    "accepted": false,
+    "feedback": "Capitalization not needed for 'wetter'"
+  },
+  {
+    "id": 62,
+    "word_id": 62,
+    "accepted": false,
+    "feedback": "Capitalization not needed for 'regen'"
+  },
+  {
+    "id": 63,
+    "word_id": 63,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 64,
+    "word_id": 64,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 65,
+    "word_id": 65,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 66,
+    "word_id": 66,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 67,
+    "word_id": 67,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 68,
+    "word_id": 68,
+    "accepted": true,
+    "feedback": ""
+  },
+  {
+    "id": 69,
+    "word_id": 69,
+    "accepted": true,
+    "feedback": ""
+  }
+]
