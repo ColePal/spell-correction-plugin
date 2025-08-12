@@ -50,7 +50,7 @@ async function SpellCorrectionQuery(queryText, inputId, startingIndex) {
         const queryResponse = await response.json();
 
         //let misspelledWords = findMisspelledWords(queryResponse);
-        //console.log("queryResponse after unpacking:",queryResponse);
+        console.log("queryResponse after unpacking:",queryResponse);
         findMisspelledWords(queryResponse);
     } catch(error) {
         console.log(error);
