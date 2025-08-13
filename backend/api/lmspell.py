@@ -1,186 +1,112 @@
-"""
-First attempt at adding LMSpell. Still needs fixing
-"""
-
 import torch
-import re
-from transformers import MT5ForConditionalGeneration, T5TokenizerFast
-import os
+from transformers import T5ForConditionalGeneration, T5Tokenizer
+from difflib import SequenceMatcher # Compares Sequences: Used to compare the original vs corrected words
 import logging
-
 
 logger = logging.getLogger(__name__)
 
-# variables to store model
+# Global model storage
 _model = None
 _tokenizer = None
 
 
 def get_model():
-    """Loads the model """
+    """English correction model"""
     global _model, _tokenizer
 
     if _model is None:
-        try:
-            print("Loading LMSpell model(found it takes ages)")
+        print("Loading Correction Model...")
 
-            # Get Hugging Face token from .env Cole's Key
-            hf_token = os.environ.get("HF_TOKEN")
+        model_name = "vennify/t5-base-grammar-correction"#other models seems to be only for Sinhala
 
-            if not hf_token:
-                print("Warning: HF_TOKEN not set.")
+        _model = T5ForConditionalGeneration.from_pretrained(
+            model_name,
+            cache_dir="./model_cache"
+        )
+        _tokenizer = T5Tokenizer.from_pretrained(
+            model_name,
+            cache_dir="./model_cache"
+        )
 
-            # Loading the model
-            _model = MT5ForConditionalGeneration.from_pretrained(
-                "lm-spell/mt5-base-ft-ssc",
-                token=hf_token,
-                cache_dir="./model_cache"  # Cache locally
-            )
-            _model.eval()
-
-            # Load tokenizer
-            _tokenizer = T5TokenizerFast.from_pretrained(
-                "google/mt5-base",
-                cache_dir="./model_cache"
-            )
-            _tokenizer.add_special_tokens({'additional_special_tokens': ['<ZWJ>']})
-
-            logger.info("Model loaded")
-            print("Model loaded")
-
-        except Exception as e:
-            logger.error(f"Error loading model: {str(e)}")
-            print(f"Error loading model: {str(e)}")
-            raise
+        _model.eval()
+        print("Model loaded successfully!")
 
     return _model, _tokenizer
 
 
-def correct_text(text, max_length=1024):
+def correct_text(text, max_length=512): # "was trained on sequences of up to 512 tokens."stack
+
+    # Clean and validate input
+    text = ' '.join(text.strip().split())#removes white space
+    if not text:
+        return {'original': '', 'corrected': '', 'error': 'Empty input'}
+
+    if len(text) > 1024:
+        return {'original': text, 'corrected': text, 'error': 'Text too long '}
 
     try:
-        # Validate input
-        if not text or not isinstance(text, str):
-            return {
-                'original': text,
-                'corrected': text,
-                'error': 'Invalid input text'
-            }
-
-        if len(text) > 1024:  # limit
-            return {
-                'original': text,
-                'corrected': text,
-                'error': 'Text too long. Please limit to 1024 characters.'
-            }
-
         model, tokenizer = get_model()
 
-        # Replace zero-width joiner
-        processed_text = re.sub(r'\u200d', '<ZWJ>', text)
+        # Prepare input with prefix
+        input_text = f"grammar: {text}"
 
-        # Tokenize
-        try:
-            inputs = tokenizer(
-                processed_text,
-                return_tensors='pt',
-                padding='do_not_pad',
-                max_length=max_length
+        inputs = tokenizer(
+            input_text,
+            return_tensors='pt',
+            max_length=max_length,
+            truncation=True
+        )
+
+        # Generate correction
+        with torch.no_grad():
+            outputs = model.generate(
+                **inputs,
+                max_length=max_length,
+                num_beams=5,
+                early_stopping=True,
+                no_repeat_ngram_size=3
             )
-        except Exception as e:
-            logger.error(f"Tokenization error: {str(e)}")
-            return {
-                'original': text,
-                'corrected': text,
-                'error': f'Tokenization error: {str(e)}'
-            }
 
-        # Generate corrections
-        with torch.inference_mode():
-            try:
-                outputs = model.generate(
-                    input_ids=inputs["input_ids"],
-                    attention_mask=inputs["attention_mask"],
-                    max_length=max_length,
-                    num_beams=2,  # Slightly increase beams for better quality
-                    do_sample=False,
-                    early_stopping=True,
-                    no_repeat_ngram_size=3  # Prevent repetition
-                )
-            except Exception as e:
-                logger.error(f"Generation error: {str(e)}")
-                return {
-                    'original': text,
-                    'corrected': text,
-                    'error': f'Generation error: {str(e)}'
-                }
+        corrected_text = tokenizer.decode(
+            outputs[0],
+            skip_special_tokens=True
+        ).strip()
 
-        # Decode the output
-        try:
-            prediction = outputs[0]
-            special_token_id_to_keep = tokenizer.convert_tokens_to_ids('<ZWJ>')
-            all_special_ids = set(tokenizer.all_special_ids)
+        # Fallback to original if empty
+        if not corrected_text:
+            corrected_text = text
 
-            pred_tokens = prediction.cpu()
-            tokens_list = pred_tokens.tolist()
+        differences = find_differences(text, corrected_text)
 
-            # Filter special tokens except ZWJ
-            filtered_tokens = [
-                token for token in tokens_list
-                if token == special_token_id_to_keep or token not in all_special_ids
-            ]
-
-            prediction_decoded = tokenizer.decode(
-                filtered_tokens,
-                skip_special_tokens=False,
-                clean_up_tokenization_spaces=True
-            ).replace('\n', '').strip()
-
-            # Replace special token back
-            corrected = re.sub(r'<ZWJ>\s?', '\u200d', prediction_decoded)
-
-            # Find differences for highlighting
-            differences = find_differences(text, corrected)
-
-            return {
-                'original': text,
-                'corrected': corrected,
-                'differences': differences,
-                'success': True
-            }
-
-        except Exception as e:
-            logger.error(f"Decoding error: {str(e)}")
-            return {
-                'original': text,
-                'corrected': text,
-                'error': f'Decoding error: {str(e)}'
-            }
+        return {
+            'original': text,
+            'corrected': corrected_text,
+            'correctText': corrected_text,  # Frontend
+            'incorrectText': text,  # Frontend
+            'differences': differences,
+            'num_corrections': len(differences),
+            'success': True
+        }
 
     except Exception as e:
-        logger.error(f"Unexpected error in correct_text: {str(e)}")
+        logger.error(f"Error: {str(e)}")
         return {
             'original': text,
             'corrected': text,
-            'error': f'Unexpected error: {str(e)}'
+            'error': str(e),
+            'success': False
         }
 
 
 def find_differences(original, corrected):
-    """
-    Find the differences between original and corrected text
 
-    Returns:
-        List of dictionaries containing difference information
-    """
-    differences = []
+    if original == corrected:
+        return []
 
-    # Simple word word comparison
     original_words = original.split()
     corrected_words = corrected.split()
 
-    from difflib import SequenceMatcher
-
+    differences = []
     matcher = SequenceMatcher(None, original_words, corrected_words)
 
     for tag, i1, i2, j1, j2 in matcher.get_opcodes():
@@ -211,34 +137,43 @@ def find_differences(original, corrected):
 
     return differences
 
-
-def batch_correct_texts(texts, batch_size=8):
-    """
-    Correct multiple texts in batches
-    texts: List of texts to correct
-    batch_size: Number of texts to process at once
-
-    Returns:
-        List of correction results
-    """
-    results = []
-
-    for i in range(0, len(texts), batch_size):
-        batch = texts[i:i + batch_size]
-        for text in batch:
-            result = correct_text(text)
-            results.append(result)
-
-    return results
-
-
 def is_model_loaded():
     return _model is not None and _tokenizer is not None
 
 
 def unload_model():
+    """Free up memory by unloading model"""
     global _model, _tokenizer
     _model = None
     _tokenizer = None
+    print("Model unloaded")
 
-    logger.info("Model unloaded from memory")
+
+def quick_test():
+    """
+    Quick test function
+    run it in terminal (Git Bash) with
+    python manage.py shell
+    from api import lmspell
+    lmspell.test_correction()
+    """
+    test_texts = [
+        "The quik brown foks jump over teh lazi dog.",
+        "She sells seechells bye the seashor.",
+        "I am goign to the supermarkit later tooday."
+    ]
+
+    print("\nQuick Test Results:")
+    print("=" * 50) # repeats 50 times
+
+    for text in test_texts:
+        result = correct_text(text)
+        print(f"Original:  {text}")
+        print(f"Corrected: {result['corrected']}")
+        print("-" * 30)
+
+    print("=" * 50)
+
+
+if __name__ == "__main__":
+    quick_test()
