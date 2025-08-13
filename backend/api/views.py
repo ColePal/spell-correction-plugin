@@ -10,16 +10,22 @@ import uuid
 
 @api_view(['POST'])
 def spell_check(request):
+    """Main spell check endpoint that uses LMSpell"""
+    # Get data from request
     text = request.data.get('text', '')
+    lang = request.data.get('language', 'en')
+    inputId = request.data.get('inputId', '')
+    index = request.data.get('index', 0)
 
-    # Useing lmspell module
-    result = lmspell.correct_text(text)
+    if not text:
+        return Response(
+            {'error': 'Text is required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-    return Response(result)
 
-
-def landing_page(request):
-    return render(request, 'landing.html')
+def covertest_page(request):
+    return render(request, 'covertest.html')
 
 def cover_page(request):
     return render(request, 'covertest.html')
@@ -27,7 +33,7 @@ def cover_page(request):
 
 @api_view(['GET'])
 def health_check(request):
-    return Response({'status': 'ok', 'project': 'spellcorrector'})
+    return Response({'status': 'ok', 'project': 'spell-correction-plugin'})
 
 @api_view(['GET'])
 def experimental(request):
