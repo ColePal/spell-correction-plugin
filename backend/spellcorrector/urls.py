@@ -22,4 +22,5 @@ urlpatterns = [
     path('', views.landing_page, name='landing'),
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
+    path('cover/', views.cover_page, name='cover'),
 ]
