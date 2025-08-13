@@ -21,6 +21,9 @@ def spell_check(request):
 def landing_page(request):
     return render(request, 'landing.html')
 
+def cover_page(request):
+    return render(request, 'covertest.html')
+
 
 @api_view(['GET'])
 def health_check(request):
