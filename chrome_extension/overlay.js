@@ -5,7 +5,7 @@ const overlayContainer = document.createElement('div');
 
 
 
-async function main() {
+async function createOverlayInteractable() {
   
   // Where the button first appears on the page
   let starting_point = 'left'
@@ -152,17 +152,14 @@ async function main() {
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onLeftClick);
   });
+  
+  
+  embedDjango();
 }
 
 
-chrome.storage.local.get('extensionToggleButton', function(uservar) {
-    if (uservar.extensionToggleButton) {
-      console.log('Extension Toggle Button:', uservar.extensionToggleButton);
-	  main()
-    }
-  });
 
-
+function findTextBoxes() {
 // Finds all valid textboxes and logs user changes.
 
 // Editable fields to look for user changes in.
@@ -276,3 +273,19 @@ document.addEventListener('input', (event) => {
     } 
   }
 });
+}
+
+function embedDjango() {
+	
+}
+
+
+
+chrome.storage.local.get('extensionToggleButton', function(uservar) {
+    if (uservar.extensionToggleButton) {
+      console.log('Extension Toggle Button:', uservar.extensionToggleButton);
+	  createOverlayInteractable()
+    }
+});
+
+findTextBoxes();

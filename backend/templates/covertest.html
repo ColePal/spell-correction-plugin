@@ -171,13 +171,13 @@
                 <!-- Second Main Column (containing nested columns) -->
                 <div class="col-sm-9">
                     <div class="p-5 bg-primary text-white rounded mb-4">
-                        <h1 class="">Jumbotron Example</h1>
+                        <h1 class="" id="jumbo">Jumbotron Example</h1>
                         <p class="">Jumbotron example</p>
                     </div>
                     <div class="row">
                         <!-- First Nested Column -->
                         <div class="col-sm-6">
-                            <div class="card">
+                            <div class="card" id="text-input">
                                 <div class="card-body">
                                     <h5 class="card-title">Enter your text:</h5>
                                     <!-- Choose here >-->
@@ -198,7 +198,7 @@
                         <!-- Second Nested Column -->
                         <div class="col-sm-6">
                             <div class="card">
-                                <div class="card-body">
+                                <div class="card-body" id="huggingface-output">
                                     <h5 class="card-title">HuggingFace Output:</h5>
                                     <div style="position: relative;">
                                             <textarea name="comments" rows="5" cols="40" placeholder="Enter Text"
@@ -214,7 +214,7 @@
                 </div>
                 <div class="col-sm-3">
                     <div class="card">
-                        <div class="card-body">
+                        <div class="card-body" id="huggingface-model">
                             <h5 class="card-title">HuggingFace Model:</h5>
                         </div>
                     </div>
