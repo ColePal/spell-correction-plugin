@@ -28,7 +28,7 @@ async function SpellCorrectionQuery(queryText, inputId, startingIndex) {
         "index": startingIndex,
         "language": "en"
     });
-    //console.log("Sending to server", JSONQuery);
+    console.log("Sending to server", JSONQuery);
     //Promise.
     const spellCheckUrl = "{% url 'spell_check' %}";
 
@@ -51,25 +51,20 @@ async function SpellCorrectionQuery(queryText, inputId, startingIndex) {
 
         //let misspelledWords = findMisspelledWords(queryResponse);
         console.log("queryResponse after unpacking:",queryResponse);
+
         findMisspelledWords(queryResponse);
+
+        /*This section is for the landing page.*/
+        outputElement = document.getElementById("testTarget-lmspelldiv");
+        currentText = outputElement.innerHTML;
+
+        currentValidText = currentText.substring(0,queryResponse.index);
+        newText = currentValidText + queryResponse.correctText;
+        outputElement.innerHTML = newText;
+
     } catch(error) {
         console.log(error);
     }
-
-    //PRETEND THAT THIS IS BUILT FROM THE RESPONSE FROM THE SERVER
-
-    //mock response not real please delete
-
-    /*
-    let response = {
-        incorrectText:"hello there my nome is cole",
-        correctText:"hello there my name is cole",
-        contextIndex: 0,
-        inputId: "testInput"
-    }*/
-
-    //console.log("response from server", response);
-    //return response;
 }
 
 
@@ -139,10 +134,9 @@ function detectFirstDifference(inputText, previouslySentText) {
 
 //#Returns a list of individual words with corrections, indices and input_ids. Everything needed for highlighting?
 async function onInputEventListener(inputId) {
-    
     //wait for the timer, or until significant changes have occured
     await conditionsForSendingQuery(inputId);
-    //console.log(changeMap);
+
     const inputElement = document.getElementById(inputId);
     const currentInputValue = inputElement.value;
 
@@ -185,7 +179,7 @@ async function onInputEventListener(inputId) {
         
     })
         */
-    /*   
+    /*
     errorMap.get(inputId).forEach(wordData => {
         let textInput = document.getElementById(wordData.inputId);
         let shadowDiv = document.getElementById(wordData.inputId+"-lmspelldiv");
@@ -198,7 +192,7 @@ async function onInputEventListener(inputId) {
             shadowDiv.innerHTML = shadowDiv.innerHTML.substring(0, targetIndex)+"<u style=\"color:red;\">"+targetWord+"</u>"+shadowDiv.innerHTML.substring(targetIndex+targetLength, shadowDiv.innerHTML.length);
         }
 
-        
+
     })
         */
        highlightWords(inputId);
@@ -210,6 +204,19 @@ async function onInputEventListener(inputId) {
 //if the text has double spaces, this wont work!!! Thats why its naive
 
 function findMisspelledWords(queryResponse) {
+    console.log(queryResponse);
+    Array.from(queryResponse.correctedWords).forEach(incorrectWord => {
+        if (incorrectWord.type === 'replacement') {
+            errorMap.get(queryResponse.inputId).push({
+                "incorrectWord": incorrectWord.original,
+                "correctWord":incorrectWord.corrected,
+                "index":queryResponse.index+incorrectWord.original_index,
+                "inputId":queryResponse.inputId
+            })
+        }
+    })
+    /*
+
     const incorrectText = queryResponse.incorrectText;
     const correctText = queryResponse.correctText;
     const contextIndex = queryResponse.index;
@@ -221,25 +228,6 @@ function findMisspelledWords(queryResponse) {
     let index = 0;
     //const wordArray = new Array();
     const length = Math.max(incorrectTextArray.length, correctTextArray.length);
-
-    
-    /*
-    for (let i = 0; i < length; i++) {
-        const word1 = incorrectTextArray[i] || "";
-        const word2 = correctTextArray[i] || "";
-
-        if (word1 != word2) {
-            wordArray.push({
-                "incorrectWord": word1,
-                "correctWord":word2,
-                "index":index+contextIndex,
-                "inputId":inputId
-            })
-        }
-        index += word1.length +1
-        
-    }
-        */
 
     for (let i = 0; i < length; i++) {
         const word1 = incorrectTextArray[i] || "";
@@ -254,8 +242,10 @@ function findMisspelledWords(queryResponse) {
             })
         }
         index += word1.length +1
-        
+
     }
+
+     */
     //return wordArray;
 }
 
@@ -272,6 +262,9 @@ function highlightWords(inputId) {
         let targetIndex = shadowDiv.innerHTML.indexOf(targetWord);
         if (targetIndex != -1) {
             shadowDiv.innerHTML = shadowDiv.innerHTML.substring(0, targetIndex)+"<u style=\"color:red;\">"+targetWord+"</u>"+shadowDiv.innerHTML.substring(targetIndex+targetLength, shadowDiv.innerHTML.length);
+        } else {
+            const excludingArray = errorMap.get(inputId).filter(item => item.targetWord !== wordData.targetWord);
+            errorMap.set(inputId, excludingArray);
         }
 
     })

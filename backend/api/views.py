@@ -84,18 +84,55 @@ def spell_check(request):
         language=lang
     )
     """
-    corrected = list(text)
+    #corrected = list(text)
     # just return the response now
 
-    randIndex = random.randint(0, len(text) - 1)
-    corrected[randIndex] = 'q'
-    corrected_text = ''.join(corrected)
+    #randIndex = random.randint(0, len(text) - 1)
+
+    #while (corrected[randIndex] == ' '):
+    #    randIndex = random.randint(0, len(text) - 1)
+
+    #corrected[randIndex] = 'q'
+    #corrected_text = ''.join(corrected)
+
+    lmspellOutput = lmspell.correct_text(text)
+
+    print(lmspellOutput)
+
+    corrected_words = list()
+    for correction in lmspellOutput["differences"]:
+        corrected_word = {
+            'original': correction["original"],
+            'corrected': correction["corrected"],
+            'originalIndex': correction["original_index"],
+            'correctedIndex': correction["corrected_index"],
+            'type': correction["type"]
+        }
+        corrected_words.append(corrected_word)
 
     response_data = {
-        'incorrectText': text,
-        'correctText': corrected_text,
-        'index':index,
-        'inputId':inputId
+        'incorrectText': lmspellOutput["incorrectText"],
+        'correctText': lmspellOutput["correctText"],
+        'index': index,
+        'inputId': inputId,
+        'correctedWords': corrected_words,
     }
 
     return Response(response_data)
+
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+import json
+from .services import evaluate
+
+def home(request):
+    return render(request,"home.html")
+
+@csrf_exempt
+def analyze_view(request):
+    if request.method != "POST":
+        return JsonResponse({"detail": "POST only"}, status=405)
+    data = json.loads(request.body or "{}")
+    return JsonResponse(evaluate(data.get("text", "")))
+
