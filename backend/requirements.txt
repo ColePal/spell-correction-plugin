@@ -7,7 +7,7 @@ python-dotenv>=1.1.0
 sqlparse>=0.5.0
 tzdata>=2025.0
 
-torch>=2.0.0
+torch>=2.4.1
 transformers>=4.30.0
 sentencepiece>=0.2.00  # Needed for MT5 tokenizer (Python 3.13 does not work needs 3.12 or other)
 protobuf>=3.20.0

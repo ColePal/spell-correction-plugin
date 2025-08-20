@@ -6,6 +6,7 @@ from rest_framework import status
 from django.shortcuts import render
 from .models import CorrectionRequest, CorrectedWord, User, Session
 from . import lmspell
+from .services import evaluate
 import uuid
 
 @api_view(['POST'])
@@ -84,22 +85,15 @@ def spell_check(request):
         language=lang
     )
     """
-    #corrected = list(text)
-    # just return the response now
 
-    #randIndex = random.randint(0, len(text) - 1)
-
-    #while (corrected[randIndex] == ' '):
-    #    randIndex = random.randint(0, len(text) - 1)
-
-    #corrected[randIndex] = 'q'
-    #corrected_text = ''.join(corrected)
 
     lmspellOutput = lmspell.correct_text(text)
 
     print(lmspellOutput)
 
     corrected_words = list()
+    if (lmspellOutput["success"] == False):
+        return Response()
     for correction in lmspellOutput["differences"]:
         corrected_word = {
             'original': correction["original"],
@@ -130,7 +124,7 @@ def home(request):
     return render(request,"home.html")
 
 @csrf_exempt
-def analyze_view(request):
+def analyze(request):
     if request.method != "POST":
         return JsonResponse({"detail": "POST only"}, status=405)
     data = json.loads(request.body or "{}")

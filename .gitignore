@@ -1,3 +1,5 @@
+backend/model_cache/
+backend/api/__pycache__/
 backend/spellcorrector/__pycache__/wsgi.cpython-312.pyc
 backend/spellcorrector/__pycache__/urls.cpython-312.pyc
 backend/spellcorrector/__pycache__/settings.cpython-312.pyc

@@ -1,10 +1,14 @@
 from django.db import models
 from datetime import date, time, datetime
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 
 #PLACEHOLDER UNTIL I WORK OUT DJANGOS SESSION AND USER SYSTEM
+''''''
 class User(models.Model):
+    #creates a "profile" user model, uses the user field for authentication
+    #user = models.OneToOneField(User, on_delete=models.cascade)
     username = models.CharField(max_length=50, null=False,primary_key=True)
     first_name = models.CharField(max_length=50, null=False)
     last_name = models.CharField(max_length=50, null=False)
@@ -30,6 +34,10 @@ class CorrectionRequest(models.Model):
         if len(self.original_text) > 50:
             preview += "..."
         return preview
+    class Meta:
+        permissions = [
+            ("create_correction_request", "Can store user text in database")
+        ]
 
 class CorrectedWord(models.Model):
     id = models.AutoField(primary_key=True)

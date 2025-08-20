@@ -1,22 +1,309 @@
-<!DOCTYPE html>
+<!--{% load static %}-->
+<!doctype html>
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Slicing Algorithm Test</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/docs/4.0/assets/img/favicons/favicon.ico">
+
+    <title>Cover Template for Bootstrap</title>
+
+    <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/cover/">
+
+    <!-- Bootstrap core CSS -->
+    <link href="../../dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <!--    <link href="cover.css" rel="stylesheet">-->
+
+    <!-- Bootstrap CSS and Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet"/>
+
+    <style>
+        /*
+        * Globals
+        */
+
+        /* Links */
+        a,
+        a:focus,
+        a:hover {
+            color: #fff;
+        }
+
+        /* Custom default button */
+        .btn-secondary,
+        .btn-secondary:hover,
+        .btn-secondary:focus {
+            color: #333;
+            text-shadow: none; /* Prevent inheritance from `body` */
+            background-color: #fff;
+            border: .05rem solid #fff;
+        }
+
+
+        /*
+         * Base structure
+         */
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            display: -ms-flexbox;
+            display: -webkit-box;
+            display: flex;
+            -ms-flex-pack: center;
+            -webkit-box-pack: center;
+            justify-content: center;
+            color: #fff;
+            text-shadow: 0 .05rem .1rem rgba(0, 0, 0, .5);
+            box-shadow: inset 0 0 5rem rgba(0, 0, 0, .5);
+            /*background: url("{% static 'vimal-s-ZhVUAUc8V4s-unsplash.jpg' %}") no-repeat center center fixed;
+            The background is broken will comment out for now*/
+            background-size: cover;
+        }
+
+        .cover-container {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .row.align-items-stretch {
+            align-items: stretch;
+        }
+
+        .col-sm-3 > .card {
+            height: 100%;
+        }
+
+        @media (min-width: 768px) {
+            .cover-container {
+                width: 60%;
+                max-width: 80%;
+            }
+        }
+
+        .masthead {
+            margin-bottom: 2rem;
+        }
+
+        .masthead-brand {
+            margin-bottom: 0;
+        }
+
+        .nav-masthead .nav-link {
+            padding: .25rem 0;
+            font-weight: 700;
+            color: rgb(255, 255, 255);
+            background-color: transparent;
+            border-bottom: .25rem solid transparent;
+        }
+
+        .nav-masthead .nav-link:hover,
+        .nav-masthead .nav-link:focus {
+            border-bottom-color: rgb(255, 255, 255);
+        }
+
+        .nav-masthead .nav-link + .nav-link {
+            margin-left: 1rem;
+        }
+
+        .nav-masthead .active {
+            color: #fff;
+            border-bottom-color: #fff;
+        }
+
+        @media (min-width: 48em) {
+            .masthead-brand {
+                float: left;
+            }
+
+            .nav-masthead {
+                float: right;
+            }
+        }
+
+        .cover {
+            padding: 0 1.5rem;
+        }
+
+        .cover .btn-lg {
+            padding: .75rem 1.25rem;
+            font-weight: 700;
+        }
+
+        .mastfoot {
+            color: rgba(255, 255, 255, .5);
+        }
+
+        </style>
+
 </head>
 
-<body onload="findAllInput()">
-  <h1>Chunking program test</h1>
+<body class="text-center" onload="findAllInput()">
 
-  <label for="testInput">Test Input:</label>
-  <input type="text" id="testInput" placeholder="chunking text input">
+<div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
+    <header class="masthead mb-auto">
+        <div class="inner">
+            <h3 class="masthead-brand" style="color: white;">LLMSpell</h3>
+            <nav class="nav nav-masthead justify-content-center">
+                <i class="fs-4 bi-house me-2 text-white"></i>
+                <a class="nav-link active me-2" href="#">Home</a>
+                <i class="fs-4 bi-speedometer2 me-2 text-white"></i>
+                <a class="nav-link me-2" href="#">Dashboard</a>
+                <i class="fs-4 bi-envelope me-2 text-white"></i>
+                <a class="nav-link me-2" href="#">Contact</a>
+            </nav>
+        </div>
+    </header>
 
-  <script>{%  include "SlicingAlgorithm.js" %}</script>
-  <!--<script src="SlicingAlgorithm.js"></script>-->
-  <script>{%  include "SetupPage.js" %}
-  </script>
+    <main role="main" class="inner cover">
+        <div class="container">
+            <div class="row align-items-stretch">
+                <!-- Second Main Column (containing nested columns) -->
+                <div class="col-sm-9">
+                    <div class="p-5 bg-primary text-white rounded mb-4">
+                        <h1 class="" id="jumbo">Jumbotron Example</h1>
+                        <p class="">Jumbotron example</p>
+                    </div>
+                    <div class="row">
+                        <!-- First Nested Column -->
+                        <div class="col-sm-6">
+                            <div class="card" id="text-input">
+                                <div class="card-body">
+                                    <h5 class="card-title">Enter your text:</h5>
+                                    <textarea name="comments" rows="5" cols="40" placeholder="Enter Text"
+                                                      class="w-100" style="padding-bottom: 35px;" id="testInput"></textarea>
+                                 </div>
+                            </div>
+                        </div>
+                        <!-- Second Nested Column -->
+                        <div class="col-sm-6">
+                            <div class="card">
+                                <div class="card-body" id="huggingface-output">
+                                    <h5 class="card-title">HuggingFace Output:</h5>
+                                    <div style="position: relative;">
+                                            <textarea name="comments" rows="5" cols="40" placeholder="Enter Text"
+                                                      class="w-100" style="padding-bottom: 35px;" id="testTarget"></textarea>
+                                        <button class="btn btn-primary"
+                                                style="position: absolute; bottom: 10px; right: 5px;">Copy
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="card">
+                        <div class="card-body" id="huggingface-model">
+                            <h5 class="card-title">HuggingFace Model:</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="status" style="margin:8px 0;color:#666;"></div>
+<div class="row">
+    <div class="card"><h3>Emotion</h3>
+        <div id="emotion" class="mono">—</div>
+    </div>
+    <div class="card"><h3>Formality</h3>
+        <div id="formality" class="mono">—</div>
+    </div>
+    <div class="card"><h3>Readability</h3>
+        <div id="readability" class="mono">—</div>
+    </div>
+</div>
+
+<script>
+  function fleschMeaning(score) {
+    if (score > 100)
+        return "Super easy (child-level simplicity)";
+    if (score >= 90)
+        return "Very easy (5th grade)";
+    if (score >= 80)
+        return "Easy (6th grade)";
+    if (score >= 70)
+        return "Fairly easy (7th grade)";
+    if (score >= 60)
+        return "Standard (8th–9th grade)";
+    if (score >= 50)
+        return "Fairly difficult (10th–12th grade)";
+    if (score >= 30)
+        return "Difficult (college level)";
+    if (score >= 0)
+        return "Very difficult (college graduate)";
+    return "Extremely complex / academic";
+  }
+
+  let timer = null;
+
+  async function analyze(text) {
+    document.getElementById("status").textContent = "Analyzing…";
+
+    const res = await fetch("/api/analyze/", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ text })
+    });
+    const data = await res.json();
+    document.getElementById("status").textContent = "";
+
+    if (!data.ok) {
+      document.getElementById("emotion").textContent = "—";
+      document.getElementById("formality").textContent = "—";
+      document.getElementById("readability").textContent = "—";
+      return;
+    }
+
+    const top = (data.emotion && Array.isArray(data.emotion.top) && data.emotion.top[0]) ? data.emotion.top[0] : null;
+document.getElementById("emotion").textContent =
+  top ? `${top.label}: ${(top.score * 100).toFixed(1)}%` : "—";
+
+
+
+   const f = data.formality;
+   document.getElementById("formality").textContent = `${f.label}`
+
+
+
+    // Readability
+    const fleschNum = Number(data.readability.flesch_reading_ease);
+    document.getElementById("readability").textContent = `Readability: ${fleschNum.toFixed(1)} — ${fleschMeaning(fleschNum)}\n`;
+  }
+
+  document.getElementById("testInput").addEventListener("input", () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => analyze(document.getElementById("testInput").value), 500);
+  });
+</script>
+    </main>
+
+    <footer class="mastfoot mt-auto">
+        <div class="inner">
+            <p>LLMSpell</p>
+        </div>
+    </footer>
+</div>
+
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+        crossorigin="anonymous"></script>
+
+<script>{%  include "SlicingAlgorithm.js" %}</script>
+<!--<script src="SlicingAlgorithm.js"></script>-->
+<script>{%  include "SetupPage.js" %}</script>
+
 </body>
 
 </html>

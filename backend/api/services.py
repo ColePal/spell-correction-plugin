@@ -1,6 +1,7 @@
 import os
 from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
-import torch, textstat
+import torch
+from .textstat import flesch_reading_ease, flesch_kincaid_grade, gunning_fog
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
 os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
@@ -50,9 +51,9 @@ def evaluate(full_text: str, length: int = 600):
 
 
     readability = {
-        "flesch_reading_ease": textstat.flesch_reading_ease(text),
-        "fk_grade": textstat.flesch_kincaid_grade(text),
-        "gunning_fog": textstat.gunning_fog(text),
+        "flesch_reading_ease": flesch_reading_ease(text, "en"),
+        "fk_grade": flesch_kincaid_grade(text, "en"),
+        "gunning_fog": gunning_fog(text, "en"),
     }
 
     return {
