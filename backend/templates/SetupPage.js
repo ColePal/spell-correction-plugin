@@ -1,3 +1,17 @@
+/*What does this script do?
+*
+* Upon page load, this script will find every instance of textareas and inputs.
+* It will then create a *shadow div* for the element.
+    *   The shadow div is an overlay that copies the size and position of an element.
+    *   Every time an element is edited, the contents are copied to the *shadow div*
+    *   The *shadow div* hides the underlying element, but does not accept input. This
+    *   means that users will only ever type into the original page elements. This is
+    *   important as we don't want to break the functionality of the pages we are
+    *   spell correcting for.
+* Current issues:
+*   When the page is resized the *shadow div* does not resize or change location.
+*/
+
 window.addEventListener("load", () => findAllInput());
 
 
@@ -42,3 +56,4 @@ function findAllInput() {
         element.style.color="transparent";
       });
     }
+

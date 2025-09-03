@@ -1,4 +1,4 @@
-const CONTEXT_WINDOW_SIZE = 20;
+const CONTEXT_WINDOW_SIZE = 100;
 
 /*There two maps work together to make sure the user input is sent to the
 server in a timely manner. changemap tracks total keystrokes up to a max. This
@@ -19,6 +19,22 @@ const previouslySentQueries = new Map();
 //A map variable that keeps track of the errors discovered within each input element.
 const errorMap = new Map();
 
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 //#This function is an example of what will be sent to the backend to perform queries.
 //#We must make sure we have API expecting a data structure that looks something like this
 async function SpellCorrectionQuery(queryText, inputId, startingIndex) {
@@ -31,12 +47,13 @@ async function SpellCorrectionQuery(queryText, inputId, startingIndex) {
     console.log("Sending to server", JSONQuery);
     //Promise.
     const spellCheckUrl = "{% url 'spell_check' %}";
-
+    const csrfToken = getCookie("csrftoken");
     try {
         let response = await fetch(spellCheckUrl, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
             },
             body: JSONQuery
         })
@@ -82,12 +99,12 @@ async function conditionsForSendingQuery(inputId) {
         changeMap.set(inputId, 1);
     }
     
-    if (changeMap.get(inputId) == CONTEXT_WINDOW_SIZE) {
+    if (changeMap.get(inputId) === CONTEXT_WINDOW_SIZE) {
         changeMap.set(inputId, 0);
         if (debounceTimers.has(inputId)) {
             clearTimeout(debounceTimers.get(inputId));
         }
-        return true;
+        return false;
     } else {
         //if we reach this point, make sure to update the changeMap.
         changeMap.set(inputId, changeMap.get(inputId)+1);
@@ -135,7 +152,9 @@ function detectFirstDifference(inputText, previouslySentText) {
 //#Returns a list of individual words with corrections, indices and input_ids. Everything needed for highlighting?
 async function onInputEventListener(inputId) {
     //wait for the timer, or until significant changes have occured
-    await conditionsForSendingQuery(inputId);
+    let isTimedOut = await conditionsForSendingQuery(inputId);
+
+    console.log(isTimedOut);
 
     const inputElement = document.getElementById(inputId);
     const currentInputValue = inputElement.value;
@@ -154,48 +173,14 @@ async function onInputEventListener(inputId) {
     queryString = currentInputValue.substring(startIndex,startIndex+queryLength);
     let queryResponse = await SpellCorrectionQuery(queryString, inputId, startIndex);
 
+
     //because the user can backspace and insert characters at any point, we take the
     //previously sent text up to the start index and add the current query to it.
     let validPreviousText = previousText.substring(0,startIndex);
     const newPreviousText = validPreviousText + queryString;
     previouslySentQueries.set(inputId, newPreviousText);
 
-    //let misspelledWords = findMisspelledWords(queryResponse);
-
-    //findMisspelledWords(queryResponse);
-/*
-    misspelledWords.forEach(wordData => {
-        let textInput = document.getElementById(wordData.inputId);
-        let shadowDiv = document.getElementById(wordData.inputId+"-lmspelldiv");
-        shadowDiv.innerHTML = textInput.value;
-
-        let targetWord = wordData.incorrectWord;
-        let targetLength = targetWord.length;
-        let targetIndex = shadowDiv.innerHTML.indexOf(targetWord);
-        if (targetIndex != -1) {
-            shadowDiv.innerHTML = shadowDiv.innerHTML.substring(0, targetIndex)+"<u style=\"color:red;\">"+targetWord+"</u>"+shadowDiv.innerHTML.substring(targetIndex+targetLength, shadowDiv.innerHTML.length);
-        }
-
-        
-    })
-        */
-    /*
-    errorMap.get(inputId).forEach(wordData => {
-        let textInput = document.getElementById(wordData.inputId);
-        let shadowDiv = document.getElementById(wordData.inputId+"-lmspelldiv");
-        shadowDiv.innerHTML = textInput.value;
-
-        let targetWord = wordData.incorrectWord;
-        let targetLength = targetWord.length;
-        let targetIndex = shadowDiv.innerHTML.indexOf(targetWord);
-        if (targetIndex != -1) {
-            shadowDiv.innerHTML = shadowDiv.innerHTML.substring(0, targetIndex)+"<u style=\"color:red;\">"+targetWord+"</u>"+shadowDiv.innerHTML.substring(targetIndex+targetLength, shadowDiv.innerHTML.length);
-        }
-
-
-    })
-        */
-       highlightWords(inputId);
+    highlightWords(inputId);
 }
 
 //given the response from the server, find the misspelt words, get their index,

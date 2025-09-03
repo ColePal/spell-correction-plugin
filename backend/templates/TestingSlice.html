@@ -144,6 +144,19 @@
             color: rgba(255, 255, 255, .5);
         }
 
+        replacement {
+            text-decoration: underline;
+            color: red;
+        }
+        insertion {
+            text-decoration: underline;
+            color: yellow;
+        }
+        deletion {
+            text-decoration: underline;
+            color: blue;
+        }
+
         </style>
 
 </head>
@@ -161,6 +174,7 @@
                 <a class="nav-link me-2" href="#">Dashboard</a>
                 <i class="fs-4 bi-envelope me-2 text-white"></i>
                 <a class="nav-link me-2" href="#">Contact</a>
+                <a class="nav-link me-2" href={% url 'login' %}>Login</a>
             </nav>
         </div>
     </header>
@@ -280,11 +294,12 @@ document.getElementById("emotion").textContent =
     const fleschNum = Number(data.readability.flesch_reading_ease);
     document.getElementById("readability").textContent = `Readability: ${fleschNum.toFixed(1)} — ${fleschMeaning(fleschNum)}\n`;
   }
-
+/*
   document.getElementById("testInput").addEventListener("input", () => {
     clearTimeout(timer);
     timer = setTimeout(() => analyze(document.getElementById("testInput").value), 500);
   });
+*/
 </script>
     </main>
 
@@ -300,7 +315,7 @@ document.getElementById("emotion").textContent =
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
         crossorigin="anonymous"></script>
 
-<script>{%  include "SlicingAlgorithm.js" %}</script>
+<script>{%  include "Requester.js" %}</script>
 <!--<script src="SlicingAlgorithm.js"></script>-->
 <script>{%  include "SetupPage.js" %}</script>
 

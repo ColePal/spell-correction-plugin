@@ -1,10 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <title>Title</title>
 </head>
 <body>
-$END$
+    <div id="inputs">
+        <form method="post">
+            {% csrf_token %}
+            {% if messages %}
+                <ul class="messages">
+                {% for message in messages %}
+                    <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+              </ul>
+            {% endif %}
+            <label>
+                Email
+            <input type="email" name="email" required/>
+            </label>
+            <label>
+                Password
+            <input type="password" name="password" required/>
+            </label>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+    <button onclick="toggleLogin()" id="toggleButton">Register</button>
+
+    <script>
+        let login = true;
+
+        //start the timer
+        var timerActive = false;
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve,ms));
+        }
+
+        async function toggleLogin() {
+            if (timerActive) {
+                return;
+            }
+            login = !login;
+            let div = document.getElementById("inputs");
+            div.innerHTML = "";
+
+            if (login) {
+                const form = document.createElement("form");
+                form.action='';
+                form.method="post";
+
+                const emailInput = document.createElement("input");
+                emailInput.type = "email";
+
+                const passwordInput = document.createElement("input");
+                passwordInput.type = "password";
+
+                const submitButton = document.createElement("button");
+                submitButton.type = "submit";
+                submitButton.innerText = "Submit"
+
+                const emailLabel = document.createElement("label");
+                emailLabel.innerText = "Email";
+                emailLabel.appendChild(emailInput);
+
+                const passwordLabel = document.createElement("label");
+                passwordLabel.innerText = "Password";
+                passwordLabel.appendChild(passwordInput);
+
+                form.appendChild(emailLabel);
+                form.appendChild(passwordLabel);
+                form.appendChild(submitButton);
+
+                div.appendChild(form);
+
+            } else {
+                const form = document.createElement("form");
+                form.action='{% url 'register' %}';
+                form.method="post";
+
+                const emailInput = document.createElement("input");
+                emailInput.type = "email";
+                emailInput.name = "email";
+
+                const passwordInput = document.createElement("input");
+                passwordInput.type = "password";
+                passwordInput.name = "password";
+
+                const confirmPasswordInput = document.createElement("input");
+                confirmPasswordInput.type = "password";
+
+                const submitButton = document.createElement("button");
+                submitButton.type = "submit";
+                submitButton.innerText = "Register";
+
+                const emailLabel = document.createElement("label");
+                emailLabel.innerText = "Email";
+                emailLabel.appendChild(emailInput);
+
+                const passwordLabel = document.createElement("label");
+                passwordLabel.innerText = "Password";
+                passwordLabel.appendChild(passwordInput);
+
+                const confirmPasswordLabel = document.createElement("label");
+                confirmPasswordLabel.innerText = "Confirm Password";
+                confirmPasswordLabel.appendChild(confirmPasswordInput);
+
+
+                form.appendChild(emailLabel);
+                form.appendChild(passwordLabel);
+                form.appendChild(confirmPasswordLabel);
+                form.appendChild(submitButton);
+
+                div.appendChild(form);
+            }
+            timerActive = true;
+            await delay(500);
+            timerActive = false;
+        }
+
+    </script>
+
 </body>
 </html>

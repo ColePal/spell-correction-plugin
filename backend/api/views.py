@@ -1,29 +1,33 @@
 import random
+import re
 
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+from regex import regex
+
+from .services import evaluate
+from django.contrib.auth import authenticate
+from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from django.shortcuts import render, redirect
 from django.shortcuts import render
-from .models import CorrectionRequest, CorrectedWord, User, Session
+from .models import CorrectionRequest, CorrectedWord
+from django.contrib.auth.models import User
+from django.contrib.auth import login as auth_login, logout as auth_logout
+
 from . import lmspell
+from .sentencebuffer import sentencebuffer
+from django.contrib import messages
 from .services import evaluate
 import uuid
 
-@api_view(['POST'])
-def spell_check(request):
-    """Main spell check endpoint that uses LMSpell"""
-    # Get data from request
-    text = request.data.get('text', '')
-    lang = request.data.get('language', 'en')
-    inputId = request.data.get('inputId', '')
-    index = request.data.get('index', 0)
 
-    if not text:
-        return Response(
-            {'error': 'Text is required'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
+sentenceBufferMap = {}
 
 def covertest_page(request):
     return render(request, 'covertest.html')
@@ -40,9 +44,6 @@ def health_check(request):
 def experimental(request):
     return render(request, 'TestingSlice.html')
 
-"""Session and user data is for server side only. We only need to send
-highlighting and spell correction information back to the user"""
-
 @api_view(['POST'])
 def spell_check(request):
     # get data from request
@@ -52,43 +53,36 @@ def spell_check(request):
     index = request.data.get('index', '')
 
     if not text:
+        print("Text is required")
         return Response(
             {'error': 'Text is required'},
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # create a test user and session
-    """
-    test_user, created = User.objects.get_or_create(
-        username='test01',
-        defaults={
-            'first_name': 'Test',
-            'last_name': 'User',
-            'email': 'test@example.com'
+    #The user cannot use spell correction unless logged in.
+    if not request.user.is_authenticated:
+        response_data = {
+            'incorrectText': text,
+            'correctText': text,
+            'index': index,
+            'correctedWords': list(),
         }
-    )
+        print("Not Logged in")
+        return Response(response_data)
 
-    # Create session
-    session = Session.objects.create(
-        id=str(uuid.uuid4())[:20],
-        user_id=test_user
-    )
+    session_key = request.session.session_key
+    if session_key not in sentenceBufferMap:
+        sentenceBufferMap.update({session_key: sentencebuffer()})
 
-    # will connect to LMSpell later
-    corrected = text  # just echo for testing
+    #sentence buffer stores unterminated strings to concat to the text,
+    #providing the language model with contextful strings.
 
-    # store correction request
-    correction_request = CorrectionRequest.objects.create(
-        session_id=session,
-        original_text=text,
-        received_text=corrected,
-        language=lang
-    )
-    """
+    buffer_index = sentenceBufferMap.get(session_key).get_index()
+    query = sentenceBufferMap.get(session_key).get_query(index, text)
 
+    lmspellOutput = lmspell.correct_text(query)
 
-    lmspellOutput = lmspell.correct_text(text)
-
+    #print(sentenceBufferMap[session_key])
     print(lmspellOutput)
 
     corrected_words = list()
@@ -98,27 +92,21 @@ def spell_check(request):
         corrected_word = {
             'original': correction["original"],
             'corrected': correction["corrected"],
-            'originalIndex': correction["original_index"],
-            'correctedIndex': correction["corrected_index"],
+            'startIndex': correction["original_index"],
             'type': correction["type"]
         }
         corrected_words.append(corrected_word)
 
     response_data = {
-        'incorrectText': lmspellOutput["incorrectText"],
-        'correctText': lmspellOutput["correctText"],
-        'index': index,
-        'inputId': inputId,
+        'incorrectText': lmspellOutput["original"],
+        'correctText': lmspellOutput["corrected"],
+        'index': buffer_index,
         'correctedWords': corrected_words,
     }
 
     return Response(response_data)
 
-from django.http import JsonResponse
-from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
-import json
-from .services import evaluate
+
 
 def home(request):
     return render(request,"home.html")
@@ -130,3 +118,41 @@ def analyze(request):
     data = json.loads(request.body or "{}")
     return JsonResponse(evaluate(data.get("text", "")))
 
+
+@api_view(['POST', 'GET'])
+def login(request):
+    if request.method == "GET":
+        return render(request, "login.html")
+    elif request.method == "POST":
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+
+        user = authenticate(request, username=email, password=password)
+
+        if user is not None:
+            auth_login(request, user)
+            return redirect("experimental")
+        else:
+            print("User does not exist")
+            messages.error(request, "Invalid credentials")
+            return redirect("login")
+    return redirect("experimental")
+
+@api_view(['POST'])
+def register(request):
+    email = request.POST.get("email")
+    password = request.POST.get("password")
+
+    print(email)
+    print(password)
+
+    if User.objects.filter(username=email).exists():
+        messages.error(request, "Username already exists")
+        return redirect("login")
+    user = User.objects.create_user(email = email, username=email, password=password)
+    return redirect(request, "login")
+
+def logout(request):
+    auth_logout(request)
+    messages.success(request, "You have been logged out.")
+    return redirect("experimental")
