@@ -152,15 +152,8 @@ async function createOverlayInteractable() {
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onLeftClick);
   });
-  
-  
-  embedDjango();
 }
 
-
-
-function findTextBoxes() {
-// Finds all valid textboxes and logs user changes.
 
 // Editable fields to look for user changes in.
 const valid_field_types = `
@@ -170,6 +163,10 @@ const valid_field_types = `
   textarea
 `;
 
+
+function findTextBoxes() {
+// Finds all valid textboxes and logs user changes.
+
 // Highlight Colours
 const highlight_colour = 'yellow'
 const found_highlight_colour = 'green' // To show that the extension has found the textbox.
@@ -177,14 +174,69 @@ const found_highlight_colour = 'green' // To show that the extension has found t
 // Lists
 const editable_fields_list = document.querySelectorAll(valid_field_types); // List of found valid fields.
 
-// Highlight found fields/textboxes upon page load.
-function highlight_found_fields() {
-  editable_fields_list.forEach(field => {
-    field.style.backgroundColor = found_highlight_colour;
-  });
+
 }
 
-highlight_found_fields()
+function setupTextAreaOverlay(textarea) {
+	
+	// Create Overlay
+	const overlay = document.createElement("div");
+	overlay.className = "spell-corrector-overlay";
+	document.body.appendChild(overlay);
+	
+	// Div Copy Style of TextArea
+	
+	overlay.style.position = "absolute";
+	overlay.style.pointerEvents = "none";
+	overlay.style.background = "transparent";
+	overlay.style.color = "transparent";
+	overlay.style.zIndex = 12345;
+	// Grab textarea specific styles properties
+	let textAreaStylings = getComputedStyle(textarea); // It gets the in use style!!!
+    overlay.style.font = textAreaStylings.font;
+    overlay.style.padding = textAreaStylings.padding;
+    overlay.style.lineHeight = textAreaStylings.lineHeight;
+    overlay.style.border = textAreaStylings.border;
+    overlay.style.boxSizing = textAreaStylings.boxSizing;
+	
+	
+	// Update DIV text to match textarea text
+	const updateDivText = () => {
+		overlay.innerHTML = "";
+		const wordSpan = document.createElement("span");
+		wordSpan.style.userSelect = '';
+		wordSpan.textContent = textarea.value;
+		wordSpan.style.backgroundColor = 'green';
+		wordSpan.style.color = "pink";
+		overlay.appendChild(wordSpan);
+	}
+	
+	updateDivText();
+	textarea.addEventListener("input", updateDivText);
+	textarea.addEventListener("scroll", updateDivText);
+	
+	// Put div visually on top of textarea
+	const positionOverlay = () => {
+		const areaBounds = textarea.getBoundingClientRect();
+		overlay.style.left = window.scrollX + areaBounds.left + 'px';
+		overlay.style.width = areaBounds.width + 'px';
+		overlay.style.top = window.scrollY + areaBounds.top + 'px';
+		overlay.style.height = areaBounds.height + 'px';
+	};
+	
+	positionOverlay();
+	// Rerun positioning when window scrolled or resized.
+    textarea.addEventListener("resize", positionOverlay);
+	window.addEventListener("resize", positionOverlay);
+	window.addEventListener("scroll", positionOverlay);
+	
+}
+
+
+document.querySelectorAll(valid_field_types).forEach(setupTextAreaOverlay);
+
+
+
 
 const existingInputsList = {};
 
@@ -210,7 +262,7 @@ document.addEventListener('input', (event) => {
 	    // Print Element Id and Text to console
         console.log("Edited Field:", changed_element.id);
         console.log("Field Text:", changed_element.value);
-	    changed_element.style.backgroundColor = highlight_colour // Highlights the text.
+	    //changed_element.style.backgroundColor = highlight_colour // Highlights the text.
 	  
 	    // If div is found
 	    if (field_elements_div) {
@@ -273,11 +325,6 @@ document.addEventListener('input', (event) => {
     } 
   }
 });
-}
-
-function embedDjango() {
-	
-}
 
 
 
