@@ -27,6 +27,8 @@ def text_input(text: str, n: int):
 
 def evaluate(full_text: str, length: int = 600):
     text = text_input(full_text, length)
+    if text is None:
+        return {"ok": True, "note": "Value parsed was null"}
     if text=="" or len(text) < 2:
         return {"ok": True, "note": "Not enough text to analyse"}
 

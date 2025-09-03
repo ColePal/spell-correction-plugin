@@ -23,4 +23,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
     path('cover/', views.cover_page, name='cover'),
+    path('experimental/', views.experimental, name='experimental'),
+    path('login/', views.login, name='login'),
+    path('logout/', views.logout, name='logout'),
+    path('register/', views.register, name='register'),
 ]

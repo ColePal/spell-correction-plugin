@@ -1,5 +1,5 @@
 import torch
-from transformers import T5ForConditionalGeneration, T5Tokenizer
+from transformers import T5ForConditionalGeneration, T5TokenizerFast
 from difflib import SequenceMatcher # Compares Sequences: Used to compare the original vs corrected words
 import logging
 
@@ -23,7 +23,7 @@ def get_model():
             model_name,
             cache_dir="./model_cache"
         )
-        _tokenizer = T5Tokenizer.from_pretrained(
+        _tokenizer = T5TokenizerFast.from_pretrained(
             model_name,
             cache_dir="./model_cache"
         )
@@ -81,8 +81,9 @@ def correct_text(text, max_length=512): # "was trained on sequences of up to 512
         return {
             'original': text,
             'corrected': corrected_text,
-            'correctText': corrected_text,  # Frontend
-            'incorrectText': text,  # Frontend
+            #COLE IS REMOVING THE DUPLICATION
+            #'correctText': corrected_text,  # Frontend
+            #'incorrectText': text,  # Frontend
             'differences': differences,
             'num_corrections': len(differences),
             'success': True
