@@ -29,7 +29,7 @@ def covertest_page(request):
     return render(request, 'covertest.html')
 
 def cover_page(request):
-    return render(request, 'covertest.html')
+    return render(request, 'TestingSlice.html')
 
 
 @api_view(['GET'])
