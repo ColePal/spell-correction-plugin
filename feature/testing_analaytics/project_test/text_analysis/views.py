@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 import json
-from .services import evaluate,language_detection
+from .services import evaluate
 
 def home(request):
     return render(request, "text_analysis/home.html")
@@ -12,9 +12,4 @@ def analyze_view(request):
     if request.method != "POST":
         return JsonResponse({"detail": "POST only"}, status=405)
     data = json.loads(request.body or "{}")
-    return JsonResponse(evaluate(data.get("text", "")),)
-
-@csrf_exempt
-def language_detect(request):
-   data = json.loads(request.body or "{}")
-   return JsonResponse({"ok": True,"language":language_detection(data.get("text", ""))})
+    return JsonResponse(evaluate(data.get("text", "")))
