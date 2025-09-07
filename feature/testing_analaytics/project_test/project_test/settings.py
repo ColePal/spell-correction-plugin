@@ -9,12 +9,14 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
+import os
 from pathlib import Path
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+MODEL_DIRECTORY = BASE_DIR / "text_analysis" / "models"
+FASTTEXT_MODEL_PATH = Path(os.environ.get("FASTTEXT_MODEL_PATH", MODEL_DIRECTORY / "lid.176.ftz"))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/

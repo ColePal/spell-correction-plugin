@@ -177,6 +177,37 @@ const editable_fields_list = document.querySelectorAll(valid_field_types); // Li
 
 }
 
+
+
+
+// get rid of per word pop ups when any key pressed.
+
+
+let assignUID = 0;
+
+function alterAllWordPopUps(type) { // 0 to remove, 1 to make invisible, 2 to update positioning
+	for (let i = 0; i <= assignUID; i++) {
+	  const existingPopups = document.getElementById(`scwp-${i}-popup`);
+	  if (existingPopups) {
+		  if (type == 0) {existingPopups.remove();}
+		  if (type == 1) {existingPopups.style.display = 'none';}
+		  if (type == 2) {
+			  const wordBounds = document.getElementById(`scwp-${i}`).getBoundingClientRect();
+			  existingPopups.style.left = window.scrollX + wordBounds.left + 'px';
+			  existingPopups.style.top = window.scrollY + wordBounds.top + wordBounds.height + 'px';
+		  }
+	  }
+	}
+};
+
+document.addEventListener('keydown', () => {
+  alterAllWordPopUps(0);
+});
+
+
+//import { SpellCorrectionQuery } from = '../backend/templates/Requester.js';
+//SpellCorrectionQuery();
+
 function setupTextAreaOverlay(textarea) {
 	
 	// Create Overlay
@@ -191,6 +222,7 @@ function setupTextAreaOverlay(textarea) {
 	overlay.style.background = "transparent";
 	overlay.style.color = "transparent";
 	overlay.style.zIndex = 12345;
+
 	// Grab textarea specific styles properties
 	let textAreaStylings = getComputedStyle(textarea); // It gets the in use style!!!
     overlay.style.font = textAreaStylings.font;
@@ -201,14 +233,90 @@ function setupTextAreaOverlay(textarea) {
 	
 	
 	// Update DIV text to match textarea text
-	const updateDivText = () => {
+	const updateDivText = () => { //  = () => { means local to setupTextAreaOverlay!!!
 		overlay.innerHTML = "";
-		const wordSpan = document.createElement("span");
-		wordSpan.style.userSelect = '';
-		wordSpan.textContent = textarea.value;
-		wordSpan.style.backgroundColor = 'green';
-		wordSpan.style.color = "pink";
-		overlay.appendChild(wordSpan);
+		
+		const inputWords = textarea.value.match(/[a-zA-Z]+(?:'[a-zA-Z]+)?| +|[^a-zA-Z\s]+/g) || []; // splits every time a 
+		
+		inputWords.forEach((word) => {
+			const wordSpan = document.createElement("span");
+			wordSpan.style.userSelect = '';
+			wordSpan.textContent = word;
+			wordSpan.style.whiteSpace = "pre"; // fixes "     " becoming " "
+			
+			const wordClick = () => {
+				
+				const existingPopUpCheck = document.getElementById(wordSpan.id + "-popup");
+				
+				
+				
+				//alterAllWordPopUps(1);
+				
+				if (document.body.contains(existingPopUpCheck)) { // if popup already exists
+					let displayState = existingPopUpCheck.style.display;
+					alterAllWordPopUps(1);
+					if (displayState === 'none') {
+						existingPopUpCheck.style.display = 'block';
+					} 
+					else {
+						existingPopUpCheck.style.display = 'none';
+					}
+					
+				}
+				else {
+					alterAllWordPopUps(1);
+					const wordCorrectPopUp = document.createElement("div");
+					
+					wordCorrectPopUp.id = "scwp-" + assignUID + "-popup";
+					wordSpan.id = "scwp-" + assignUID;
+					assignUID += 1;
+					wordCorrectPopUp.style.position = "absolute";
+					wordCorrectPopUp.style.zIndex = 12345;
+					wordCorrectPopUp.style.fontSize = 30 + 'px';
+					wordCorrectPopUp.textContent = wordSpan.textContent;
+					wordCorrectPopUp.style.backgroundColor = 'black';
+					wordCorrectPopUp.style.color = 'white';
+					
+					
+					const wordButtons = document.createElement("h5");
+					wordButtons.style.display = "inline"; // to make same line.
+					wordButtons.textContent = "  [Y/N]";
+					wordCorrectPopUp.appendChild(wordButtons);
+
+					
+					const wordBounds = wordSpan.getBoundingClientRect();
+					wordCorrectPopUp.style.left = window.scrollX + wordBounds.left + 'px';
+					//overlay.style.width = wordBounds.width + 'px';
+					
+					
+					
+					wordCorrectPopUp.style.top = window.scrollY + wordBounds.top + wordBounds.height + 'px';
+					//wordCorrectPopUp.style.top = window.scrollY + wordBounds.top - 40 + 'px';
+					
+					//overlay.style.height = wordBounds.height + 'px';
+					
+					document.body.appendChild(wordCorrectPopUp);
+				}
+			};
+			
+			
+			
+			if (/[a-zA-Z]+(?:'[a-zA-Z]+)?/.test(word)) { // if word and not char
+				wordSpan.style.backgroundColor = '#FFC0CB80';
+				wordSpan.style.color = 'green';
+				wordSpan.style.cursor = "pointer";
+				wordSpan.style.pointerEvents = "auto";
+				wordSpan.addEventListener("click", wordClick); // make clickable
+			}
+			else {
+				wordSpan.style.pointerEvents = "none";
+				wordSpan.style.backgroundColor = 'transparent';
+				wordSpan.style.color = "pink";
+				console.log("Current: [", word, "]");
+			}
+			
+			overlay.appendChild(wordSpan);
+		});
 	}
 	
 	updateDivText();
@@ -222,6 +330,7 @@ function setupTextAreaOverlay(textarea) {
 		overlay.style.width = areaBounds.width + 'px';
 		overlay.style.top = window.scrollY + areaBounds.top + 'px';
 		overlay.style.height = areaBounds.height + 'px';
+		alterAllWordPopUps(2);
 	};
 	
 	positionOverlay();

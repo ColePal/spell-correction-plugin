@@ -157,6 +157,7 @@ function executeAllChanges(inputId) {
     outputElement.innerHTML = currentWords.join(" ");
 }
 
+
 async function conditionsForSendingQuery(inputId) {
     if (changeMap.get(inputId) == null) {
         changeMap.set(inputId, 1);
@@ -209,7 +210,7 @@ function detectFirstDifference(textA, textB) {
 /*
 Send a correction request to the server. The server will respond with corrections or with null.
  */
-async function SpellCorrectionQuery(queryText, inputId, startingIndex, sentenceIndex) {
+export async function SpellCorrectionQuery(queryText, inputId, startingIndex) {
     //get the csrftoken from cookies.
     function getCookie(name) {
         let cookieValue = null;
