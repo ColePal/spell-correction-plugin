@@ -49,15 +49,10 @@ def spell_check(request):
     # get data from request
     text = request.data.get('text', '')
     lang = request.data.get('language', 'en')
-    inputId = request.data.get('inputId', '')
-    index = request.data.get('index', '')
+    sentence_index = request.data.get('sentenceIndex', 0)
+    index = request.data.get('index', 0)
+    print(request.data)
 
-    if not text:
-        print("Text is required")
-        return Response(
-            {'error': 'Text is required'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
 
     #The user cannot use spell correction unless logged in.
     if not request.user.is_authenticated:
@@ -74,16 +69,24 @@ def spell_check(request):
     if session_key not in sentenceBufferMap:
         sentenceBufferMap.update({session_key: sentencebuffer()})
 
+    if not text:
+        print("Text is required")
+        sentenceBufferMap.get(session_key).flush()
+        return Response(
+            {'error': 'Text is required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
     #sentence buffer stores unterminated strings to concat to the text,
     #providing the language model with contextful strings.
 
-    buffer_index = sentenceBufferMap.get(session_key).get_index()
+    buffer_index = sentenceBufferMap.get(session_key).get_minimum_index(index, sentence_index)
     query = sentenceBufferMap.get(session_key).get_query(index, text)
 
     lmspellOutput = lmspell.correct_text(query)
 
     #print(sentenceBufferMap[session_key])
-    print(lmspellOutput)
+
 
     corrected_words = list()
     if (lmspellOutput["success"] == False):
@@ -103,7 +106,7 @@ def spell_check(request):
         'index': buffer_index,
         'correctedWords': corrected_words,
     }
-
+    print(response_data)
     return Response(response_data)
 
 

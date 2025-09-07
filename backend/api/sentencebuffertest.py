@@ -290,7 +290,7 @@ class SenetenceBufferTestCase(unittest.TestCase):
         query = buffer.get_query(5, "And")
         self.assertEqual(query, "And")
         self.assertEqual(buffer.get_text(), "And")
-        self.assertEqual(buffer.buffer[0], 5)
+        self.assertEqual(buffer.get_index(), 5)
 
         query = buffer.get_query(6, "I want it toi wokr well an")
         self.assertEqual(query, "And I want it toi wokr well an")
@@ -305,8 +305,28 @@ class SenetenceBufferTestCase(unittest.TestCase):
         query = buffer.get_query(19, "errorws!")
         self.assertEqual(query, "And I want it toi wokr well and ai want it to fix the errorws!")
         self.assertEqual(buffer.get_text(), "")
-        self.assertEqual(buffer.buffer[0], 20)
+        self.assertEqual(buffer.get_index(), 20)
 
+    def test_sentencebuffer_get_query_deleting_sentence_start_index_0(self):
+        buffer = sentencebuffer()
+        query = buffer.get_query(0, "twas brillig, and the slighthy.")
+        self.assertEqual(buffer.get_index(), 5)
+        query = buffer.get_query(5, "toaves did gire and gimble,")
+        self.assertEqual(buffer.get_index(), 5)
+        query = buffer.get_query(10, "in the wabe")
+        self.assertEqual(buffer.get_index(), 5)
+        query = buffer.get_query(0, "Hello there!")
+        self.assertEqual(query, "Hello there!")
+        self.assertEqual(buffer.get_index(), 2)
+
+    def test_sentencebuffer_index_0_replace(self):
+        buffer = sentencebuffer()
+        query = buffer.get_query(0, "In thrnder sunghne or in rain?")
+        self.assertEqual(query, "In thrnder sunghne or in rain?")
+        self.assertEqual(buffer.get_index(), 6)
+        query = buffer.get_query(0, "In thrnder sunghne or in rain?")
+        self.assertEqual(query, "In thrnder sunghne or in rain?")
+        self.assertEqual(buffer.get_index(), 6)
 
 if __name__ == '__main__':
     unittest.main()

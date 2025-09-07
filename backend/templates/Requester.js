@@ -23,6 +23,11 @@ const debounceTimers = new Map();
 //#if Input has not changed, no query will be sent.
 const previouslySentQueries = new Map();
 
+const CorrectionType = Object.freeze({
+    INSERTION:"insertion",
+    REPLACEMENT:"replacement",
+    DELETION:"deletion"
+})
 
 //A map variable that keeps track of the errors discovered within each input element.
 const errorMap = new Map();
@@ -54,6 +59,8 @@ async function onInputEventListener(inputId) {
     console.log('previousText',previousText)
     console.log('currentInputValue',currentInputValue)
     console.log('startIndex',startIndex)
+
+    let sentenceIndex = detectSentenceIndex(previousText);
     /*
     if the startIndex indicates no differences were found, finish the function. There is no point
     in sending the same text to the server twice unless if isTimedOut === true, then there is a reason to
@@ -83,7 +90,7 @@ async function onInputEventListener(inputId) {
     /*
     Makes a request to the server.
      */
-    let queryResponse = await SpellCorrectionQuery(queryString, inputId, startIndex);
+    let queryResponse = await SpellCorrectionQuery(queryString, inputId, startIndex, sentenceIndex);
 
     /*
     If the response from the server was what we were expecting we should find the misspelled words and store them.
@@ -101,10 +108,14 @@ async function onInputEventListener(inputId) {
     //Because the corrections have been updated, update the highlighting for this particular input.
     updateHighlightedWords(inputId);
 
+    executeAllChanges(inputId);
+}
+
+function executeAllChanges(inputId) {
      /*This section is for the landing page.*/
 
-    outputElement = document.getElementById("testTarget-lmspelldiv");
-    currentWords = document.getElementById(inputId).value.split(" ");
+    const outputElement = document.getElementById("testTarget-lmspelldiv");
+    let currentWords = document.getElementById(inputId).value.split(" ");
 
     /*
     "originalText": correction.original,
@@ -113,23 +124,38 @@ async function onInputEventListener(inputId) {
     "endIndex":(correction.startIndex+startIndex) + correction.original.split(" ").length,
     "type": correction.type
      */
+
+    /*
+    Changing the length of the currentWords makes performing future changes incredibly hard.
+    The chosen solution is to add all changes that do not change the length of currentWords first,
+    then add all changes that do change current length starting at the end of the currentWords and working
+    towards the beginning.
+     */
+    //[...errorMap.get(inputId).entries()] == [[5,{}][7,{}][2,{}][2,{}]]
+    const errors = [...errorMap.get(inputId).values()].sort((a,b) => b.startIndex - a.startIndex)
+    console.log("ErrorMap",errors);
+
+
     console.log("currentWords Before:",currentWords)
-    errorMap.get(inputId).forEach(correction => {
-        if (correction.originalText.split(" ").length === correction.correctedText.split(" ").length) {
-            //currentWords.splice(correction.startIndex,correction.endIndex);
-            currentWords = currentWords.slice(0,correction.startIndex).concat(correction.correctedText.split(" ")).concat(currentWords.slice(correction.endIndex))
-        }
+    errors.forEach(correction => {
+        if (correction.type === CorrectionType.INSERTION) {
+            console.log("INSERTION: Replacing", correction.originalText, "with", correction.correctedText)
+            const textBeforeTargetedWords = currentWords.slice(0,correction.startIndex)
+            const textAfterTargetedWords = currentWords.slice(correction.startIndex)
+            const targetText = correction.correctedText.split(" ")
+
+            console.log("Before Replacement", textBeforeTargetedWords);
+            console.log("Replacement", targetText);
+            console.log("After Replacement", textAfterTargetedWords);
+
+            currentWords = textBeforeTargetedWords.concat(targetText).concat(textAfterTargetedWords)
+        } else {
+            currentWords = currentWords.slice(0,correction.startIndex).concat(correction.correctedText.split(" ")).concat(currentWords.slice(correction.endIndex))}
     })
 
-    //currentValidWords = currentWords.slice(startIndex);
     console.log("currentWords", currentWords);
-    newText = currentWords.join(" ");
-    outputElement.innerHTML = newText;
-
-    console.log("errorMap", errorMap)
-
+    outputElement.innerHTML = currentWords.join(" ");
 }
-
 
 async function conditionsForSendingQuery(inputId) {
     if (changeMap.get(inputId) == null) {
@@ -183,7 +209,7 @@ function detectFirstDifference(textA, textB) {
 /*
 Send a correction request to the server. The server will respond with corrections or with null.
  */
-async function SpellCorrectionQuery(queryText, inputId, startingIndex) {
+async function SpellCorrectionQuery(queryText, inputId, startingIndex, sentenceIndex) {
     //get the csrftoken from cookies.
     function getCookie(name) {
         let cookieValue = null;
@@ -201,7 +227,7 @@ async function SpellCorrectionQuery(queryText, inputId, startingIndex) {
     }
     JSONQuery = JSON.stringify({
         "text": queryText,
-        "inputId": inputId,
+        "sentenceIndex": sentenceIndex,
         "index": startingIndex,
         "language": "en"
     });
@@ -241,9 +267,13 @@ function updateErrorMap(queryResponse, inputId, startIndex) {
     let corrections = errorMap.get(inputId);
     if (!corrections) return;
 
-    console.log("Deleting outdated errors between", queryStartIndex, "and", queryEndIndex);
+    let currentTextEnd = document.getElementById(inputId).value.split(" ").length;
+    console.log("Deleting outdated errors between", queryStartIndex, "and", queryEndIndex, "and deleting stale errors");
     corrections.forEach((correction, targetIndex) => {
     if (targetIndex >= queryStartIndex && targetIndex < queryEndIndex) {
+        corrections.delete(targetIndex);
+    }
+    if (targetIndex > currentTextEnd) {
         corrections.delete(targetIndex);
     }
     });
@@ -283,7 +313,7 @@ function updateHighlightedWords(inputId) {
         const correctionType = correction.type;
 
         //if an index can be found for the error, highlight it, otherwise, delete the error, presuming it dealt with.
-        if (targetIndex !== -1) {
+        //if (targetIndex !== -1) {
             //shadowDiv.innerHTML = `${shadowDiv.innerHTML.substring(0, targetIndex)} <${correctionType}>${targetText}</${correctionType}> ${shadowDiv.innerHTML.substring(targetIndex+targetLength, shadowDiv.innerHTML.length)}`;
             const originalWords = shadowDiv.innerHTML.split(" ");
 
@@ -293,16 +323,16 @@ function updateHighlightedWords(inputId) {
             //console.log(targetText);
             const wrappedTargetWords = `<${correctionType}>${targetText}</${correctionType}>`.split(" ")
             shadowDiv.innerHTML = (textBeforeTargetedWords.concat(wrappedTargetWords).concat(textAfterTargetedWords)).join(" ");
-        } else {
-            corrections.delete(targetIndex);
-        }
+        //} else {
+            //corrections.delete(targetIndex);
+        //}
     })
     //console.log(shadowDiv.innerHTML);
 }
 
-function updateShadowDIV(inputId) {
-    let textInput = document.getElementById(inputId);
-    let shadowDiv = document.getElementById(inputId+"-lmspelldiv");
-    shadowDiv.innerHTML = textInput.value;
-    //updateHighlightedWords(inputId);
+function detectSentenceIndex(text) {
+    let queryStartIndex = text.search(/[.?!](?=[^?.!]*$)/);
+    let previousWords = text.slice(0,queryStartIndex).split();
+    return previousWords.length;
 }
+

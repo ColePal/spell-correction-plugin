@@ -61,6 +61,9 @@ class sentencebuffer:
 
     def get_query(self, index, text):
         match = re.search(r"[.?!](?=[^?.!]*$)", text)
+        if index <= self.get_index():
+            self.flush(index)
+
         if match:
             previous_index = self.get_index()
             query = " ".join(self.get_text().split()[:index-previous_index] + text.split())
@@ -75,5 +78,25 @@ class sentencebuffer:
     def get_index(self):
         return self.buffer[0]
 
+    def flush(self, index=0):
+        self.buffer = (index,"")
+
+    """
+    This method is problematic and does not solve the problem it was hoping to solve.
+    Get mimimum index is meant to accept an index parameter and if that parameter is lower
+    than the buffer index, return that index, otherwise return the buffer index. This does
+    not work because the index is tracking the start of a chunk of text, whereas buffer index
+    tracks the last sentence stopper. This is a mismatch in function and these indices cannot
+    be interchanged.
+    
+    SOLUTION:
+    The browser will need to tell the server where the last sentence stopper is. If that is lower
+    than the buffer index, return that one.
+    """
+    def get_minimum_index(self, index, previous_index):
+        if index <  self.get_index():
+            return previous_index
+        else:
+            return self.get_index()
     def __str__(self):
         return f"{self.buffer[0]} {self.buffer[1]}"

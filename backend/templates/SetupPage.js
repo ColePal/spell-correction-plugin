@@ -57,3 +57,10 @@ function findAllInput() {
       });
     }
 
+    function updateShadowDIV(inputId) {
+    let textInput = document.getElementById(inputId);
+    let shadowDiv = document.getElementById(inputId+"-lmspelldiv");
+    shadowDiv.innerHTML = textInput.value;
+    //updateHighlightedWords(inputId);
+}
+
