@@ -183,7 +183,7 @@ function detectFirstDifference(textA, textB) {
 /*
 Send a correction request to the server. The server will respond with corrections or with null.
  */
-async function SpellCorrectionQuery(queryText, inputId, startingIndex) {
+export async function SpellCorrectionQuery(queryText, inputId, startingIndex) {
     //get the csrftoken from cookies.
     function getCookie(name) {
         let cookieValue = null;

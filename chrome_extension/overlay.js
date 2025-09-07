@@ -185,12 +185,17 @@ const editable_fields_list = document.querySelectorAll(valid_field_types); // Li
 
 let assignUID = 0;
 
-function alterAllWordPopUps(type) { // 0 to remove, 1 to make invisible
+function alterAllWordPopUps(type) { // 0 to remove, 1 to make invisible, 2 to update positioning
 	for (let i = 0; i <= assignUID; i++) {
-	  const existingPopups = document.getElementById(`scwp-${i}-popup`);;
+	  const existingPopups = document.getElementById(`scwp-${i}-popup`);
 	  if (existingPopups) {
 		  if (type == 0) {existingPopups.remove();}
-		  else {existingPopups.style.display = 'none';}
+		  if (type == 1) {existingPopups.style.display = 'none';}
+		  if (type == 2) {
+			  const wordBounds = document.getElementById(`scwp-${i}`).getBoundingClientRect();
+			  existingPopups.style.left = window.scrollX + wordBounds.left + 'px';
+			  existingPopups.style.top = window.scrollY + wordBounds.top + wordBounds.height + 'px';
+		  }
 	  }
 	}
 };
@@ -198,6 +203,10 @@ function alterAllWordPopUps(type) { // 0 to remove, 1 to make invisible
 document.addEventListener('keydown', () => {
   alterAllWordPopUps(0);
 });
+
+
+//import { SpellCorrectionQuery } from = '../backend/templates/Requester.js';
+//SpellCorrectionQuery();
 
 function setupTextAreaOverlay(textarea) {
 	
@@ -213,6 +222,7 @@ function setupTextAreaOverlay(textarea) {
 	overlay.style.background = "transparent";
 	overlay.style.color = "transparent";
 	overlay.style.zIndex = 12345;
+
 	// Grab textarea specific styles properties
 	let textAreaStylings = getComputedStyle(textarea); // It gets the in use style!!!
     overlay.style.font = textAreaStylings.font;
@@ -226,12 +236,13 @@ function setupTextAreaOverlay(textarea) {
 	const updateDivText = () => { //  = () => { means local to setupTextAreaOverlay!!!
 		overlay.innerHTML = "";
 		
-		const inputWords = textarea.value.match(/[a-zA-Z]+(?:'[a-zA-Z]+)?|[^a-zA-Z]+/g) || []; // splits every time a 
+		const inputWords = textarea.value.match(/[a-zA-Z]+(?:'[a-zA-Z]+)?| +|[^a-zA-Z\s]+/g) || []; // splits every time a 
 		
 		inputWords.forEach((word) => {
 			const wordSpan = document.createElement("span");
 			wordSpan.style.userSelect = '';
 			wordSpan.textContent = word;
+			wordSpan.style.whiteSpace = "pre"; // fixes "     " becoming " "
 			
 			const wordClick = () => {
 				
@@ -276,19 +287,32 @@ function setupTextAreaOverlay(textarea) {
 					const wordBounds = wordSpan.getBoundingClientRect();
 					wordCorrectPopUp.style.left = window.scrollX + wordBounds.left + 'px';
 					//overlay.style.width = wordBounds.width + 'px';
+					
+					
+					
 					wordCorrectPopUp.style.top = window.scrollY + wordBounds.top + wordBounds.height + 'px';
+					//wordCorrectPopUp.style.top = window.scrollY + wordBounds.top - 40 + 'px';
+					
 					//overlay.style.height = wordBounds.height + 'px';
 					
 					document.body.appendChild(wordCorrectPopUp);
 				}
 			};
 			
-			if (/[a-zA-Z]+/.test(word)) { // if word and not char
-				wordSpan.style.backgroundColor = 'green';
-				wordSpan.style.color = "pink";
-				wordSpan.style.pointerEvents = "auto";
+			
+			
+			if (/[a-zA-Z]+(?:'[a-zA-Z]+)?/.test(word)) { // if word and not char
+				wordSpan.style.backgroundColor = '#FFC0CB80';
+				wordSpan.style.color = 'green';
 				wordSpan.style.cursor = "pointer";
+				wordSpan.style.pointerEvents = "auto";
 				wordSpan.addEventListener("click", wordClick); // make clickable
+			}
+			else {
+				wordSpan.style.pointerEvents = "none";
+				wordSpan.style.backgroundColor = 'transparent';
+				wordSpan.style.color = "pink";
+				console.log("Current: [", word, "]");
 			}
 			
 			overlay.appendChild(wordSpan);
@@ -306,6 +330,7 @@ function setupTextAreaOverlay(textarea) {
 		overlay.style.width = areaBounds.width + 'px';
 		overlay.style.top = window.scrollY + areaBounds.top + 'px';
 		overlay.style.height = areaBounds.height + 'px';
+		alterAllWordPopUps(2);
 	};
 	
 	positionOverlay();
