@@ -3,7 +3,7 @@ const toggleButton = document.createElement('div');
 const logo = document.createElement('img');
 const overlayContainer = document.createElement('div');
 
-
+let suggest_html;
 
 async function createOverlayInteractable() {
   
@@ -70,6 +70,10 @@ async function createOverlayInteractable() {
   const overlay = await fetch(chrome.runtime.getURL('overlay.html')); // fetch overlay, get response
   const overlay_html = await overlay.text();
   overlayContainer.innerHTML = overlay_html;
+  
+  // Get suggestionPopup.html for word popups.
+  const suggest = await fetch(chrome.runtime.getURL('suggestionPopup.html')); // fetch suggestion, get response
+  suggest_html = await suggest.text();
   
   // Positions elements based on if Button appears on left or right side of screen
   switch (starting_point) {
@@ -180,6 +184,64 @@ const editable_fields_list = document.querySelectorAll(valid_field_types); // Li
 
 
 
+
+// Add to the DOM the Style of the per word text correction optioning pop up boxes
+const textPopupStyle = document.createElement('style');
+textPopupStyle.textContent = `
+	.fancy-result-h2 {
+	  font-size: 18px;   
+	  margin-top: 4px;   
+	  margin-bottom: 0px; 
+	  margin-left: 1px;
+	  margin-right: 5px;
+	  user-select: none;
+	  display: inline;
+	  margin:auto;
+	  font-family: "Fira Code", monospace, monospace;
+	  font-weight: bold;
+	}
+	.fancy-result-div {
+	  border-radius: 12px;
+	  background: white;
+	  border-color: black;
+	  padding: 8px 14px;
+	  border-style: solid;
+	  border-color: grey;
+	  border-width: 2px;
+	  user-select: none;
+	  text-align:center;
+	  display: inline-block;
+	}
+	.yes-button {
+		border-radius: 6px;
+		display: inline;
+		background-color: #73cb21;
+		border-color: #73AD21;
+		color: white;
+		padding: 2px 4px;
+		text-align: center;
+	}
+	.yes-button:hover {
+		background-color: #5a991f;
+	}
+	.no-button {
+		border-radius: 6px;
+		display: inline;
+		border-color: #d91a1a;
+		background-color: #FF0000;
+		color: white;
+		padding: 2px 4px;
+		text-align: center;
+	}
+	.no-button:hover {
+		background-color: #c92828;
+	}
+`;
+document.head.appendChild(textPopupStyle);
+
+
+
+
 // get rid of per word pop ups when any key pressed.
 
 
@@ -248,10 +310,6 @@ function setupTextAreaOverlay(textarea) {
 				
 				const existingPopUpCheck = document.getElementById(wordSpan.id + "-popup");
 				
-				
-				
-				//alterAllWordPopUps(1);
-				
 				if (document.body.contains(existingPopUpCheck)) { // if popup already exists
 					let displayState = existingPopUpCheck.style.display;
 					alterAllWordPopUps(1);
@@ -264,38 +322,47 @@ function setupTextAreaOverlay(textarea) {
 					
 				}
 				else {
-					alterAllWordPopUps(1);
-					const wordCorrectPopUp = document.createElement("div");
 					
+					alterAllWordPopUps(1);
+					
+					const suggestTemp = document.createElement('template');	// get the suggestionPopup template				
+					suggestTemp.innerHTML = suggest_html.trim();
+					
+					const wordCorrectPopUp = suggestTemp.content.querySelector('#lm-suggestion-div');
+					
+					// Set IDs for searchability
 					wordCorrectPopUp.id = "scwp-" + assignUID + "-popup";
 					wordSpan.id = "scwp-" + assignUID;
 					assignUID += 1;
+					// Give buttons IDs.
+					suggestTemp.content.querySelector('#yes-button').id = "scwp-" + assignUID + "-yes-button";
+					suggestTemp.content.querySelector('#no-button').id = "scwp-" + assignUID + "-no-button";
+					
+					
+					// Update DIV style
 					wordCorrectPopUp.style.position = "absolute";
 					wordCorrectPopUp.style.zIndex = 12345;
-					wordCorrectPopUp.style.fontSize = 30 + 'px';
-					wordCorrectPopUp.textContent = wordSpan.textContent;
-					wordCorrectPopUp.style.backgroundColor = 'black';
-					wordCorrectPopUp.style.color = 'white';
 					
-					
-					const wordButtons = document.createElement("h5");
-					wordButtons.style.display = "inline"; // to make same line.
-					wordButtons.textContent = "  [Y/N]";
-					wordCorrectPopUp.appendChild(wordButtons);
+					// Set result text
+					const wordCorrectResult = suggestTemp.content.querySelector('#lm-result');
+					wordCorrectResult.textContent = wordSpan.textContent + " ";
 
-					
+					// Positioning
 					const wordBounds = wordSpan.getBoundingClientRect();
 					wordCorrectPopUp.style.left = window.scrollX + wordBounds.left + 'px';
-					//overlay.style.width = wordBounds.width + 'px';
-					
-					
-					
 					wordCorrectPopUp.style.top = window.scrollY + wordBounds.top + wordBounds.height + 'px';
-					//wordCorrectPopUp.style.top = window.scrollY + wordBounds.top - 40 + 'px';
 					
-					//overlay.style.height = wordBounds.height + 'px';
+					// Add to DOM
+					document.body.appendChild(suggestTemp.content.cloneNode(true));
 					
-					document.body.appendChild(wordCorrectPopUp);
+					// Give buttons click functionality.
+					document.getElementById(`scwp-${assignUID}-yes-button`).addEventListener("click", () => {
+					  alterAllWordPopUps(1);
+					});
+					document.getElementById(`scwp-${assignUID}-no-button`).addEventListener("click", () => {
+					  alterAllWordPopUps(1);
+					});
+					
 				}
 			};
 			

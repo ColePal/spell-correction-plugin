@@ -16,7 +16,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["index.html","overlay.html","icon.png"],
+      "resources": ["index.html","overlay.html","icon.png","suggestionPopup.html"],
       "matches": ["<all_urls>"]
     }],
   "content_scripts": [
