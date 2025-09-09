@@ -153,10 +153,10 @@ def unload_model():
 def quick_test():
     """
     Quick test function
-    run it in terminal (Git Bash) with
+    run it in terminal
     python manage.py shell
     from api import lmspell
-    lmspell.test_correction()
+    lmspell.quick_test()
     """
     test_texts = [
         "The quik brown foks jump over teh lazi dog.",
