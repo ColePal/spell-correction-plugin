@@ -9,5 +9,6 @@ tzdata>=2025.0
 
 torch>=2.4.1
 transformers>=4.30.0
-sentencepiece>=0.2.00  # Needed for MT5 tokenizer (Python 3.13 does not work needs 3.12 or other)
+sentencepiece>=0.2.00  # Needed for MT5 tokenizer
 protobuf>=3.20.0
+google-generativeai>=0.8.5
