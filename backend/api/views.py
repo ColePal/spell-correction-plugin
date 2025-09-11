@@ -35,6 +35,8 @@ def covertest_page(request):
 def cover_page(request):
     return render(request, 'TestingSlice.html')
 
+def dashboard_page(request):
+    return render(request, 'dashboard.html')
 
 @api_view(['GET'])
 def health_check(request):
