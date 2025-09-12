@@ -1,112 +1,187 @@
+from transformers import T5ForConditionalGeneration, T5TokenizerFast, MT5ForConditionalGeneration, MT5Tokenizer
+from difflib import SequenceMatcher
 import torch
-from transformers import T5ForConditionalGeneration, T5TokenizerFast
-from difflib import SequenceMatcher # Compares Sequences: Used to compare the original vs corrected words
 import logging
+import requests
+import os
+from typing import Dict, Any, Optional #python stuff for typing
 
 logger = logging.getLogger(__name__)
 
-# Global model storage
-_model = None
-_tokenizer = None
+_models = {
+    'en': None, # Vennify/Gemini
+    'si': None,
+    'hi': None,
+}
+_tokenizers = {
+    'en': None,
+    'si': None,
+    'hi': None,
+}
+# API keys/urls
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+#Need url for "API endpoints for interacting with Gemini Models"
+HUGGINGFACE_API_KEY = os.getenv('HUGGINGFACE_API_KEY', '')
 
 
-def get_model():
-    """English correction model"""
-    global _model, _tokenizer
+def get_model(language='en'):
+    global _models, _tokenizers
 
-    if _model is None:
-        print("Loading Correction Model...")
+    if language not in ['en', 'si', 'hi']:
+        language = 'en'
 
-        model_name = "vennify/t5-base-grammar-correction"#other models seems to be only for Sinhala
+    if _models[language] is None:
+        print(f"Loading {language.upper()} ")
 
-        _model = T5ForConditionalGeneration.from_pretrained(
-            model_name,
-            cache_dir="./model_cache"
-        )
-        _tokenizer = T5TokenizerFast.from_pretrained(
-            model_name,
-            cache_dir="./model_cache"
-        )
-
-        _model.eval()
-        print("Model loaded successfully!")
-
-    return _model, _tokenizer
-
-
-def correct_text(text, max_length=512): # "was trained on sequences of up to 512 tokens."stack
-
-    # Clean and validate input
-    text = ' '.join(text.strip().split())#removes white space
-    if not text:
-        return {'original': '', 'corrected': '', 'error': 'Empty input'}
-
-    if len(text) > 1024:
-        return {'original': text, 'corrected': text, 'error': 'Text too long '}
-
-    try:
-        model, tokenizer = get_model()
-
-        # Prepare input with prefix
-        input_text = f"grammar: {text}"
-
-        inputs = tokenizer(
-            input_text,
-            return_tensors='pt',
-            max_length=max_length,
-            truncation=True
-        )
-
-        # Generate correction
-        with torch.no_grad():
-            outputs = model.generate(
-                **inputs,
-                max_length=max_length,
-                num_beams=5,
-                early_stopping=True,
-                no_repeat_ngram_size=3
+        if language == 'en':
+            model_name = "vennify/t5-base-grammar-correction"
+            _models[language] = T5ForConditionalGeneration.from_pretrained(
+                model_name,
+                cache_dir="./model_cache"
+            )
+            _tokenizers[language] = T5TokenizerFast.from_pretrained(
+                model_name,
+                cache_dir="./model_cache"
+            )
+        else:
+            model_name = "lm-spell/mt5-base-ft-ssc"
+            _models[language] = MT5ForConditionalGeneration.from_pretrained(
+                model_name,
+                cache_dir="./model_cache"
+            )
+            _tokenizers[language] = MT5Tokenizer.from_pretrained(
+                model_name,
+                cache_dir="./model_cache"
             )
 
-        corrected_text = tokenizer.decode(
-            outputs[0],
-            skip_special_tokens=True
-        ).strip()
+        _models[language].eval()
+        print(f"{language.upper()}")
 
-        # Fallback to original if empty
-        if not corrected_text:
-            corrected_text = text
-
-        differences = find_differences(text, corrected_text)
-
-        return {
-            'original': text,
-            'corrected': corrected_text,
-            #COLE IS REMOVING THE DUPLICATION
-            #'correctText': corrected_text,  # Frontend
-            #'incorrectText': text,  # Frontend
-            'differences': differences,
-            'num_corrections': len(differences),
-            'success': True
-        }
-
-    except Exception as e:
-        logger.error(f"Error: {str(e)}")
-        return {
-            'original': text,
-            'corrected': text,
-            'error': str(e),
-            'success': False
-        }
+    return _models[language], _tokenizers[language]
 
 
-def find_differences(original, corrected):
+def spell_correction_gemini(text: str) -> Dict[str, Any]:
+    if not GEMINI_API_KEY:
+        return {'original': text,
+                'corrected': text,
+                'success': False}
 
+    prompt = f"""Fix any spelling and grammar errors in the following text.
+       Return (Important) only the corrected text without any explanation or additional text.
+       If there are no errors, return the text exactly as is.
+       Do not add any formatting or quotes and if not english leave as is.
+       Text: {text}"""
+
+            # Definitions from GoogleAI Resource
+            # "topK": 1
+            # : This parameter limits the selection pool to only the single most probable next token at each step.
+            # "topP": 1
+            # : Also known as nucleus sampling, this parameter sets a cumulative probability threshold for token selection.
+            # "temperature": 0.1
+             #: This parameter controls the randomness of the model's output.
+            # A low temperature, like 0.1, makes the model's choices more predictable and focused, selecting the most probable tokens.
+            # This leads to less creative and more deterministic responses.
+            #https://cloud.google.com/vertex-ai/generative-ai/docs/learn/prompts/adjust-parameter-values
+
+
+    response = requests.post(
+        f"{GEMINI_API_URL}?key={GEMINI_API_KEY}",
+        json={
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {
+                "temperature": 0.1, #Google Gemini Values and stats Controls Randomness lower means less random
+                "topK": 1, #  how probable
+                "topP": 1, # Determines how creative or randomizes it by seed
+                "maxOutputTokens": 2048, #Max singular output should be fine "A token is approximately four characters."
+            }
+        },
+        timeout=10 # Waits 10 seconds
+    )
+
+    if response.status_code != 200:
+        return {'original': text, 'corrected': text, 'success': False}
+
+    result = response.json()
+    corrected_text = result['candidates'][0]['content']['parts'][0]['text'].strip()
+
+    # removal of unnecessary items
+    corrected_text = corrected_text.strip('"\'`')
+    if '```' in corrected_text:
+        corrected_text = corrected_text.replace('```', '')
+
+    differences = find_differences(text, corrected_text)
+
+    return {
+        'original': text,
+        'corrected': corrected_text,
+        'differences': differences,
+        'num_corrections': len(differences),
+        'success': True,
+        'model': 'gemini-2.0-flash'#lightweight and cheapest
+    }
+
+
+def spellcorrect_text(text: str, max_length: int = 512, language: str = 'en', use_external_api: Optional[str] = None) -> \
+Dict[str, Any]:
+    text = ' '.join(text.strip().split())
+
+    if not text:
+        return {'original': '', 'corrected': '', 'success': False}
+
+    if len(text) > 1024:#limit from lmspell
+        return {'original': text, 'corrected': text, 'success': False}
+
+    if use_external_api == 'gemini':
+        return spell_correction_gemini(text)
+
+    model, tokenizer = get_model(language)
+
+    prefix = "grammar: " if language == 'en' else "correct: "
+    input_text = prefix + text
+
+    inputs = tokenizer(
+        input_text,
+        return_tensors='pt', #pytorch acronym
+        max_length=max_length, #max 512 Lmspell
+        truncation=True # Cut off if too long
+    )
+
+    with torch.no_grad():
+        outputs = model.generate(
+            **inputs,
+            max_length=max_length, #max 512 Lmspell
+            num_beams=5,
+            early_stopping=True,
+            no_repeat_ngram_size=3
+        )# resource used for both sections https://huggingface.co/docs/transformers/main/en/main_classes/text_generation
+
+    corrected_text = tokenizer.decode(outputs[0], skip_special_tokens=True).strip()
+
+    #Fallback
+    if not corrected_text:
+        corrected_text = text
+
+    differences = find_differences(text, corrected_text)
+
+    return {
+        'original': text,
+        'corrected': corrected_text,
+        #Removed duplicate keys as per Cole comment
+        'differences': differences,
+        'num_corrections': len(differences),
+        'success': True,
+        'model': f'local_{language}',
+        'language': language
+    }
+
+
+def find_differences(original, corrected):#nothing here changed
     if original == corrected:
         return []
 
     original_words = original.split()
     corrected_words = corrected.split()
-
     differences = []
     matcher = SequenceMatcher(None, original_words, corrected_words)
 
@@ -138,40 +213,54 @@ def find_differences(original, corrected):
 
     return differences
 
-def is_model_loaded():
-    return _model is not None and _tokenizer is not None
+
+def is_model_loaded(language='en'):
+    return _models.get(language) is not None and _tokenizers.get(language) is not None
 
 
-def unload_model():
-    """Free up memory by unloading model"""
-    global _model, _tokenizer
-    _model = None
-    _tokenizer = None
-    print("Model unloaded")
+def unload_model(language=None):
+    global _models, _tokenizers
+
+    if language:
+        _models[language] = None
+        _tokenizers[language] = None
+    else:
+        for lang in _models:
+            _models[lang] = None
+            _tokenizers[lang] = None
 
 
 def quick_test():
     """
-    Quick test function
-    run it in terminal
-    python manage.py shell
-    from api import lmspell
-    lmspell.quick_test()
-    """
+      Added Gemmini API testing
+      Run it in terminal:
+      python manage.py shell
+      from api import lmspell
+      lmspell.quick_test()
+      """
+
     test_texts = [
         "The quik brown foks jump over teh lazi dog.",
         "She sells seechells bye the seashor.",
         "I am goign to the supermarkit later tooday."
     ]
-
     print("\nQuick Test Results:")
-    print("=" * 50) # repeats 50 times
 
+
+    print("Vennify local : ")
+    print("\n" + "=" * 50)
     for text in test_texts:
-        result = correct_text(text)
+        result = spellcorrect_text(text)
+        print("\n" + "=" * 50)
         print(f"Original:  {text}")
-        print(f"Corrected: {result['corrected']}")
-        print("-" * 30)
+        print(f"Corrected {result['corrected']}\n")
+        print("=" * 50)
+    if GEMINI_API_KEY:
+        print("\nGEMINI API TEST:")
+        result = spellcorrect_text("The quik brown foks jump over teh lazi dog.", use_external_api='gemini')     # This is the sentence that is displayed not the other one
+        if result['success']:
+            print(f"Original: The quik brown foks jump over teh lazi dog.")
+            print(f"Corrected {result['corrected']}")
 
     print("=" * 50)
 
