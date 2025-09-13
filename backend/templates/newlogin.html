@@ -1,0 +1,275 @@
+<!--{% load static %}-->
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport" />
+        <meta content="" name="description" />
+        <meta content="" name="author" />
+        <link href="/docs/4.0/assets/img/favicons/favicon.ico" rel="icon" />
+        <title>Cover Template for Bootstrap</title>
+        <link href="https://getbootstrap.com/docs/4.0/examples/cover/" rel="canonical" />
+        <!-- Bootstrap core CSS -->
+        <link href="../../dist/css/bootstrap.min.css" rel="stylesheet" />
+        <!-- Bootstrap CSS and Icons -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" />
+        <style>
+            /*
+        * Globals
+        */
+            /* Links */
+            a,
+            a:focus,
+            a:hover {
+                color: #fff;
+            }
+            /* Custom default button */
+            .btn-secondary,
+            .btn-secondary:hover,
+            .btn-secondary:focus {
+                color: #333;
+                text-shadow: none; /* Prevent inheritance from `body` */
+                background-color: #fff;
+                border: 0.05rem solid #fff;
+            }
+            /*
+        * Base structure
+        */
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+            }
+            body {
+                display: flex;
+                justify-content: center;
+                align-items: center; /* <-- add this */
+                min-height: 100vh; /* full viewport height */
+                margin: 0;
+                color: #fff;
+                text-shadow: 0 0.05rem 0.1rem rgba(0, 0, 0, 0.5);
+                box-shadow: inset 0 0 5rem rgba(0, 0, 0, 0.5);
+                background: url("{% static 'shapelined-_JBKdviweXI-unsplash.jpg' %}") no-repeat center center fixed;
+                background-size: cover;
+            }
+
+            .cover-container {
+                width: 100%;
+                max-width: 100%;
+            }
+            .row.align-items-stretch {
+                align-items: stretch;
+            }
+            .col-sm-3 > .card {
+                height: 100%;
+            }
+            @media (min-width: 768px) {
+                .cover-container {
+                    width: 60%;
+                    max-width: 80%;
+                }
+            }
+            .masthead {
+                margin-bottom: 2rem;
+            }
+            .masthead-brand {
+                margin-bottom: 0;
+            }
+            .nav-masthead .nav-link {
+                padding: 0.25rem 0;
+                font-weight: 700;
+                color: rgb(255, 255, 255);
+                background-color: transparent;
+                border-bottom: 0.25rem solid transparent;
+            }
+            .nav-masthead .nav-link:hover,
+            .nav-masthead .nav-link:focus {
+                border-bottom-color: rgb(255, 255, 255);
+            }
+            .nav-masthead .nav-link + .nav-link {
+                margin-left: 1rem;
+            }
+            .nav-masthead .active {
+                color: #fff;
+                border-bottom-color: #fff;
+            }
+            @media (min-width: 48em) {
+                .masthead-brand {
+                    float: left;
+                }
+                .nav-masthead {
+                    float: right;
+                }
+            }
+            .cover {
+                padding: 0 1.5rem;
+            }
+            .cover .btn-lg {
+                padding: 0.75rem 1.25rem;
+                font-weight: 700;
+            }
+            .mastfoot {
+                color: rgba(255, 255, 255, 0.5);
+            }
+            insertion {
+                text-decoration: underline;
+                color: yellow;
+            }
+            deletion {
+                text-decoration: underline;
+                color: blue;
+            }
+            replacement {
+                text-decoration: underline;
+                color: red;
+            }
+        </style>
+    </head>
+    <body>
+        <main class="inner cover" role="main">
+            <div class="container">
+                <div class="row align-items-stretch">
+                    <div class="col-sm-12">
+                        <div class="card p-5 shadow">
+                            <div id="inputs">
+                                <form method="post">
+                                    {% csrf_token %} {% if messages %}
+                                    <ul class="messages">
+                                        {% for message in messages %}
+                                        <li class="{{ message.tags }}">{{ message }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% endif %}
+                                    <div class="form-group">
+                                        <label>
+                                            Email
+                                            <input type="email" name="email" class="form-control" required />
+                                        </label>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>
+                                            Password
+                                            <input type="password" name="password" class="form-control" required />
+                                        </label>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col">
+                                            <button type="submit" class="btn btn-primary w-100">Submit</button>
+                                        </div>
+                                        <div class="col">
+                                            <button id="toggleButton" type="button" onclick="toggleLogin()" class="btn btn-success w-100">Register</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                let login = true;
+
+                //start the timer
+                var timerActive = false;
+
+                function delay(ms) {
+                    return new Promise(resolve => setTimeout(resolve,ms));
+                }
+
+                async function toggleLogin() {
+                    if (timerActive) {
+                        return;
+                    }
+                    login = !login;
+                    let div = document.getElementById("inputs");
+                    div.innerHTML = "";
+
+                    if (login) {
+                        const form = document.createElement("form");
+                        form.action='';
+                        form.method="post";
+
+                        const emailInput = document.createElement("input");
+                        emailInput.type = "email";
+
+                        const passwordInput = document.createElement("input");
+                        passwordInput.type = "password";
+
+                        const submitButton = document.createElement("button");
+                        submitButton.type = "submit";
+                        submitButton.innerText = "Submit"
+
+                        const emailLabel = document.createElement("label");
+                        emailLabel.innerText = "Email";
+                        emailLabel.appendChild(emailInput);
+
+                        const passwordLabel = document.createElement("label");
+                        passwordLabel.innerText = "Password";
+                        passwordLabel.appendChild(passwordInput);
+
+                        form.appendChild(emailLabel);
+                        form.appendChild(passwordLabel);
+                        form.appendChild(submitButton);
+
+                        div.appendChild(form);
+
+                    } else {
+                        const form = document.createElement("form");
+                        form.action = '{% url 'register' %}';
+                        form.method = "post";
+
+                        const emailDiv = document.createElement("div");
+                        emailDiv.classList.add("form-group", "mb-3");
+                        const emailLabel = document.createElement("label");
+                        emailLabel.innerText = "Email";
+                        const emailInput = document.createElement("input");
+                        emailInput.type = "email";
+                        emailInput.name = "email";
+                        emailInput.classList.add("form-control");
+                        emailLabel.appendChild(emailInput);
+                        emailDiv.appendChild(emailLabel);
+
+                        const passwordDiv = document.createElement("div");
+                        passwordDiv.classList.add("form-group", "mb-3");
+                        const passwordLabel = document.createElement("label");
+                        passwordLabel.innerText = "Password";
+                        const passwordInput = document.createElement("input");
+                        passwordInput.type = "password";
+                        passwordInput.name = "password";
+                        passwordInput.classList.add("form-control");
+                        passwordLabel.appendChild(passwordInput);
+                        passwordDiv.appendChild(passwordLabel);
+
+                        const confirmDiv = document.createElement("div");
+                        confirmDiv.classList.add("form-group", "mb-3");
+                        const confirmLabel = document.createElement("label");
+                        confirmLabel.innerText = "Confirm Password";
+                        const confirmPasswordInput = document.createElement("input");
+                        confirmPasswordInput.type = "password";
+                        confirmPasswordInput.classList.add("form-control");
+                        confirmLabel.appendChild(confirmPasswordInput);
+                        confirmDiv.appendChild(confirmLabel);
+
+                        const submitButton = document.createElement("button");
+                        submitButton.type = "submit";
+                        submitButton.innerText = "Register";
+                        submitButton.classList.add("btn", "btn-success", "w-100", "mt-3", "py-2");
+
+                        form.appendChild(emailDiv);
+                        form.appendChild(passwordDiv);
+                        form.appendChild(confirmDiv);
+                        form.appendChild(submitButton);
+
+                        div.appendChild(form);
+
+                    }
+                    timerActive = true;
+                    await delay(500);
+                    timerActive = false;
+                }
+            </script>
+        </main>
+    </body>
+</html>
