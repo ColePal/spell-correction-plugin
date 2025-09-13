@@ -32,6 +32,8 @@ function findAllInput() {
         //Add a shadow div for highlighting mischief
         let shadowDiv = document.createElement("div");
         shadowDiv.id = element.id + "-lmspelldiv";
+        shadowDiv.className = "shadowDiv"
+
         shadowDiv.style.position = "absolute";
         shadowDiv.style.zIndex = 2;
         shadowDiv.style.whiteSpace = "pre-wrap";
@@ -44,7 +46,7 @@ function findAllInput() {
         shadowDiv.style.font = window.getComputedStyle(element).font;
         shadowDiv.style.lineHeight = window.getComputedStyle(element).lineHeight;
         shadowDiv.style.padding = window.getComputedStyle(element).padding;
-        shadowDiv.style.pointerEvents = "none";
+        //shadowDiv.style.pointerEvents = "none";
 
         document.body.appendChild(shadowDiv);
 

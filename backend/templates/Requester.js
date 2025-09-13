@@ -31,9 +31,10 @@ const CorrectionType = Object.freeze({
 
 //A map variable that keeps track of the errors discovered within each input element.
 const errorMap = new Map();
+let lastIndex = 0;
 
 async function onInputEventListener(inputId) {
-
+    let deletion = false;
     /*
     The eventListener is going to handle requesting different depending on which condition
     was satisfied for sending. Timeouts get treated as terminated sentences. isTimedOut
@@ -56,11 +57,14 @@ async function onInputEventListener(inputId) {
     well.
      */
     let startIndex = detectFirstDifference(currentInputValue, previousText);
+    let sentenceIndex = detectSentenceIndex(currentInputValue, startIndex);
     console.log('previousText',previousText)
     console.log('currentInputValue',currentInputValue)
     console.log('startIndex',startIndex)
+    if (startIndex < lastIndex) {
+        startIndex = sentenceIndex;
+    }
 
-    let sentenceIndex = detectSentenceIndex(previousText);
     /*
     if the startIndex indicates no differences were found, finish the function. There is no point
     in sending the same text to the server twice unless if isTimedOut === true, then there is a reason to
@@ -74,7 +78,9 @@ async function onInputEventListener(inputId) {
     /*
     split inputString into words, detach the first words upto the startIndex, and rejoin them into string
      */
+    //CURRENT CHANGES
     let queryString = currentInputValue.split(" ").slice(startIndex).join(" ").trim();
+    //let queryString = currentInputValue.split(" ").slice(sentenceIndex).join(" ").trim();
     console.log('queryString',queryString)
 
     //let queryStartIndex = queryString.match(/[.?!](?=[^?.!]*$)/);
@@ -85,12 +91,16 @@ async function onInputEventListener(inputId) {
     because the user can backspace and insert characters at any point, we take the
     previously sent text up to the start index and add the current query to it.
     */
-    let updatedSentText = previousText.split(" ").slice(0, startIndex).concat(queryString.split(" ")).join(" ");
+    let updatedSentWords = previousText.split(" ").slice(0, startIndex).concat(queryString.split(" "))
+    let updatedSentText = updatedSentWords.join(" ");
     previouslySentQueries.set(inputId, updatedSentText);
+    lastIndex = updatedSentWords.length;
     /*
     Makes a request to the server.
      */
+    //CURRENT CHANGES
     let queryResponse = await SpellCorrectionQuery(queryString, inputId, startIndex, sentenceIndex);
+    //let queryResponse = await SpellCorrectionQuery(queryString, inputId, sentenceIndex, sentenceIndex);
 
     /*
     If the response from the server was what we were expecting we should find the misspelled words and store them.
@@ -106,6 +116,7 @@ async function onInputEventListener(inputId) {
 
 
     //Because the corrections have been updated, update the highlighting for this particular input.
+    console.log("errormap",errorMap)
     updateHighlightedWords(inputId);
 
     executeAllChanges(inputId);
@@ -210,7 +221,7 @@ function detectFirstDifference(textA, textB) {
 /*
 Send a correction request to the server. The server will respond with corrections or with null.
  */
-export async function SpellCorrectionQuery(queryText, inputId, startingIndex) {
+async function SpellCorrectionQuery(queryText, inputId, startingIndex, sentenceIndex) {
     //get the csrftoken from cookies.
     function getCookie(name) {
         let cookieValue = null;
@@ -292,48 +303,114 @@ function updateErrorMap(queryResponse, inputId, startIndex) {
     })
 }
 
-function updateHighlightedWords(inputId) {
-    let shadowDiv = document.getElementById(inputId+"-lmspelldiv");
+function createCorrectionPanel(correction, span, parent, plainText, inputId) {
+    const correctionPanel = document.createElement("div")
+    console.log(correction.correctedText);
+    correctionPanel.style.position = "absolute";
+    correctionPanel.style.zIndex = 3;
+    correctionPanel.style.color = "Black";
+    correctionPanel.style.left = span.getBoundingClientRect().left-100 + "px";
+    correctionPanel.style.top = span.getBoundingClientRect().top+30 + "px";
+    correctionPanel.style.width = 200 + "px";
+    correctionPanel.style.height = 100 + "px";
+    correctionPanel.style.visibility = "hidden"
+    correctionPanel.style.backgroundColor = "White"
 
-    shadowDiv.innerHTML = shadowDiv.innerHTML.replace(/<\/?[a-z]+>/g, "")
+    //this can be changed to something more attractive
+    const correctionText = document.createTextNode(correction.correctedText)
+    const acceptButton = document.createElement("button")
+    acceptButton.style.backgroundColor = "Green"
+    acceptButton.style.width = "30px"
+    acceptButton.style.height = "30px"
 
-    let corrections = errorMap.get(inputId);
-    if (!corrections) return;
-
-    corrections.forEach((correction, targetIndex) => {
-
-        //The location and length of highlighting
-        let numberOfTargetedWords = correction.originalText.split(" ").length;
-
-        //let targetText = correction.originalText;
-
-
-        //let targetLength = targetText.length;
-        //let targetIndex = shadowDiv.innerHTML.indexOf(targetText);
-
-        const correctionType = correction.type;
-
-        //if an index can be found for the error, highlight it, otherwise, delete the error, presuming it dealt with.
-        //if (targetIndex !== -1) {
-            //shadowDiv.innerHTML = `${shadowDiv.innerHTML.substring(0, targetIndex)} <${correctionType}>${targetText}</${correctionType}> ${shadowDiv.innerHTML.substring(targetIndex+targetLength, shadowDiv.innerHTML.length)}`;
-            const originalWords = shadowDiv.innerHTML.split(" ");
-
-            const textBeforeTargetedWords = originalWords.slice(0, targetIndex);
-            const textAfterTargetedWords = originalWords.slice(targetIndex+numberOfTargetedWords);
-            const targetText = originalWords.slice(targetIndex,targetIndex+numberOfTargetedWords).join(" ");
-            //console.log(targetText);
-            const wrappedTargetWords = `<${correctionType}>${targetText}</${correctionType}>`.split(" ")
-            shadowDiv.innerHTML = (textBeforeTargetedWords.concat(wrappedTargetWords).concat(textAfterTargetedWords)).join(" ");
-        //} else {
-            //corrections.delete(targetIndex);
-        //}
+    acceptButton.addEventListener("mousedown", () => {
+        const newTextNode = document.createTextNode(correction.correctedText)
+        span.replaceWith(newTextNode)
+        errorMap.get(inputId).delete(correction.startIndex)
+        //previouslySentQueries.set(inputId, plainText)
+        parent.removeChild(correctionPanel)
+        document.getElementById(inputId).value = parent.innerText
+        onInputEventListener(inputId)
     })
-    //console.log(shadowDiv.innerHTML);
+
+    const rejectButton = document.createElement("button")
+    rejectButton.style.backgroundColor = "Red"
+    rejectButton.style.width = "30px"
+    rejectButton.style.height = "30px"
+
+    rejectButton.addEventListener("mousedown", () => {
+        correctionPanel.style.visibility = "hidden"
+    })
+    correctionPanel.appendChild(correctionText)
+    correctionPanel.appendChild(acceptButton)
+    correctionPanel.appendChild(rejectButton)
+
+    parent.appendChild(correctionPanel)
+    return correctionPanel
 }
 
-function detectSentenceIndex(text) {
-    let queryStartIndex = text.search(/[.?!](?=[^?.!]*$)/);
-    let previousWords = text.slice(0,queryStartIndex).split();
-    return previousWords.length;
+function updateHighlightedWords(inputId) {
+    let shadowDiv = document.getElementById(inputId + "-lmspelldiv");
+
+    const plainText = shadowDiv.innerText;
+    shadowDiv.textContent = "";
+
+    const words = plainText.split(/\s+/);
+
+    const corrections = [...errorMap.get(inputId).values()].sort((a, b) => b.startIndex - a.startIndex);
+    if (!corrections || corrections.length === 0) return;
+
+    corrections.forEach((correction) => {
+        const numberOfTargetedWords = correction.originalText.split(" ").length;
+        const startIndex = correction.startIndex;
+
+        const targetWords = words.slice(startIndex, startIndex + numberOfTargetedWords);
+
+        var span = document.createElement("span");
+        span.className = correction.type;
+        span.textContent = targetWords.join(" ");
+        const correctionPanel = createCorrectionPanel(correction, span, shadowDiv, plainText, inputId)
+        span.addEventListener("mouseover", () => {
+            correctionPanel.style.visibility = "visible"
+
+        })
+
+        span.addEventListener("mouseout", () => {
+            //correctionPanel.style.visibility = "hidden"
+        })
+
+
+        span.addEventListener("mousedown", () => {
+            //const newTextNode = document.createTextNode(correction.correctedText)
+            //span.replaceWith(newTextNode)
+            //errorMap.get(inputId).delete(correction.startIndex)
+            //previouslySentQueries.set(inputId, plainText)
+            //shadowDiv.removeChild(correctionPanel)
+        })
+
+        words.splice(startIndex, numberOfTargetedWords, span);
+
+    });
+    words.forEach((word, i) => {
+        if (typeof word === "string") {
+            shadowDiv.appendChild(document.createTextNode(word));
+        } else {
+            shadowDiv.appendChild(word); // span element
+        }
+        if (i < words.length - 1) {
+            shadowDiv.appendChild(document.createTextNode(" ")); // restore spaces
+        }
+    });
+}
+
+function detectSentenceIndex(text, queryStartIndex) {
+    let firstText = text.split(" ").slice(0,queryStartIndex).join(" ");
+    let lastSentenceStopper = firstText.search(/[.?!](?=[^?.!]*$)/);
+    console.log(lastSentenceStopper)
+    if (lastSentenceStopper === -1) {
+        return 0;
+    }
+    return firstText.slice(0,lastSentenceStopper).split(" ").length;
+    //return lastSentenceStopper;
 }
 

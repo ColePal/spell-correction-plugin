@@ -142,17 +142,26 @@
             .mastfoot {
                 color: rgba(255, 255, 255, .5);
             }
-            insertion {
+            .insertion {
                 text-decoration: underline;
                 color: yellow;
             }
-            deletion {
+            .deletion {
                 text-decoration: underline;
                 color: blue;
             }
-            replacement {
+            .replacement {
                 text-decoration: underline;
                 color: red;
+            }
+            .shadowDiv {
+                pointer-events: none;
+            }
+            .shadowDiv span {
+                pointer-events: auto;
+            }
+            .shadowDiv div {
+                pointer-events: auto;
             }
         </style>
     </head>

@@ -328,5 +328,22 @@ class SenetenceBufferTestCase(unittest.TestCase):
         self.assertEqual(query, "In thrnder sunghne or in rain?")
         self.assertEqual(buffer.get_index(), 6)
 
+    def test_sentencebuffer_filled_undermine(self):
+        buffer = sentencebuffer()
+        query = buffer.get_query(0, "Twas brillig, and the sl")
+        query = buffer.get_query(4, "slithy toaves. Did girae and")
+        query = buffer.get_query(9,"gibmle in the wabe. all")
+        query = buffer.get_query(14, "mimsey were the borrow gro")
+        query = buffer.get_query(18, "groav. and nthe mome raths o")
+        query = buffer.get_query(23, "outgrabe")
+        query = buffer.get_query(19, "anTo the mall with u")
+        query = buffer.get_query(23, "us!")
+        query = buffer.get_query(6, "Whats for dinner my lov")
+        self.assertEqual(query, "Whats for dinner my lov")
+        self.assertEqual(buffer.get_minimum_index(6,6), 6)
+        query = buffer.get_query(10, "love?")
+        self.assertEqual(query, "Whats for dinner my love?")
+        self.assertEqual(buffer.get_index(), 11)
+
 if __name__ == '__main__':
     unittest.main()

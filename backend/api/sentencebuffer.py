@@ -98,5 +98,6 @@ class sentencebuffer:
             return previous_index
         else:
             return self.get_index()
+
     def __str__(self):
         return f"{self.buffer[0]} {self.buffer[1]}"
