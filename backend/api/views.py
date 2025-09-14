@@ -85,7 +85,7 @@ def spell_check(request):
     buffer_index = sentenceBufferMap.get(session_key).get_minimum_index(index, sentence_index)
     query = sentenceBufferMap.get(session_key).get_query(index, text)
 
-    lmspellOutput = lmspell.correct_text(query)
+    lmspellOutput = lmspell.spellcorrect_text(query)
 
     #print(sentenceBufferMap[session_key])
 
@@ -161,3 +161,9 @@ def logout(request):
     auth_logout(request)
     messages.success(request, "You have been logged out.")
     return redirect("experimental")
+
+def accept_change(request):
+    if request.method != "POST":
+        return JsonResponse({"detail": "POST only"}, status=405)
+    data = json.loads(request.body or "{}")
+    

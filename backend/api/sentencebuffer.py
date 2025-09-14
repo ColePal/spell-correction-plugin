@@ -5,22 +5,28 @@ class sentencebuffer:
     def __init__(self):
         self.buffer = (0,"")
 
+
+    #Update the buffer. Controls the text in the buffer, as well as the buffers index
     def update(self, index, text):
         previous_index = self.get_index()
         previous_text = self.get_text()
         previous_text_len = len(previous_text.split())
-
+        #if index of the incoming text is less than the current buffer index, change the index to be
+        #wherever the last sentence stopper is, and change the text to be everything following the stopper
         if index <= previous_index:
             #print("top")
             self.buffer = (index+self.find_last_sentence_stopper_word(text)+1,self.get_trailing_text(text))
             #print("bufferText", self.get_text())
             return
+        #If the new index is in the middle of the previous buffer text,
         elif index <= previous_text_len + 1 + previous_index:
             #print("mid")
             stopper_index = self.find_last_sentence_stopper_word(text)
             #print("stopper_index", stopper_index)
             if (stopper_index != -1):
                 #print("mid mid")
+
+
                 valid_text = self.get_trailing_text(text)
                 self.buffer = (index+stopper_index+1,valid_text)
                 #print("buffer", valid_text)
@@ -58,6 +64,11 @@ class sentencebuffer:
         start_index = self.find_last_sentence_stopper_word(text)+1
         words = text.split(" ")
         return (" ".join(words[start_index:])).strip()
+
+    def get_leading_text(self, text):
+        end_index = self.find_last_sentence_stopper_word(text)+1
+        words = text.split(" ")
+        return (" ".join(words[:end_index])).strip()
 
     def get_query(self, index, text):
         match = re.search(r"[.?!](?=[^?.!]*$)", text)

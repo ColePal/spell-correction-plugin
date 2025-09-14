@@ -122,6 +122,24 @@ async function onInputEventListener(inputId) {
     executeAllChanges(inputId);
 }
 
+function executeChange(correction, currentWords) {
+    if (correction.type === CorrectionType.INSERTION) {
+        console.log("INSERTION: Replacing", correction.originalText, "with", correction.correctedText)
+        const textBeforeTargetedWords = currentWords.slice(0,correction.startIndex)
+        const textAfterTargetedWords = currentWords.slice(correction.startIndex)
+        const targetText = correction.correctedText.split(" ")
+
+        console.log("Before Replacement", textBeforeTargetedWords);
+        console.log("Replacement", targetText);
+        console.log("After Replacement", textAfterTargetedWords);
+
+        currentWords = textBeforeTargetedWords.concat(targetText).concat(textAfterTargetedWords)
+    } else {
+        currentWords = currentWords.slice(0,correction.startIndex).concat(correction.correctedText.split(" ")).concat(currentWords.slice(correction.endIndex))
+    }
+    return currentWords
+}
+
 function executeAllChanges(inputId) {
      /*This section is for the landing page.*/
 
@@ -149,19 +167,7 @@ function executeAllChanges(inputId) {
 
     console.log("currentWords Before:",currentWords)
     errors.forEach(correction => {
-        if (correction.type === CorrectionType.INSERTION) {
-            console.log("INSERTION: Replacing", correction.originalText, "with", correction.correctedText)
-            const textBeforeTargetedWords = currentWords.slice(0,correction.startIndex)
-            const textAfterTargetedWords = currentWords.slice(correction.startIndex)
-            const targetText = correction.correctedText.split(" ")
-
-            console.log("Before Replacement", textBeforeTargetedWords);
-            console.log("Replacement", targetText);
-            console.log("After Replacement", textAfterTargetedWords);
-
-            currentWords = textBeforeTargetedWords.concat(targetText).concat(textAfterTargetedWords)
-        } else {
-            currentWords = currentWords.slice(0,correction.startIndex).concat(correction.correctedText.split(" ")).concat(currentWords.slice(correction.endIndex))}
+        currentWords = executeChange(correction, currentWords)
     })
 
     console.log("currentWords", currentWords);
@@ -304,8 +310,10 @@ function updateErrorMap(queryResponse, inputId, startIndex) {
 }
 
 function createCorrectionPanel(correction, span, parent, plainText, inputId) {
+    /*
+    Correction panel that holds the "corrected word", accept and reject buttons
+     */
     const correctionPanel = document.createElement("div")
-    console.log(correction.correctedText);
     correctionPanel.style.position = "absolute";
     correctionPanel.style.zIndex = 3;
     correctionPanel.style.color = "Black";
@@ -340,6 +348,10 @@ function createCorrectionPanel(correction, span, parent, plainText, inputId) {
 
     rejectButton.addEventListener("mousedown", () => {
         correctionPanel.style.visibility = "hidden"
+        errorMap.get(inputId).delete(correction.startIndex)
+        parent.removeChild(correctionPanel)
+        const newTextNode = document.createTextNode(correction.originalText)
+        span.replaceWith(newTextNode)
     })
     correctionPanel.appendChild(correctionText)
     correctionPanel.appendChild(acceptButton)
