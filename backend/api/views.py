@@ -85,7 +85,7 @@ def spell_check(request):
     buffer_index = sentenceBufferMap.get(session_key).get_minimum_index(index, sentence_index)
     query = sentenceBufferMap.get(session_key).get_query(index, text)
 
-    lmspellOutput = lmspell.correct_text(query)
+    lmspellOutput = lmspell.spellcorrect_text(query)
 
     #print(sentenceBufferMap[session_key])
 
