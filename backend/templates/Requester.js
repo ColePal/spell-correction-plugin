@@ -101,7 +101,7 @@ async function onInputEventListener(inputId) {
     //CURRENT CHANGES
     let queryResponse = await SpellCorrectionQuery(queryString, inputId, startIndex, sentenceIndex);
     //let queryResponse = await SpellCorrectionQuery(queryString, inputId, sentenceIndex, sentenceIndex);
-
+    if (queryResponse == null) return
     /*
     If the response from the server was what we were expecting we should find the misspelled words and store them.
     */
@@ -264,8 +264,18 @@ async function SpellCorrectionQuery(queryText, inputId, startingIndex, sentenceI
         if (!response.ok) {
             const text = await response.text();
             console.error("Server error:", response.status, text);
+
+            if (response.status === 401) {
+                if (loginWarning === true ) {
+                    //pop up
+                    alert("You need to log in to use spell correction")
+                    loginWarning = false
+                }
+            }
             return;
         }
+
+
         const queryResponse = await response.json();
         //let misspelledWords = findMisspelledWords(queryResponse);
         console.log("queryResponse after unpacking:",queryResponse);

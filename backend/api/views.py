@@ -65,8 +65,7 @@ def spell_check(request):
             'correctedWords': list(),
         }
         print("Not Logged in")
-        return Response(response_data)
-
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
     session_key = request.session.session_key
     if session_key not in sentenceBufferMap:
         sentenceBufferMap.update({session_key: sentencebuffer()})
@@ -111,18 +110,14 @@ def spell_check(request):
     print(response_data)
     return Response(response_data)
 
-
-
 def home(request):
     return render(request,"home.html")
 
-@csrf_exempt
 def analyze(request):
     if request.method != "POST":
         return JsonResponse({"detail": "POST only"}, status=405)
     data = json.loads(request.body or "{}")
     return JsonResponse(evaluate(data.get("text", "")))
-
 
 @api_view(['POST', 'GET'])
 def login(request):
@@ -155,7 +150,7 @@ def register(request):
         messages.error(request, "Username already exists")
         return redirect("login")
     user = User.objects.create_user(email = email, username=email, password=password)
-    return redirect(request, "login")
+    return redirect("login")
 
 def logout(request):
     auth_logout(request)
@@ -166,4 +161,4 @@ def accept_change(request):
     if request.method != "POST":
         return JsonResponse({"detail": "POST only"}, status=405)
     data = json.loads(request.body or "{}")
-    
+

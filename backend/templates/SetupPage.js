@@ -11,6 +11,7 @@
 * Current issues:
 *   When the page is resized the *shadow div* does not resize or change location.
 */
+loginWarning = true
 
 window.addEventListener("load", () => findAllInput());
 

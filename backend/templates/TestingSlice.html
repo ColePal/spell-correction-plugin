@@ -261,6 +261,13 @@
                 </div>
 
                 <script>
+                    function getCookie(name) {
+                      const value = `; ${document.cookie}`;
+                      const parts = value.split(`; ${name}=`);
+                      if (parts.length === 2) return parts.pop().split(';').shift();
+                      return null;
+                    }
+
                     function fleschMeaning(score) {
                         if (score > 100) return "Super easy (child-level simplicity)";
                         if (score >= 90) return "Very easy (5th grade)";
@@ -276,11 +283,13 @@
                     let timer = null;
 
                     async function analyze(text) {
+                        const csrfToken = getCookie("csrftoken");
                         document.getElementById("status").textContent = "Analyzing…";
 
                         const res = await fetch("/api/analyze/", {
                             method: "POST",
-                            headers: { "Content-Type": "application/json" },
+                            headers: { "Content-Type": "application/json",
+                            'X-CSRFToken': csrfToken},
                             body: JSON.stringify({ text }),
                         });
                         const data = await res.json();
