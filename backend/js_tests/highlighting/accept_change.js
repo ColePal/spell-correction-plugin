@@ -1,5 +1,7 @@
 QUnit.module('highlighting', {
     //set up the map, the previous sent, all that jazz
+    //hello there? hows it going
+
 });
 
 QUnit.test('User accepts changes in order', function(assert) {

@@ -4,24 +4,6 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 #from django.contrib.sessions.models import Session
 
-
-#PLACEHOLDER UNTIL I WORK OUT DJANGOS SESSION AND USER SYSTEM
-''''''
-#class User(models.Model):
-    #creates a "profile" user model, uses the user field for authentication
-    #user = models.OneToOneField(User, on_delete=models.cascade)
-    #username = models.CharField(max_length=50, null=False,primary_key=True)
-    #first_name = models.CharField(max_length=50, null=False)
-    #last_name = models.CharField(max_length=50, null=False)
-    #email = models.EmailField(max_length=100, unique=True)
-    #password = models.CharField(max_length=100)
-
-#class Session(models.Model):
-#    id = models.AutoField(primary_key=True)
-#    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-
-# Create your models here.
-
 class CorrectionRequest(models.Model):
     # keeping track of corrections
     id = models.AutoField(primary_key=True)
@@ -31,6 +13,7 @@ class CorrectionRequest(models.Model):
     received_text = models.TextField()
     language = models.CharField(max_length=5, default='en')
     created_at = models.DateTimeField(auto_now_add=True)
+    #created_at = models.CharField()
 
     def __str__(self):
         preview = self.original_text[:50]
@@ -59,4 +42,16 @@ class WordFeedback(models.Model):
     word_id = models.ForeignKey(CorrectedWord, on_delete=models.CASCADE)
     accepted = models.BooleanField()
     feedback = models.CharField(max_length=200, null=False)
+
+    def __str__(self):
+        if self.word_id:  # self.word is the CorrectedWord instance
+            original = self.word_id.incorrect_word
+            corrected = self.word_id.corrected_word
+            preview = f"{original[:20]} -> {corrected[:20]}"
+
+            if len(original) + len(corrected) > 40:
+                preview += "..."
+            return preview
+        return "No word linked"
+
 

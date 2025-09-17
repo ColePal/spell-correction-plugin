@@ -1,3 +1,4 @@
+import datetime
 import random
 import re
 
@@ -16,7 +17,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import render, redirect
 from django.shortcuts import render
-from .models import CorrectionRequest, CorrectedWord
+from .models import CorrectionRequest, CorrectedWord, WordFeedback
 from django.contrib.auth.models import User
 from django.contrib.auth import login as auth_login, logout as auth_logout
 
@@ -63,10 +64,13 @@ def spell_check(request):
             'correctText': text,
             'index': index,
             'correctedWords': list(),
+            'identifier': 0
         }
         print("Not Logged in")
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
     session_key = request.session.session_key
+
+
     if session_key not in sentenceBufferMap:
         sentenceBufferMap.update({session_key: sentencebuffer()})
 
@@ -85,9 +89,7 @@ def spell_check(request):
     query = sentenceBufferMap.get(session_key).get_query(index, text)
 
     lmspellOutput = lmspell.spellcorrect_text(query)
-
     #print(sentenceBufferMap[session_key])
-
 
     corrected_words = list()
     if (lmspellOutput["success"] == False):
@@ -97,9 +99,38 @@ def spell_check(request):
             'original': correction["original"],
             'corrected': correction["corrected"],
             'startIndex': correction["original_index"],
-            'type': correction["type"]
+            'type': correction["type"],
+            'identifier': 0
         }
         corrected_words.append(corrected_word)
+
+    #if there is a sentence terminator in query log it to db
+    stopper = re.search(r"[.?!](?=[^?.!]*$)", query)
+    identifier = 0
+    if stopper:
+        identifier = int(datetime.datetime.now().timestamp() * 1000)
+        correction_record = CorrectionRequest.objects.create(
+            session_id=session_key,
+            original_text = lmspellOutput["original"],
+            received_text = lmspellOutput["corrected"],
+            language=lang,
+            created_at=identifier,
+        )
+        print("Logging Correction to DB", correction_record)
+        correction_record.save()
+
+        print("Logging corrected Words to DB")
+        for index, correction in enumerate(corrected_words):
+            print("correction", correction)
+            corrected_word_record = CorrectedWord.objects.create(
+                query_id = correction_record,
+                incorrect_word = correction["original"],
+                corrected_word = correction["corrected"],
+            )
+            corrected_word_record.save()
+            correction["identifier"] = corrected_word_record.id
+
+
 
     response_data = {
         'incorrectText': lmspellOutput["original"],
@@ -150,6 +181,7 @@ def register(request):
         messages.error(request, "Username already exists")
         return redirect("login")
     user = User.objects.create_user(email = email, username=email, password=password)
+    user.save()
     return redirect("login")
 
 def logout(request):
@@ -157,8 +189,34 @@ def logout(request):
     messages.success(request, "You have been logged out.")
     return redirect("experimental")
 
+@api_view(['POST'])
 def accept_change(request):
-    if request.method != "POST":
-        return JsonResponse({"detail": "POST only"}, status=405)
-    data = json.loads(request.body or "{}")
+    word_id = request.data.get("identifier", 0)
+    accepted = request.data.get("accepted", True)
+    feedback = request.data.get("feedback", "")
+
+
+    try:
+        corrected_word = CorrectedWord.objects.get(id=word_id)
+    except CorrectedWord.DoesNotExist:
+        print("Word does not exist", word_id)
+        return Response(
+        {"error": f"CorrectedWord with id {word_id} not found."},
+        status = 404
+        )
+
+    word_feedback_record = WordFeedback.objects.create(
+        word_id = corrected_word,
+        accepted = accepted,
+        feedback = feedback,
+    )
+
+    print("Received Feedback", word_feedback_record)
+
+    word_feedback_record.save()
+
+    return Response(
+        {"success": f"CorrectedWord with id {word_id} was found."},
+        status=200
+    )
 

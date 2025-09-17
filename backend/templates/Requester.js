@@ -31,6 +31,8 @@ const CorrectionType = Object.freeze({
 
 //A map variable that keeps track of the errors discovered within each input element.
 const errorMap = new Map();
+let blackList = new Map();
+
 let lastIndex = 0;
 
 async function onInputEventListener(inputId) {
@@ -287,11 +289,15 @@ async function SpellCorrectionQuery(queryText, inputId, startingIndex, sentenceI
 }
 
 function updateErrorMap(queryResponse, inputId, startIndex) {
+    //make sure the errorMap for this input is initialised
     if (!errorMap.has(inputId)) {
         errorMap.set(inputId, new Map());
+        blackList.set(inputId, new Map());
     }
-    queryStartIndex = queryResponse.index;
-    queryEndIndex = queryResponse.index + queryResponse.incorrectText.split(" ").length
+    //get the span of the replacement
+    const queryStartIndex = queryResponse.index;
+    const queryEndIndex = queryResponse.index + queryResponse.incorrectText.split(" ").length
+
     let corrections = errorMap.get(inputId);
     if (!corrections) return;
 
@@ -309,13 +315,19 @@ function updateErrorMap(queryResponse, inputId, startIndex) {
 
 
     Array.from(queryResponse.correctedWords).forEach(correction => {
-        errorMap.get(inputId).set(correction.startIndex+startIndex,{
-            "originalText": correction.original,
-            "correctedText": correction.corrected,
-            "startIndex":correction.startIndex+startIndex,
-            "endIndex":(correction.startIndex) + correction.original.split(" ").length+startIndex,
-            "type": correction.type
-        })
+        const rejectedCorrection = blackList.get(inputId).get(correction.startIndex+startIndex)
+        if (rejectedCorrection && (rejectedCorrection.originalText === correction.original)) {
+            return
+        }
+            errorMap.get(inputId).set(correction.startIndex + startIndex, {
+                "originalText": correction.original,
+                "correctedText": correction.corrected,
+                "startIndex": correction.startIndex + startIndex,
+                "endIndex": (correction.startIndex) + correction.original.split(" ").length + startIndex,
+                "type": correction.type,
+                "identifier": correction.identifier
+            })
+
     })
 }
 
@@ -341,7 +353,7 @@ function createCorrectionPanel(correction, span, parent, plainText, inputId) {
     acceptButton.style.width = "30px"
     acceptButton.style.height = "30px"
 
-    acceptButton.addEventListener("mousedown", () => {
+    acceptButton.addEventListener("mousedown", async () => {
         const newTextNode = document.createTextNode(correction.correctedText)
         span.replaceWith(newTextNode)
         errorMap.get(inputId).delete(correction.startIndex)
@@ -349,6 +361,46 @@ function createCorrectionPanel(correction, span, parent, plainText, inputId) {
         parent.removeChild(correctionPanel)
         document.getElementById(inputId).value = parent.innerText
         onInputEventListener(inputId)
+
+        if (correction.queryIdentifier === 0) {
+            return
+        }
+
+        console.log("QUERYIDENTIFIER", correction.identifier)
+
+        const data = JSON.stringify({
+            "identifier": correction.identifier,
+            "accept": true,
+            "feedback": "None"
+        })
+
+
+        const spellCheckUrl = "{% url 'accept_change' %}";
+        const csrfToken = getCookie("csrftoken");
+        try {
+            let response = await fetch(spellCheckUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: data
+            })
+            if (!response.ok) {
+                const text = await response.text();
+                console.error("Server error:", response.status, text);
+                return;
+            }
+
+
+            const queryResponse = await response.json();
+            //let misspelledWords = findMisspelledWords(queryResponse);
+            console.log("Feedback response:", queryResponse);
+            return queryResponse;
+        } catch (error) {
+            console.log(error);
+        }
+
     })
 
     const rejectButton = document.createElement("button")
@@ -356,12 +408,51 @@ function createCorrectionPanel(correction, span, parent, plainText, inputId) {
     rejectButton.style.width = "30px"
     rejectButton.style.height = "30px"
 
-    rejectButton.addEventListener("mousedown", () => {
+    rejectButton.addEventListener("mousedown", async () => {
         correctionPanel.style.visibility = "hidden"
         errorMap.get(inputId).delete(correction.startIndex)
+        blackList.get(inputId).set(correction.startIndex, correction)
         parent.removeChild(correctionPanel)
         const newTextNode = document.createTextNode(correction.originalText)
         span.replaceWith(newTextNode)
+        executeAllChanges(inputId)
+
+        if (correction.queryIdentifier === 0) {
+            return
+        }
+
+        let data = {
+            "identifier": correction.queryIdentifier,
+            "accept": false,
+            "feedback": "None"
+        }
+
+
+        const spellCheckUrl = "{% url 'accept_change' %}";
+        const csrfToken = getCookie("csrftoken");
+        try {
+            let response = await fetch(spellCheckUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: data
+            })
+            if (!response.ok) {
+                const text = await response.text();
+                console.error("Server error:", response.status, text);
+                return;
+            }
+
+
+            const queryResponse = await response.json();
+            //let misspelledWords = findMisspelledWords(queryResponse);
+            console.log("Feedback response:", queryResponse);
+            return queryResponse;
+        } catch (error) {
+            console.log(error);
+        }
     })
     correctionPanel.appendChild(correctionText)
     correctionPanel.appendChild(acceptButton)
@@ -372,42 +463,46 @@ function createCorrectionPanel(correction, span, parent, plainText, inputId) {
 }
 
 function updateHighlightedWords(inputId) {
-    let shadowDiv = document.getElementById(inputId + "-lmspelldiv");
 
-    const plainText = shadowDiv.innerText;
+    //sort the corrections by index so that they can be applied in reverse order.
+    const corrections = [...errorMap.get(inputId).values()].sort((a, b) => b.startIndex - a.startIndex);
+    //don't do anythign
+    if (!corrections || corrections.length === 0) return;
+
+    let shadowDiv = document.getElementById(inputId + "-lmspelldiv");
+    let inputElement = document.getElementById(inputId)
+
+    //const plainText = shadowDiv.innerText;
+    const plainText = inputElement.value
     shadowDiv.textContent = "";
 
     const words = plainText.split(/\s+/);
-
-    const corrections = [...errorMap.get(inputId).values()].sort((a, b) => b.startIndex - a.startIndex);
-    if (!corrections || corrections.length === 0) return;
 
     corrections.forEach((correction) => {
         const numberOfTargetedWords = correction.originalText.split(" ").length;
         const startIndex = correction.startIndex;
 
-        const targetWords = words.slice(startIndex, startIndex + numberOfTargetedWords);
+        //const targetWords = words.slice(startIndex, startIndex + numberOfTargetedWords);
 
-        var span = document.createElement("span");
+        const targetWords = words
+        .slice(startIndex, startIndex + numberOfTargetedWords)
+        .map(w => (typeof w === "string" ? w : w.textContent));
+
+        const span = document.createElement("span");
         span.className = correction.type;
         span.textContent = targetWords.join(" ");
         const correctionPanel = createCorrectionPanel(correction, span, shadowDiv, plainText, inputId)
-        span.addEventListener("mouseover", () => {
-            correctionPanel.style.visibility = "visible"
 
-        })
 
-        span.addEventListener("mouseout", () => {
-            //correctionPanel.style.visibility = "hidden"
-        })
 
 
         span.addEventListener("mousedown", () => {
-            //const newTextNode = document.createTextNode(correction.correctedText)
-            //span.replaceWith(newTextNode)
-            //errorMap.get(inputId).delete(correction.startIndex)
-            //previouslySentQueries.set(inputId, plainText)
-            //shadowDiv.removeChild(correctionPanel)
+            if (correctionPanel.style.visibility === "visible") {
+                correctionPanel.style.visibility = "hidden"
+            } else {
+                correctionPanel.style.visibility = "visible"
+            }
+
         })
 
         words.splice(startIndex, numberOfTargetedWords, span);
