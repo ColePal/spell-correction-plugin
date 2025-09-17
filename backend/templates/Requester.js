@@ -330,48 +330,13 @@ function updateErrorMap(queryResponse, inputId, startIndex) {
 
     })
 }
-
-function createCorrectionPanel(correction, span, parent, plainText, inputId) {
-    /*
-    Correction panel that holds the "corrected word", accept and reject buttons
-     */
-    const correctionPanel = document.createElement("div")
-    correctionPanel.style.position = "absolute";
-    correctionPanel.style.zIndex = 3;
-    correctionPanel.style.color = "Black";
-    correctionPanel.style.left = span.getBoundingClientRect().left-100 + "px";
-    correctionPanel.style.top = span.getBoundingClientRect().top+30 + "px";
-    correctionPanel.style.width = 200 + "px";
-    correctionPanel.style.height = 100 + "px";
-    correctionPanel.style.visibility = "hidden"
-    correctionPanel.style.backgroundColor = "White"
-
-    //this can be changed to something more attractive
-    const correctionText = document.createTextNode(correction.correctedText)
-    const acceptButton = document.createElement("button")
-    acceptButton.style.backgroundColor = "Green"
-    acceptButton.style.width = "30px"
-    acceptButton.style.height = "30px"
-
-    acceptButton.addEventListener("mousedown", async () => {
-        const newTextNode = document.createTextNode(correction.correctedText)
-        span.replaceWith(newTextNode)
-        errorMap.get(inputId).delete(correction.startIndex)
-        //previouslySentQueries.set(inputId, plainText)
-        parent.removeChild(correctionPanel)
-        document.getElementById(inputId).value = parent.innerText
-        onInputEventListener(inputId)
-
-        if (correction.queryIdentifier === 0) {
-            return
-        }
-
-        console.log("QUERYIDENTIFIER", correction.identifier)
+async function acceptChangeRequest(feedback, isAccepted) {
+    console.log("QUERYIDENTIFIER", correction.identifier)
 
         const data = JSON.stringify({
             "identifier": correction.identifier,
-            "accept": true,
-            "feedback": "None"
+            "accept": isAccepted,
+            "feedback": feedback
         })
 
 
@@ -400,13 +365,52 @@ function createCorrectionPanel(correction, span, parent, plainText, inputId) {
         } catch (error) {
             console.log(error);
         }
+}
+
+function createCorrectionPanel(correction, span, parent, plainText, inputId) {
+    /*
+    Correction panel that holds the "corrected word", accept and reject buttons
+     */
+    const correctionPanel = document.createElement("div")
+    correctionPanel.className = "correction-panel"
+    const rect = span.getBoundingClientRect();
+    // position left edge same as span
+    correctionPanel.style.left = rect.left + window.scrollX + "px";
+    // position top edge just below span
+    correctionPanel.style.top = rect.bottom + 30 + window.scrollY + "px";
+
+    const buttonPanel = document.createElement("div");
+    buttonPanel.className = "button-panel";
+
+
+
+    //this can be changed to something more attractive
+    const correctionText = document.createElement("div")
+    correctionText.textContent = correction.correctedText
+    const acceptButton = document.createElement("button")
+    acceptButton.className = "accept-button"
+    acceptButton.textContent = "✔";
+
+    acceptButton.addEventListener("mousedown", async () => {
+        const newTextNode = document.createTextNode(correction.correctedText)
+        span.replaceWith(newTextNode)
+        errorMap.get(inputId).delete(correction.startIndex)
+        //previouslySentQueries.set(inputId, plainText)
+        parent.removeChild(correctionPanel)
+        document.getElementById(inputId).value = parent.innerText
+        onInputEventListener(inputId)
+
+        if (correction.queryIdentifier === 0) {
+            return
+        }
+
+        await acceptChangeRequest("", true)
 
     })
 
     const rejectButton = document.createElement("button")
-    rejectButton.style.backgroundColor = "Red"
-    rejectButton.style.width = "30px"
-    rejectButton.style.height = "30px"
+    rejectButton.className = "reject-button";
+    rejectButton.textContent = "✖";
 
     rejectButton.addEventListener("mousedown", async () => {
         correctionPanel.style.visibility = "hidden"
@@ -417,48 +421,22 @@ function createCorrectionPanel(correction, span, parent, plainText, inputId) {
         span.replaceWith(newTextNode)
         executeAllChanges(inputId)
 
-        if (correction.queryIdentifier === 0) {
+        if (correction.identifier === 0) {
             return
         }
 
-        let data = {
-            "identifier": correction.queryIdentifier,
-            "accept": false,
-            "feedback": "None"
-        }
-
-
-        const spellCheckUrl = "{% url 'accept_change' %}";
-        const csrfToken = getCookie("csrftoken");
-        try {
-            let response = await fetch(spellCheckUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken
-                },
-                body: data
-            })
-            if (!response.ok) {
-                const text = await response.text();
-                console.error("Server error:", response.status, text);
-                return;
-            }
-
-
-            const queryResponse = await response.json();
-            //let misspelledWords = findMisspelledWords(queryResponse);
-            console.log("Feedback response:", queryResponse);
-            return queryResponse;
-        } catch (error) {
-            console.log(error);
-        }
+        await acceptChangeRequest("", false)
     })
     correctionPanel.appendChild(correctionText)
-    correctionPanel.appendChild(acceptButton)
-    correctionPanel.appendChild(rejectButton)
+
+    buttonPanel.appendChild(acceptButton)
+    buttonPanel.appendChild(rejectButton)
+
+    correctionPanel.appendChild(buttonPanel)
+
 
     parent.appendChild(correctionPanel)
+    console.log("correctionPanel", correctionPanel)
     return correctionPanel
 }
 

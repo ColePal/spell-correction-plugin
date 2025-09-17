@@ -162,6 +162,56 @@
             }
             .shadowDiv div {
                 pointer-events: auto;
+
+
+            }
+            .correction-panel {
+                position:absolute;
+                z-index: 3;
+                color: Black;
+                width: 200px;
+                height: 100px;
+                visibility: hidden;
+                background-color: White;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                justify-items: center;
+                border-radius: 10px;
+                border: 2px solid dimgray;
+            }
+
+            .button-panel {
+                border: 1px solid gray;
+                border-radius: 10px;
+                width: 100px;
+                height: 50px;
+
+
+                display: flex;
+                flex-direction: row;
+                justify-content: space-around;
+                justify-items: center;
+                vertical-align: center;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            .reject-button {
+                background-color: Red;
+                width: 30px;
+                height: 30px;
+                margin-top: auto;
+                margin-bottom: auto;
+            }
+            .accept-button {
+                background-color: Green;
+                width: 30px;
+                height: 30px;
+                margin-top: auto;
+                margin-bottom: auto;
+            }
+            .mono {
+                font-size: 12px;
             }
         </style>
     </head>
@@ -310,7 +360,9 @@
 
                         // Readability
                         const fleschNum = Number(data.readability.flesch_reading_ease);
-                        document.getElementById("readability").textContent = `Readability: ${fleschNum.toFixed(1)} — ${fleschMeaning(fleschNum)}\n`;
+                        const readabilityDiv = document.getElementById("readability")
+                        readabilityDiv.textContent = `Readability: ${fleschNum.toFixed(1)} — ${fleschMeaning(fleschNum)}\n`;
+                        //readabilityDiv.style.fontSize = "12px";
                     }
 
                     document.getElementById("testInput").addEventListener("input", () => {
