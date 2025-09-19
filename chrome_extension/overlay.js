@@ -183,7 +183,7 @@ const editable_fields_list = document.querySelectorAll(valid_field_types); // Li
 
 
 
-
+async function createOverlay() {
 
 // Add to the DOM the Style of the per word text correction optioning pop up boxes
 const textPopupStyle = document.createElement('style');
@@ -502,12 +502,20 @@ document.addEventListener('input', (event) => {
   }
 });
 
+}
 
 
 chrome.storage.local.get('extensionToggleButton', function(uservar) {
-    if (uservar.extensionToggleButton) {
-      console.log('Extension Toggle Button:', uservar.extensionToggleButton);
-	  createOverlayInteractable()
+    if (uservar.extensionToggleButton || uservar.extensionToggleButton === undefined) {
+		console.log('Extension Toggle Button:', uservar.extensionToggleButton);
+		createOverlayInteractable()
+    }
+});
+
+chrome.storage.local.get('overlayToggleButton', function(uservar) {
+    if (uservar.overlayToggleButton || uservar.overlayToggleButton === undefined) {
+		console.log('Overlay Toggle Button:', uservar.overlayToggleButton);
+		createOverlay()
     }
 });
 
