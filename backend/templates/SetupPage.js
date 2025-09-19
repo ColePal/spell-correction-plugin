@@ -44,25 +44,35 @@ function findAllInput() {
         shadowDiv.style.top = element.getBoundingClientRect().top + "px";
         shadowDiv.style.width = element.getBoundingClientRect().width + "px";
         shadowDiv.style.height = element.getBoundingClientRect().height + "px";
-        let font = window.getComputedStyle(element);
-        shadowDiv.style.font = font.font;
-        shadowDiv.style.fontWeight = font.fontWeight;
-        shadowDiv.style.fontStyle = font.fontStyle;
-        shadowDiv.style.textDecoration = font.textDecoration;
-        shadowDiv.style.letterSpacing = font.letterSpacing;
-        shadowDiv.style.textTransform = font.textTransform;
+        let inputStyle = window.getComputedStyle(element);
+        shadowDiv.style.font = inputStyle.font;
+        shadowDiv.style.fontWeight = inputStyle.fontWeight;
+        shadowDiv.style.fontStyle = inputStyle.fontStyle;
+        shadowDiv.style.textDecoration = inputStyle.textDecoration;
+        shadowDiv.style.letterSpacing = inputStyle.letterSpacing;
+        shadowDiv.style.textTransform = inputStyle.textTransform;
+        shadowDiv.style.textAlign = inputStyle.textAlign;
 
         shadowDiv.style.lineHeight = window.getComputedStyle(element).lineHeight;
         shadowDiv.style.padding = window.getComputedStyle(element).padding;
-        //shadowDiv.style.pointerEvents = "none";
 
-      function updateOverlay() {
+        function updateOverlay(shadowDiv) {
             const rect = element.getBoundingClientRect();
             shadowDiv.style.left = rect.left + window.scrollX + "px";
             shadowDiv.style.top = rect.top + window.scrollY + "px";
             shadowDiv.style.width = rect.width + "px";
             shadowDiv.style.height = rect.height + "px";
         }
+        //shadowDiv.style.pointerEvents = "none";
+          let observer = new ResizeObserver(() => {
+            updateOverlay(shadowDiv)
+        });
+        observer.observe(element);
+
+        let mutationObserver = new MutationObserver(() => {
+            updateOverlay(shadowDiv)
+        })
+          mutationObserver.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true });
 
         window.addEventListener("scroll", updateOverlay);
         window.addEventListener("resize", updateOverlay);
@@ -75,6 +85,7 @@ function findAllInput() {
         //Make it disappear!!
         element.style.background="transparent";
         element.style.color="transparent";
+        element.style.caretColor="black";
       });
     }
 
