@@ -22,6 +22,18 @@ function findAllInput() {
       //console.log(inputs);
       let inputs = Array.from(textInputs).concat(Array.from(textAreas));
 
+      // Rob note
+      // Without this the model tries and sends "on" when the switch is clicked
+      // doing this prevents that
+      inputs = inputs.filter(element => {
+        return (
+            element.tagName.toLowerCase() === "textarea" ||
+            (element.tagName.toLowerCase() === "input" &&
+            !["checkbox", "radio"].includes(element.type))
+        );
+      });
+
+
       //for each input element found:
       inputs.forEach(element => {
 
