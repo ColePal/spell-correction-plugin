@@ -20,6 +20,10 @@ from django.shortcuts import render
 from .models import CorrectionRequest, CorrectedWord, WordFeedback
 from django.contrib.auth.models import User
 from django.contrib.auth import login as auth_login, logout as auth_logout
+from django.shortcuts import render, redirect
+from django.core.mail import send_mail
+from .forms import ContactForm
+
 
 from . import lmspell
 from .sentencebuffer import sentencebuffer
@@ -38,6 +42,10 @@ def cover_page(request):
 
 def dashboard_page(request):
     return render(request, 'dashboard.html')
+
+def success_view(request):
+
+    return render(request, 'success.html')
 
 @api_view(['GET'])
 def health_check(request):
@@ -220,3 +228,26 @@ def accept_change(request):
         status=200
     )
 
+
+def contact_view(request):
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            email = form.cleaned_data['email']
+            subject = form.cleaned_data['subject']
+            message = form.cleaned_data['message']
+
+            full_message = f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}"
+
+            send_mail(
+                subject=subject,
+                message=full_message,
+                from_email=None,
+                recipient_list=['spellpalproject@gmail.com'],
+            )
+            return redirect('success')
+    else:
+        form = ContactForm()
+
+    return render(request, 'contact.html', {'form': form})
