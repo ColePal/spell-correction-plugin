@@ -64,14 +64,14 @@
                 color: #fff;
                 text-shadow: 0 0.05rem 0.1rem rgba(0, 0, 0, 0.5);
                 box-shadow: inset 0 0 5rem rgba(0, 0, 0, 0.5);
-                background: url("{% static 'vimal-s-ZhVUAUc8V4s-unsplash.jpg' %}") no-repeat center center fixed;
+                background: url("{% static 'shubham-dhage-xAgzWSEB8Nc-unsplash.jpg' %}") no-repeat center center fixed;
                 /*The background is broken will comment out for now*/
                 background-size: cover;
             }
 
             .cover-container {
-                width: 100%;
-                max-width: 100%;
+                width: 50%;
+                max-width: 50%;
             }
 
             .row.align-items-stretch {
@@ -85,7 +85,7 @@
             @media (min-width: 768px) {
                 .cover-container {
                     width: 60%;
-                    max-width: 80%;
+                    max-width: 60%;
                 }
             }
 
@@ -227,20 +227,73 @@
             .card-body textarea {
                 flex: 1;
             }
+
+            .contact-form {
+                max-width: 500px;
+                margin: 0 auto;
+                text-align: left;
+            }
+
+            .contact-form p {
+                margin-bottom: 1rem;
+            }
+
+            .contact-form input,
+            .contact-form textarea,
+            .contact-form select {
+                width: 100%;
+                padding: 0.5rem;
+                border: 1px solid #ccc;
+                border-radius: 6px;
+            }
         </style>
     </head>
 
-    <body class="text-center" onload="findAllInput()">
+    <body class="text-center">
         <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
+            <header class="masthead mb-auto">
+                <div class="inner">
+                    <h3 class="masthead-brand" style="color: white;">LLMSpell</h3>
+                    <nav class="nav nav-masthead justify-content-center">
+                        <i class="fs-4 bi-house me-2 text-white"></i>
+                        <a class="nav-link me-2" href="{% url 'cover' %}">Home</a>
+                        <i class="fs-4 bi-speedometer2 me-2 text-white"></i>
+                        <a class="nav-link me-2" href="{% url 'dashboard' %}">Dashboard</a>
+                        <i class="fs-4 bi-envelope me-2 text-white"></i>
+                        <a class="nav-link active me-2" href="{% url 'contact' %}">Contact</a>
+                        <i class="fs-4 bi-person me-2 text-white"></i>
+                        <a class="nav-link me-2" href="{% url 'login' %}">Login</a>
+                    </nav>
+                </div>
+            </header>
 
-          <div class="card">
-            <form method="post">
-              {% csrf_token %}
-              {{ form.as_p }}
-              <button type="submit">Send</button>
-            </form>
-          </div>
-
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 p-5 shadow">
+                        <form method="post" class="contact-form">
+                            {% csrf_token %} {{ form.as_p }}
+                            <button type="submit" class="btn btn-primary">Send</button>
+                        </form>
+                        {% if alert_message %}
+                        <script>
+                            alert("{{ alert_message }}");
+                        </script>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 d-flex flex-column">
+                    <div class="card flex-fill mb-3 d-flex align-items-center justify-content-center">
+                        <h1>SpellPal</h1>
+                        <h2>
+                            Got a question or query about SpellPall feel free to contact us through our contact page and we'll get back to you as soon as possible!
+                        </h2>
+                    </div>
+                    <div class="card flex-fill d-flex align-items-center justify-content-center">
+                        <h2>Check out our GitHub for upcoming patches!</h2>
+                        <a href="https://github.com/ColePal/spell-correction-plugin" style="color: blue;">GitHub</a>
+                    </div>
+                </div>
+            </div>
             <footer class="mastfoot mt-auto">
                 <div class="inner">
                     <p>LLMSpell</p>

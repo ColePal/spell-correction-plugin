@@ -44,7 +44,6 @@ def dashboard_page(request):
     return render(request, 'dashboard.html')
 
 def success_view(request):
-
     return render(request, 'success.html')
 
 @api_view(['GET'])
@@ -230,6 +229,8 @@ def accept_change(request):
 
 
 def contact_view(request):
+    alert_message = None
+
     if request.method == 'POST':
         form = ContactForm(request.POST)
         if form.is_valid():
@@ -246,8 +247,10 @@ def contact_view(request):
                 from_email=None,
                 recipient_list=['spellpalproject@gmail.com'],
             )
-            return redirect('success')
+
+            alert_message = "Your message was sent successfully!"
+            form = ContactForm()
     else:
         form = ContactForm()
 
-    return render(request, 'contact.html', {'form': form})
+    return render(request, 'contact.html', {'form': form, 'alert_message': alert_message})
