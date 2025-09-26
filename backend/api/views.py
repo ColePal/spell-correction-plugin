@@ -58,9 +58,10 @@ def experimental(request):
 def spell_check(request):
     # get data from request
     text = request.data.get('text', '')
-    lang = request.data.get('language', 'en')
+    language = request.data.get('language', 'en')
     sentence_index = request.data.get('sentenceIndex', 0)
     index = request.data.get('index', 0)
+    premium = request.data.get('premium', False)
     print(request.data)
 
 
@@ -95,7 +96,7 @@ def spell_check(request):
     buffer_index = sentenceBufferMap.get(session_key).get_minimum_index(index, sentence_index)
     query = sentenceBufferMap.get(session_key).get_query(index, text)
 
-    lmspellOutput = lmspell.spellcorrect_text(query)
+    lmspellOutput = lmspell.spell_correction(text=query, language=language, premium=premium)
     #print(sentenceBufferMap[session_key])
 
     corrected_words = list()
@@ -120,7 +121,7 @@ def spell_check(request):
             session_id=session_key,
             original_text = lmspellOutput["original"],
             received_text = lmspellOutput["corrected"],
-            language=lang,
+            language=language,
             created_at=identifier,
         )
         print("Logging Correction to DB", correction_record)

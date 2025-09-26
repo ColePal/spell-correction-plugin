@@ -249,7 +249,8 @@ async function SpellCorrectionQuery(queryText, inputId, startingIndex, sentenceI
         "text": queryText,
         "sentenceIndex": sentenceIndex,
         "index": startingIndex,
-        "language": "en"
+        "language": "en",
+        "premium": document.getElementById("textSwitch").checked
     });
     console.log("Sending to server", JSONQuery);
     const spellCheckUrl = "{% url 'spell_check' %}";

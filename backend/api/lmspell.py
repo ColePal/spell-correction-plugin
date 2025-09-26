@@ -121,19 +121,8 @@ def spell_correction_gemini(text: str) -> Dict[str, Any]:
         'model': 'gemini-2.0-flash'#lightweight and cheapest
     }
 
-
-def spellcorrect_text(text: str, max_length: int = 512, language: str = 'en', use_external_api: Optional[str] = None) -> \
-Dict[str, Any]:
-    text = ' '.join(text.strip().split())
-
-    if not text:
-        return {'original': '', 'corrected': '', 'success': False}
-
-    if len(text) > 1024:#limit from lmspell
-        return {'original': text, 'corrected': text, 'success': False}
-
-    if use_external_api == 'gemini':
-        return spell_correction_gemini(text)
+def spell_correction_standard(text : str = "", language : str = 'en') -> Dict[str, Any]:
+    VENNIFY_MAX_LENGTH = 512
 
     model, tokenizer = get_model(language)
 
@@ -142,23 +131,23 @@ Dict[str, Any]:
 
     inputs = tokenizer(
         input_text,
-        return_tensors='pt', #pytorch acronym
-        max_length=max_length, #max 512 Lmspell
-        truncation=True # Cut off if too long
+        return_tensors='pt',  # pytorch acronym
+        max_length=VENNIFY_MAX_LENGTH,  # max 512 Lmspell
+        truncation=True  # Cut off if too long
     )
 
     with torch.no_grad():
         outputs = model.generate(
             **inputs,
-            max_length=max_length, #max 512 Lmspell
+            max_length=VENNIFY_MAX_LENGTH,  # max 512 Lmspell
             num_beams=5,
             early_stopping=True,
             no_repeat_ngram_size=3
-        )# resource used for both sections https://huggingface.co/docs/transformers/main/en/main_classes/text_generation
+        )  # resource used for both sections https://huggingface.co/docs/transformers/main/en/main_classes/text_generation
 
     corrected_text = tokenizer.decode(outputs[0], skip_special_tokens=True).strip()
 
-    #Fallback
+    # Fallback
     if not corrected_text:
         corrected_text = text
 
@@ -167,13 +156,31 @@ Dict[str, Any]:
     return {
         'original': text,
         'corrected': corrected_text,
-        #Removed duplicate keys as per Cole comment
         'differences': differences,
         'num_corrections': len(differences),
         'success': True,
         'model': f'local_{language}',
         'language': language
     }
+
+def spell_correction(text: str, language: str = 'en', premium: bool = False) -> Dict[str, Any]:
+
+    text = ' '.join(text.strip().split())
+
+    if not text:
+        return {'original': '', 'corrected': '', 'success': False}
+
+    if len(text) > 1024:#limit from lmspell
+        return {'original': text, 'corrected': text, 'success': False}
+
+    if premium:
+        return spell_correction_gemini(text=text)
+    else:
+        return spell_correction_standard(text=text, language=language)
+
+
+
+
 
 
 def find_differences(original, corrected):#nothing here changed
@@ -250,14 +257,14 @@ def quick_test():
     print("Vennify local : ")
     print("\n" + "=" * 50)
     for text in test_texts:
-        result = spellcorrect_text(text)
+        result = spell_correction(text=text, premium=False)
         print("\n" + "=" * 50)
         print(f"Original:  {text}")
         print(f"Corrected {result['corrected']}\n")
         print("=" * 50)
     if GEMINI_API_KEY:
         print("\nGEMINI API TEST:")
-        result = spellcorrect_text("The quik brown foks jump over teh lazi dog.", use_external_api='gemini')     # This is the sentence that is displayed not the other one
+        result = spell_correction(text="The quik brown foks jump over teh lazi dog.", premium=True)     # This is the sentence that is displayed not the other one
         if result['success']:
             print(f"Original: The quik brown foks jump over teh lazi dog.")
             print(f"Corrected {result['corrected']}")
