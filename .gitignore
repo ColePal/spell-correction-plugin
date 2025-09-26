@@ -22,3 +22,5 @@ backend/.idea/backend.iml
 backend/.idea/misc.xml
 backend/.env
 .env
+*.env
+.env*

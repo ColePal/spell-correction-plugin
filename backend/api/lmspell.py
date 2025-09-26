@@ -174,8 +174,10 @@ def spell_correction(text: str, language: str = 'en', premium: bool = False) -> 
         return {'original': text, 'corrected': text, 'success': False}
 
     if premium:
+        print("MODEL", "Using Gemini")
         return spell_correction_gemini(text=text)
     else:
+        print("MODEL", "Standard")
         return spell_correction_standard(text=text, language=language)
 
 
