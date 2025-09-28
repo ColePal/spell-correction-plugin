@@ -1,3 +1,4 @@
+
 /*What does this script do?
 *
 * Upon page load, this script will find every instance of textareas and inputs.
@@ -11,7 +12,8 @@
 * Current issues:
 *   None found.
 */
-import onInputEventListener from "{% static 'js/requester.js' %}";
+import onInputEventListener from "./requester.js";
+
 
 /*
 //indices are calculated on a word by word basis. If a word is longer than the context window,
@@ -49,9 +51,15 @@ let lastIndex = 0;
 
 var loginWarning = true
 */
+const previouslySentQueries = new Map();
 
 
-window.addEventListener("load", () => findAllInput());
+function updateShadowDIV(inputId) {
+    let textInput = document.getElementById(inputId);
+    let shadowDiv = document.getElementById(inputId+"-lmspelldiv");
+    shadowDiv.innerHTML = textInput.value;
+    //updateHighlightedWords(inputId);
+}
 
 function findAllInput() {
       let textInputs = document.getElementsByTagName("input");
@@ -75,8 +83,8 @@ function findAllInput() {
       inputs.forEach(element => {
 
         //add an input event listener for sending to server
-        element.addEventListener("input", () => onInputEventListener(element.id, lastIndex, loginWarning))
-        //initialise previouslySentQueries SOMEWHERE ELSE DONT DO IT HERE YOU IDIOT
+        element.addEventListener("input", () => onInputEventListener(element.id, previouslySentQueries))
+
         previouslySentQueries.set(element.id, "");
 
         //Add a shadow div for highlighting mischief
@@ -144,10 +152,6 @@ function findAllInput() {
       });
     }
 
-    function updateShadowDIV(inputId) {
-    let textInput = document.getElementById(inputId);
-    let shadowDiv = document.getElementById(inputId+"-lmspelldiv");
-    shadowDiv.innerHTML = textInput.value;
-    //updateHighlightedWords(inputId);
-}
+window.findAllInput = findAllInput;
+window.addEventListener("load", () => findAllInput());
 

@@ -4,7 +4,7 @@ this script is going to decide when is a good time to send a query to the server
 receive the response and make changes to the text using the response.
  */
 
-/**
+
 //indices are calculated on a word by word basis. If a word is longer than the context window,
 //there might be some troubles
 const CONTEXT_WINDOW_SIZE = 50;
@@ -22,7 +22,7 @@ const debounceTimers = new Map();
 
 //#A map variable that keeps track of whether or not an Input has changed when sending a Query to server.
 //#if Input has not changed, no query will be sent.
-const previouslySentQueries = new Map();
+//const previouslySentQueries = new Map();
 
 const CorrectionType = Object.freeze({
     INSERTION:"insertion",
@@ -35,10 +35,11 @@ const errorMap = new Map();
 let blackList = new Map();
 
 let lastIndex = 0;
-**/
-import updateHighlightedWords from "/js/highlighting.js"
+let loginWarning = true;
 
-export async function onInputEventListener(inputId, lastIndex, loginWarning) {
+import updateHighlightedWords from "./highlighting.js"
+
+export default async function onInputEventListener(inputId, previouslySentQueries) {
     /*
     The eventListener is going to handle requesting different depending on which condition
     was satisfied for sending. Timeouts get treated as terminated sentences. isTimedOut
@@ -119,7 +120,7 @@ export async function onInputEventListener(inputId, lastIndex, loginWarning) {
 
     //Because the corrections have been updated, update the highlighting for this particular input.
     console.log("errormap",errorMap)
-    updateHighlightedWords(inputId);
+    updateHighlightedWords(inputId, errorMap);
 
     executeAllChanges(inputId);
 }
@@ -226,12 +227,7 @@ function detectFirstDifference(textA, textB) {
     //return -1;
     return textAWords.length-1;
 }
-/*
-Send a correction request to the server. The server will respond with corrections or with null.
- */
-async function SpellCorrectionQuery(queryText, inputId, startingIndex, sentenceIndex, loginWarning) {
-    //get the csrftoken from cookies.
-    function getCookie(name) {
+function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
             const cookies = document.cookie.split(';');
@@ -245,8 +241,11 @@ async function SpellCorrectionQuery(queryText, inputId, startingIndex, sentenceI
         }
         return cookieValue;
     }
-
-
+/*
+Send a correction request to the server. The server will respond with corrections or with null.
+ */
+async function SpellCorrectionQuery(queryText, inputId, startingIndex, sentenceIndex, loginWarning) {
+    //get the csrftoken from cookies.
     let JSONQuery = JSON.stringify({
         "text": queryText,
         "sentenceIndex": sentenceIndex,
@@ -255,7 +254,8 @@ async function SpellCorrectionQuery(queryText, inputId, startingIndex, sentenceI
         "premium": document.getElementById("textSwitch").checked
     });
     console.log("Sending to server", JSONQuery);
-    const spellCheckUrl = "{% url 'spell_check' %}";
+    //const spellCheckUrl = "{% url 'spell_check' %}";
+    const spellCheckUrl = window.spellCheckUrl;
     const csrfToken = getCookie("csrftoken");
     try {
         let response = await fetch(spellCheckUrl, {
