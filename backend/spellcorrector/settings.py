@@ -103,7 +103,7 @@ DATABASES = {
 
 # Code provided by Neon
 tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
-print(tmpPostgres)
+
 
 DATABASES = {
     'default': {
@@ -116,6 +116,8 @@ DATABASES = {
         'OPTIONS': dict(parse_qsl(tmpPostgres.query)),
     }
 }
+
+MODEL_DIRECTORY = BASE_DIR / "api" / "language_detect_model"
 
 
 # Password validation
