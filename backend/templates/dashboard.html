@@ -13,7 +13,7 @@
         <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/cover/" />
 
         <!-- Bootstrap core CSS -->
-        <link href="../../dist/css/bootstrap.min.css" rel="stylesheet" />
+{#        <link href="../../dist/css/bootstrap.min.css" rel="stylesheet" />#}
 
         <!-- Custom styles for this template -->
         <!--    <link href="cover.css" rel="stylesheet">-->
@@ -158,10 +158,14 @@
                 text-decoration: underline;
                 color: red;
             }
+            .card-body{
+                text-align: center;
+                 line-height: 3;
+            }
         </style>
     </head>
 
-    <body class="text-center" onload="findAllInput()">
+    <body class="text-center">
         <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
             <header class="masthead mb-auto">
                 <div class="inner nav-inner" style="max-width: 80%; margin: 0 auto;">
@@ -172,26 +176,46 @@
                         <i class="fs-4 bi-speedometer2 me-2 text-white"></i>
                         <a class="nav-link active me-2" href="#">Dashboard</a>
                         <i class="fs-4 bi-envelope me-2 text-white"></i>
-                        <a class="nav-link me-2" href="{% url 'contact' %}">Contact</a>
-                        <i class="fs-4 bi-person me-2 text-white"></i>
-                        <a class="nav-link me-2" href="{% url 'login' %}">Login</a>
+                        <a class="nav-link me-2" href="#">Contact</a>
                     </nav>
                 </div>
             </header>
             <div class="row g-3 mb-3">
                 <div class="col-12 col-md-4">
                     <div class="card">
-                        <div class="card-body">Card 1</div>
+                        <div class="card-body">Language Usage (queries per language)</div>
+                        <canvas id="languages_chart"></canvas>
                     </div>
                 </div>
                 <div class="col-12 col-md-4">
                     <div class="card h-100">
-                        <div class="card-body">Card 2</div>
+                        <div class="card-body">
+                              <div>
+                                 <strong>Most Misspelled Word:</strong>
+                                 <span id="most_misspelled">Loading...</span>
+                             </div>
+                            <div>
+                                 <strong>Total corrections:</strong>
+                                 <span id="total_corrections">—</span>
+                             </div>
+                              <div>
+                                  <strong>Unique misspelled:</strong>
+                                  <span id="unique_misspelled">—</span>
+                              </div>
+                             <div>
+                                 <strong>Unique corrected:</strong>
+                                 <span id="unique_corrected">—</span>
+                             </div>
+                             <div>
+                                 <strong>Total requests::</strong>
+                                 <span id="total_requests">—</span>
+                             </div>
+                        </div>
                     </div>
                 </div>
                 <div class="col-12 col-md-4">
                     <div class="card h-100">
-                        <div class="card-body">Card 3</div>
+                        <div class="card-body">Session Analytics</div>
                     </div>
                 </div>
             </div>
@@ -199,14 +223,29 @@
             <div class="row g-3 mb-3">
                 <div class="col-12 col-md-6">
                     <div class="card h-100">
-                        <div class="card-body">Card 4</div>
+                      <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                          <h5 class="mb-0">Mistakes % Over Time</h5>
+                          <div class="d-flex gap-2">
+                            <select id="pctUser" class="form-select form-select-sm" style="min-width:200px">
+                              <option value="">All users</option>
+                            </select>
+                            <select id="pctRange" class="form-select form-select-sm">
+                              <option value="30" selected>Last 30 days</option>
+                              <option value="90">Last 90 days</option>
+                              <option value="180">Last 180 days</option>
+                            </select>
+                          </div>
+                        </div>
+                        <canvas id="mistake_pct_chart"></canvas>
+                      </div>
                     </div>
                 </div>
-                <div class="col-12 col-md-6">
-                    <div class="card h-100">
-                        <div class="card-body">Card 5</div>
-                    </div>
-                </div>
+{#                <div class="col-12 col-md-6">#}
+{#                    <div class="card h-100">#}
+{#                        <div class="card-body">Did you know?</div>#}
+{#                    </div>#}
+{#                </div>#}
             </div>
 
             <footer class="mastfoot mt-auto">
@@ -226,5 +265,137 @@
         <script>
             {%  include "SetupPage.js" %}
         </script>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let languagesChart;
+        function initCharts() {
+         const languages_chart = document.getElementById("languages_chart").getContext("2d");
+         languagesChart = new Chart(languages_chart, {type: "doughnut", data: {labels: [], datasets: [{ data: [], borderWidth: 0,hoverOffset: 6,backgroundColor: []}]}, options: {responsive: true, plugins: { legend: { position: "bottom" } }, cutout: "60%"}}
+         );}
+
+        function randomColour() {
+         const red = Math.floor(Math.random() * 255);
+          const green = Math.floor(Math.random() * 255);
+         const blue = Math.floor(Math.random() * 255);
+         return `rgb(${red}, ${green}, ${blue})`;
+}
+
+       async function all_languages(){
+         const response = await fetch("{% url 'dashboard_languages' %}");
+          const data = await response.json();
+
+           let languages = [];
+           if (Array.isArray(data.languages_all)) {
+               languages = data.languages_all;
+           }
+           const labels = languages.map(e => e.language);
+           const colour = labels.map(() => randomColour());
+           languagesChart.data.labels = labels;
+           languagesChart.data.datasets[0].data =languages.map(e =>e.count);
+           languagesChart.data.datasets[0].backgroundColor = colour;
+           languagesChart.update();
+        }
+
+        async function misspelled(){
+             const response = await fetch("{% url 'misspelled_word' %}");
+             const data = await response.json();
+               if (data.word) {
+                   document.getElementById("most_misspelled").innerText = `${data.word} (${data.count} times)`;
+               }
+               else {
+                    document.getElementById("most_misspelled").innerText = "No data yet";
+                }
+               document.getElementById("total_corrections").textContent = data.total_corrections ?? 0;
+               document.getElementById("unique_misspelled").textContent = data.unique_misspelled ?? 0;
+               document.getElementById("unique_corrected").textContent  = data.unique_corrected ?? 0;
+               document.getElementById("total_requests").textContent    = data.total_requests ?? 0;
+
+        }
+
+        let mistakePctChart;
+
+
+        async function fetchPct(days, userId){
+          const url = new URL("{% url 'mistakes_percentage_timeseries' %}", window.location.origin);
+          url.searchParams.set("days", days);
+          if (userId) url.searchParams.set("user_id", userId);
+          const res = await fetch(url);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        }
+
+        async function loadPctUsers() {
+          try {
+            const data = await fetchPct(90, "");
+            const sel = document.getElementById("pctUser");
+            const seen = new Set();
+            (data.series || []).forEach(s => {
+              if (!s.user_id || seen.has(s.user_id)) return;
+              seen.add(s.user_id);
+              const opt = document.createElement("option");
+              opt.value = s.user_id;
+              opt.textContent = s.username ?? `User ${s.user_id}`;
+              sel.appendChild(opt);
+            });
+          } catch(e) { console.error(e); }
+        }
+
+        async function renderMistakePct() {
+          const days = document.getElementById("pctRange").value;
+          const userId = document.getElementById("pctUser").value;
+          const payload = await fetchPct(days, userId);
+          const labels = payload.labels || [];
+          const series = payload.series || [];
+
+          if (!mistakePctChart) {
+            const ctx = document.getElementById("mistake_pct_chart").getContext("2d");
+            mistakePctChart = new Chart(ctx, {
+              type: "line",
+              data: { labels, datasets: [] },
+              options: {
+                responsive: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                  legend: { position: 'bottom' },
+                  tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y?.toFixed(2)}%` } }
+                },
+                scales: {
+                  y: { beginAtZero: true, ticks: { callback: v => `${v}%` }, title: { display: true, text: "Mistakes (%)" } }
+                }
+              }
+            });
+          }
+
+          const datasets = series.map(s => ({
+            label: s.username ?? `User ${s.user_id ?? 'Unknown'}`,
+            data: s.data,
+            borderColor: randomColour(),
+            fill: false,
+            tension: 0.25,
+            pointRadius: 0
+          }));
+
+          mistakePctChart.data.labels = labels;
+          mistakePctChart.data.datasets = datasets.length ? datasets : [{
+            label: "No data",
+            data: labels.map(_ => 0)
+          }];
+          mistakePctChart.update();
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+          await loadPctUsers();
+          await renderMistakePct();
+          document.getElementById("pctUser").addEventListener("change", renderMistakePct);
+          document.getElementById("pctRange").addEventListener("change", renderMistakePct);
+         });
+
+         document.addEventListener('DOMContentLoaded', () => {
+     initCharts();
+     all_languages();
+     misspelled();
+  });
+    </script>
     </body>
 </html>
