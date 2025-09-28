@@ -82,6 +82,10 @@
                 height: 100%;
             }
 
+            .col-sm-6>.card{
+                height: 100%;
+            }
+
             @media (min-width: 768px) {
                 .cover-container {
                     width: 60%;
@@ -298,7 +302,8 @@
                         <div class="col-sm-6">
                             <div class="card p-3">
                                 <h3>Readability</h3>
-                                <div id="readability" class="mono" height="160">—</div>
+                                  <br><br>
+                                <div id="readability" class="mono" height="160" style="font-size: large"></div>
                             </div>
                         </div>
                         <div class="col-sm-3">
@@ -415,7 +420,7 @@
 
 
                         const fleschValue = Number(data.readability.flesch_reading_ease);
-                        document.getElementById("readability").textContent = `Readability: ${fleschMeaning(fleschValue)}\n`;
+                        document.getElementById("readability").textContent = `${fleschMeaning(fleschValue)}\n`;
                         document.getElementById("meterFlesch").value = Number(data.readability.flesch_reading_ease) || 0;
                     }
 
