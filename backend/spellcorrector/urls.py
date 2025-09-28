@@ -19,7 +19,7 @@ from django.urls import path, include
 from api import views
 
 urlpatterns = [
-    path('', views.covertest_page, name='covertest'),
+    path('', views.cover_page, name='covertest'),
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
     path('cover/', views.cover_page, name='cover'),
