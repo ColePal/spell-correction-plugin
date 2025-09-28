@@ -10,10 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-# Add these at the top of your settings.py
 import os
 from dotenv import load_dotenv
 from urllib.parse import urlparse, parse_qsl
+
 
 load_dotenv()
 
@@ -32,7 +32,7 @@ SECRET_KEY = 'django-insecure-it!bm9_v=x4r!cu45r(pkon^opch^xb88!el-(@tl$1)$ngqsn
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['spellpal.compose.co.nz']
 
 
 # Application definition
@@ -155,6 +155,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
@@ -165,6 +166,11 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+
+CORS_ALLOW_ALL_ORIGINS = True
+"""This line of code will be made false. (=True : during development & Testing)"""
+
+CSRF_TRUSTED_ORIGINS = ["https://spellpal.compose.co.nz"]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React default
