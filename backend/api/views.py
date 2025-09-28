@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 
 from regex import regex
-
+from django.middleware.csrf import get_token
 from .services import evaluate, language_detection, all_languages, most_misspelled_word
 from django.contrib.auth import authenticate
 from django.contrib.auth.decorators import login_required
@@ -228,6 +228,8 @@ def accept_change(request):
         status=200
     )
 
+def fetch_csrf_token(request):
+    return JsonResponse({"csrfToken": get_token(request)})
 
 def contact_view(request):
     alert_message = None
