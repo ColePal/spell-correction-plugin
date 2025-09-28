@@ -157,3 +157,396 @@ async function createOverlayInteractable() {
     window.addEventListener('mouseup', onLeftClick);
   });
 }
+
+
+// Editable fields to look for user changes in.
+const valid_field_types = `
+  input[type="text"],
+  input[type="search"],
+  input:not([type]),
+  textarea
+`;
+
+
+function findTextBoxes() {
+// Finds all valid textboxes and logs user changes.
+
+// Highlight Colours
+const highlight_colour = 'yellow'
+const found_highlight_colour = 'green' // To show that the extension has found the textbox.
+
+// Lists
+const editable_fields_list = document.querySelectorAll(valid_field_types); // List of found valid fields.
+
+
+}
+
+
+
+async function createOverlay() {
+
+// Add to the DOM the Style of the per word text correction optioning pop up boxes
+const textPopupStyle = document.createElement('style');
+textPopupStyle.textContent = `
+	.fancy-result-h2 {
+	  font-size: 18px;   
+	  margin-top: 4px;   
+	  margin-bottom: 0px; 
+	  margin-left: 1px;
+	  margin-right: 5px;
+	  user-select: none;
+	  display: inline;
+	  margin:auto;
+	  font-family: "Fira Code", monospace, monospace;
+	  font-weight: bold;
+	}
+	.fancy-result-div {
+	  border-radius: 12px;
+	  background: white;
+	  border-color: black;
+	  padding: 8px 14px;
+	  border-style: solid;
+	  border-color: grey;
+	  border-width: 2px;
+	  user-select: none;
+	  text-align:center;
+	  display: inline-block;
+	}
+	.yes-button {
+		border-radius: 6px;
+		display: inline;
+		background-color: #73cb21;
+		border-color: #73AD21;
+		color: white;
+		padding: 2px 4px;
+		text-align: center;
+	}
+	.yes-button:hover {
+		background-color: #5a991f;
+	}
+	.no-button {
+		border-radius: 6px;
+		display: inline;
+		border-color: #d91a1a;
+		background-color: #FF0000;
+		color: white;
+		padding: 2px 4px;
+		text-align: center;
+	}
+	.no-button:hover {
+		background-color: #c92828;
+	}
+`;
+document.head.appendChild(textPopupStyle);
+
+
+
+
+// get rid of per word pop ups when any key pressed.
+
+
+let assignUID = 0;
+
+function alterAllWordPopUps(type) { // 0 to remove, 1 to make invisible, 2 to update positioning
+	for (let i = 0; i <= assignUID; i++) {
+	  const existingPopups = document.getElementById(`scwp-${i}-popup`);
+	  if (existingPopups) {
+		  if (type == 0) {existingPopups.remove();}
+		  if (type == 1) {existingPopups.style.display = 'none';}
+		  if (type == 2) {
+			  const wordBounds = document.getElementById(`scwp-${i}`).getBoundingClientRect();
+			  existingPopups.style.left = window.scrollX + wordBounds.left + 'px';
+			  existingPopups.style.top = window.scrollY + wordBounds.top + wordBounds.height + 'px';
+		  }
+	  }
+	}
+};
+
+document.addEventListener('keydown', () => {
+  alterAllWordPopUps(0);
+});
+
+
+//import { SpellCorrectionQuery } from = '../backend/templates/Requester.js';
+//SpellCorrectionQuery();
+
+function setupTextAreaOverlay(textarea) {
+	
+	// Create Overlay
+	const overlay = document.createElement("div");
+	overlay.className = "spell-corrector-overlay";
+	document.body.appendChild(overlay);
+	
+	// Div Copy Style of TextArea
+	
+	overlay.style.position = "absolute";
+	overlay.style.pointerEvents = "none";
+	overlay.style.background = "transparent";
+	overlay.style.color = "transparent";
+	overlay.style.zIndex = 12345;
+
+	// Grab textarea specific styles properties
+	let textAreaStylings = getComputedStyle(textarea); // It gets the in use style!!!
+    overlay.style.font = textAreaStylings.font;
+    overlay.style.padding = textAreaStylings.padding;
+    overlay.style.lineHeight = textAreaStylings.lineHeight;
+    overlay.style.border = textAreaStylings.border;
+    overlay.style.boxSizing = textAreaStylings.boxSizing;
+	
+	
+	// Update DIV text to match textarea text
+	const updateDivText = () => { //  = () => { means local to setupTextAreaOverlay!!!
+		overlay.innerHTML = "";
+		
+		const inputWords = textarea.value.match(/[a-zA-Z]+(?:'[a-zA-Z]+)?| +|[^a-zA-Z\s]+/g) || []; // splits every time a 
+		
+		var currentWord = "NULL"
+		
+		inputWords.forEach((word, index) => {
+			const wordSpan = document.createElement("span");
+			wordSpan.style.userSelect = '';
+			wordSpan.textContent = word;
+			wordSpan.style.whiteSpace = "pre"; // fixes "     " becoming " "
+			
+			const wordClick = () => {
+				
+				const existingPopUpCheck = document.getElementById(wordSpan.id + "-popup");
+				
+				if (document.body.contains(existingPopUpCheck)) { // if popup already exists
+					let displayState = existingPopUpCheck.style.display;
+					alterAllWordPopUps(1);
+					if (displayState === 'none') {
+						existingPopUpCheck.style.display = 'block';
+						currentWord = wordSpan.textContent;
+					} 
+					else {
+						existingPopUpCheck.style.display = 'none';
+					}
+					
+				}
+				else {
+					
+					alterAllWordPopUps(1);
+					currentWord = wordSpan.textContent;
+					
+					const suggestTemp = document.createElement('template');	// get the suggestionPopup template				
+					suggestTemp.innerHTML = suggest_html.trim();
+					
+					const wordCorrectPopUp = suggestTemp.content.querySelector('#lm-suggestion-div');
+					
+					// Set IDs for searchability
+					wordCorrectPopUp.id = "scwp-" + assignUID + "-popup";
+					wordSpan.id = "scwp-" + assignUID;
+					assignUID += 1;
+					// Give buttons IDs.
+					suggestTemp.content.querySelector('#yes-button').id = "scwp-" + assignUID + "-yes-button";
+					suggestTemp.content.querySelector('#no-button').id = "scwp-" + assignUID + "-no-button";
+					
+					
+					// Update DIV style
+					wordCorrectPopUp.style.position = "absolute";
+					wordCorrectPopUp.style.zIndex = 12345;
+					
+					// Set result text
+					const wordCorrectResult = suggestTemp.content.querySelector('#lm-result');
+					wordCorrectResult.id = 'lm-result-' + (assignUID-1)
+					
+					if (wordCorrectResult.textContent === "Result Placeholder ") {
+					
+					console.log("Attempting to fetch to server...")
+					chrome.runtime.sendMessage(
+					  { type: "getFetchLLM", url: "http://localhost:8000", text : currentWord },
+					  (response) => {
+						if (chrome.runtime.lastError) {
+						  console.log("Runtime Error Message: ", chrome.runtime.lastError.message);
+						} else {
+							const result_element = document.getElementById('lm-result-'+(assignUID-1));
+							result_element.textContent = response.data.correctText + " ";
+						}
+					  }
+					);
+					
+					}
+			
+					//wordCorrectResult.textContent = wordSpan.textContent + " ";
+
+					// Positioning
+					const wordBounds = wordSpan.getBoundingClientRect();
+					wordCorrectPopUp.style.left = window.scrollX + wordBounds.left + 'px';
+					wordCorrectPopUp.style.top = window.scrollY + wordBounds.top + wordBounds.height + 'px';
+					
+					// Add to DOM
+					document.body.appendChild(suggestTemp.content.cloneNode(true));
+					
+					// Give buttons click functionality.
+					document.getElementById(`scwp-${assignUID}-yes-button`).addEventListener("click", () => {
+						
+					  // Update text on screen with change.
+					  const result_element = document.getElementById('lm-result-'+(assignUID-1));
+					  inputWords[index] = result_element.textContent.trim();
+					  textarea.value = inputWords.join('');
+					  updateDivText();
+					  alterAllWordPopUps(1);
+					  
+					});
+					document.getElementById(`scwp-${assignUID}-no-button`).addEventListener("click", () => {
+					  alterAllWordPopUps(1);
+					});
+					
+				}
+			};
+			
+			
+			
+			if (/[a-zA-Z]+(?:'[a-zA-Z]+)?/.test(word)) { // if word and not char
+				wordSpan.style.backgroundColor = '#FFC0CB80';
+				wordSpan.style.color = 'green';
+				wordSpan.style.cursor = "pointer";
+				wordSpan.style.pointerEvents = "auto";
+				wordSpan.addEventListener("click", wordClick); // make clickable
+			}
+			else {
+				wordSpan.style.pointerEvents = "none";
+				wordSpan.style.backgroundColor = 'transparent';
+				wordSpan.style.color = "pink";
+				console.log("Current: [", word, "]");
+			}
+			
+			overlay.appendChild(wordSpan);
+		});
+	}
+	
+	updateDivText();
+	textarea.addEventListener("input", updateDivText);
+	textarea.addEventListener("scroll", updateDivText);
+	
+	// Put div visually on top of textarea
+	const positionOverlay = () => {
+		const areaBounds = textarea.getBoundingClientRect();
+		overlay.style.left = window.scrollX + areaBounds.left + 'px';
+		overlay.style.width = areaBounds.width + 'px';
+		overlay.style.top = window.scrollY + areaBounds.top + 'px';
+		overlay.style.height = areaBounds.height + 'px';
+		alterAllWordPopUps(2);
+	};
+	
+	positionOverlay();
+	// Rerun positioning when window scrolled or resized.
+    textarea.addEventListener("resize", positionOverlay);
+	window.addEventListener("resize", positionOverlay);
+	window.addEventListener("scroll", positionOverlay);
+	
+}
+
+
+document.querySelectorAll(valid_field_types).forEach(setupTextAreaOverlay);
+
+
+
+
+const existingInputsList = {};
+
+// Listen for changes user makes to editable text.
+document.addEventListener('input', (event) => {
+  const changed_element = event.target;
+  const field_elements_div = overlayContainer.querySelector('div#field-elements'); // div where overlay.html can be updated.
+
+  // If matching a defined valid field type.
+  if (changed_element.matches(valid_field_types)) {
+    // If field is enabled and editable
+    if (!changed_element.disabled && !changed_element.readOnly) {
+		
+		// if field doesn't have id, set one.
+		if (changed_element.id == ""){
+			let i = 0;
+			while (("textbox"+i.toString()) in existingInputsList) {
+				i += 1;
+			}
+			changed_element.id = "textbox"+i.toString()
+		}
+	
+	    // Print Element Id and Text to console
+        console.log("Edited Field:", changed_element.id);
+        console.log("Field Text:", changed_element.value);
+	    //changed_element.style.backgroundColor = highlight_colour // Highlights the text.
+	  
+	    // If div is found
+	    if (field_elements_div) {
+			
+			// Find if changed_element already added to div
+			const changed_element_textbox = field_elements_div.querySelector(('textarea#'+changed_element.id+'-sctextbox'));
+			
+			// Add changed_element to div if not yet in div
+			if (!changed_element_textbox) {
+				if (!field_elements_div.querySelector(('textarea#'+changed_element.id))) {
+					// Title
+					const changed_title = document.createElement('h3');
+					changed_title.id = changed_element.id + '-title';
+					changed_title.textContent = changed_element.id;
+					changed_title.className = "fancy-textbox-name" 
+					changed_title.style.userSelect = 'none';
+					
+					// Textbox
+					existingInputsList[changed_element.id] = changed_element;
+					const changed_textbox = document.createElement('textarea');
+					changed_textbox.id = changed_element.id + '-sctextbox';
+					changed_textbox.textContent = changed_element.value;
+					changed_textbox.className = "fancy-textbox" 
+
+					// Add Elements to field-elements Div
+					field_elements_div.appendChild(changed_title);	
+					field_elements_div.appendChild(changed_textbox);
+				}
+				
+				// get text from popup textbox and inject back into original page textbox
+				else {
+					if (changed_element.id.endsWith('-sctextbox')) {
+						var cursorPos = changed_element.selectionStart
+						let original_element_name = changed_element.id.replace(/-sctextbox$/, '');
+						const original_changed_element_textbox = existingInputsList[original_element_name];
+						original_changed_element_textbox.focus();
+						original_changed_element_textbox.value = changed_element.value;
+						// Tell the textbox to update its values.
+						var event = new Event('input');
+						original_changed_element_textbox.dispatchEvent(event);
+						// When focus changes, make sure cursor index remains same
+						original_changed_element_textbox.setSelectionRange(cursorPos, cursorPos);
+						// Steal back focus
+						changed_element.focus();
+						setTimeout(0);
+					}
+				}
+				
+				
+		    }
+			else {
+				// Just update the value if changed_element already in div
+			    changed_element_textbox.value = changed_element.value; 
+				setTimeout(0);
+		    }
+		
+        }
+	
+	
+    } 
+  }
+});
+
+}
+
+
+chrome.storage.local.get('extensionToggleButton', function(uservar) {
+    if (uservar.extensionToggleButton || uservar.extensionToggleButton === undefined) {
+		console.log('Extension Toggle Button:', uservar.extensionToggleButton);
+		createOverlayInteractable()
+    }
+});
+
+chrome.storage.local.get('overlayToggleButton', function(uservar) {
+    if (uservar.overlayToggleButton || uservar.overlayToggleButton === undefined) {
+		console.log('Overlay Toggle Button:', uservar.overlayToggleButton);
+		createOverlay()
+    }
+});
+
+findTextBoxes();
