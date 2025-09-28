@@ -12,3 +12,6 @@ transformers>=4.30.0
 sentencepiece>=0.2.00  # Needed for MT5 tokenizer
 protobuf>=3.20.0
 google-generativeai>=0.8.5
+regex~=2025.9.1
+requests~=2.32.5
+fasttext-wheel~=0.9.2

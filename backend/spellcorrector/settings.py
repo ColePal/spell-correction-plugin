@@ -32,7 +32,7 @@ SECRET_KEY = 'django-insecure-it!bm9_v=x4r!cu45r(pkon^opch^xb88!el-(@tl$1)$ngqsn
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['spellpal.compose.co.nz']
+ALLOWED_HOSTS = ['spellpal.compose.co.nz', '127.0.0.1']
 
 
 # Application definition
@@ -90,21 +90,6 @@ WSGI_APPLICATION = 'spellcorrector.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-"""
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': '',
-        'USER': 'your_username',
-        'PASSWORD': 'your_password',
-        'HOST': 'your_neon_host',  # e.g., ep-misty-smoke-123456.ap-southeast-1.aws.neon.tech
-        'PORT': '5432',            # or 5433 (check Neon dashboard)
-        'OPTIONS': {
-            'sslmode': 'require',  # Neon requires SSL
-        },
-    }
-}"""
-
 # Code provided by Neon
 tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
 
@@ -112,7 +97,7 @@ tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': tmpPostgres.path.replace('/', ''),
+        'NAME': tmpPostgres.path.decode("utf-8").replace('/', ''),
         'USER': tmpPostgres.username,
         'PASSWORD': tmpPostgres.password,
         'HOST': tmpPostgres.hostname,

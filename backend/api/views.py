@@ -309,4 +309,4 @@ def mistakes_percentage_timeseries(request):
      values.append(round(percentage, 2))
      dates += datetime.timedelta(days=1)
 
-    return Response({ "labels": labels,"series": [{"user_id": user.id,"username": user.username, "data
+    return Response({ "labels": labels,"series": [{"user_id": user.id,"username": user.username, "data":""}]})
