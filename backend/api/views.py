@@ -1,14 +1,14 @@
 import datetime
 import random
 import re
-
+from django.db.models.aggregates import Sum, Count
+from django.db.models.functions.comparison import Coalesce
+from django.db.models.functions.datetime import TruncDate
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 import json
-
 from regex import regex
-
 from .services import evaluate, language_detection, all_languages, most_misspelled_word
 from django.contrib.auth import authenticate
 from django.contrib.auth.decorators import login_required
@@ -23,8 +23,6 @@ from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.shortcuts import render, redirect
 from django.core.mail import send_mail
 from .forms import ContactForm
-
-
 from . import lmspell
 from .sentencebuffer import sentencebuffer
 from django.contrib import messages
@@ -289,8 +287,8 @@ def mistakes_percentage_timeseries(request):
         days = 30
     user_id = request.GET.get("user_id")
 
-    end = timezone.now().date()
-    start = end - timedelta(days=days)
+    end = datetime.timezone.now().date()
+    start = end - datetime.timedelta(days=days)
     qs = CorrectionRequest.objects.filter(created_at__date__gte=start,created_at__date__lte=end)
 
     if user_id:
@@ -302,7 +300,7 @@ def mistakes_percentage_timeseries(request):
     d = start
     while d <= end:
         labels.append(d.isoformat())
-        d += timedelta(days=1)
+        d += datetime.timedelta(days=1)
 
     users = {}
     by_user_day = {}
