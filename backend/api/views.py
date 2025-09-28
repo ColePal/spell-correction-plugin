@@ -1,15 +1,15 @@
 import datetime
 import random
 import re
-
+from django.db.models.aggregates import Sum, Count
+from django.db.models.functions.comparison import Coalesce
+from django.db.models.functions.datetime import TruncDate
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 import json
-
 from regex import regex
-
-from .services import evaluate
+from .services import evaluate, language_detection, all_languages, most_misspelled_word
 from django.contrib.auth import authenticate
 from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view
@@ -20,7 +20,9 @@ from django.shortcuts import render
 from .models import CorrectionRequest, CorrectedWord, WordFeedback
 from django.contrib.auth.models import User
 from django.contrib.auth import login as auth_login, logout as auth_logout
-
+from django.shortcuts import render, redirect
+from django.core.mail import send_mail
+from .forms import ContactForm
 from . import lmspell
 from .sentencebuffer import sentencebuffer
 from django.contrib import messages
@@ -39,6 +41,9 @@ def cover_page(request):
 def dashboard_page(request):
     return render(request, 'dashboard.html')
 
+def success_view(request):
+    return render(request, 'success.html')
+
 @api_view(['GET'])
 def health_check(request):
     return Response({'status': 'ok', 'project': 'spell-correction-plugin'})
@@ -51,9 +56,10 @@ def experimental(request):
 def spell_check(request):
     # get data from request
     text = request.data.get('text', '')
-    lang = request.data.get('language', 'en')
+    language = request.data.get('language', 'en')
     sentence_index = request.data.get('sentenceIndex', 0)
     index = request.data.get('index', 0)
+    premium = request.data.get('premium', False)
     print(request.data)
 
 
@@ -88,7 +94,7 @@ def spell_check(request):
     buffer_index = sentenceBufferMap.get(session_key).get_minimum_index(index, sentence_index)
     query = sentenceBufferMap.get(session_key).get_query(index, text)
 
-    lmspellOutput = lmspell.spellcorrect_text(query)
+    lmspellOutput = lmspell.spell_correction(text=query, language=language, premium=premium)
     #print(sentenceBufferMap[session_key])
 
     corrected_words = list()
@@ -113,7 +119,7 @@ def spell_check(request):
             session_id=session_key,
             original_text = lmspellOutput["original"],
             received_text = lmspellOutput["corrected"],
-            language=lang,
+            language=language,
             created_at=identifier,
         )
         print("Logging Correction to DB", correction_record)
@@ -220,3 +226,99 @@ def accept_change(request):
         status=200
     )
 
+
+def contact_view(request):
+    alert_message = None
+
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            email = form.cleaned_data['email']
+            subject = form.cleaned_data['subject']
+            message = form.cleaned_data['message']
+
+            full_message = f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}"
+
+            send_mail(
+                subject=subject,
+                message=full_message,
+                from_email=None,
+                recipient_list=['spellpalproject@gmail.com'],
+            )
+
+            alert_message = "Your message was sent successfully!"
+            form = ContactForm()
+    else:
+        form = ContactForm()
+
+    return render(request, 'contact.html', {'form': form, 'alert_message': alert_message})
+
+
+@api_view(['POST'])
+def language(request):
+    text = request.data.get("text", "")
+    return Response({"language": language_detection(text)})
+
+@api_view(['GET'])
+def dashboard_languages(request):
+    lang_count=list(all_languages())
+    payload = [
+        {"language": lc["detected_language"], "count": lc["count"]}
+        for lc in lang_count
+    ]
+    return Response({ "languages_all": payload})
+
+
+@api_view(['GET'])
+def misspelled_word(request):
+    word,totals = most_misspelled_word()
+    if word==[]:
+        return Response({"word": None, "count": 0,**totals})
+    return Response({"word": word[0]["incorrect_word"], "count": word[0]["count"],**totals})
+
+
+@api_view(['GET'])
+def mistakes_percentage_timeseries(request):
+
+    try:
+        days = int(request.GET.get("days", 30))
+    except ValueError:
+        days = 30
+    user_id = request.GET.get("user_id")
+
+    end = datetime.timezone.now().date()
+    start = end - datetime.timedelta(days=days)
+    qs = CorrectionRequest.objects.filter(created_at__date__gte=start,created_at__date__lte=end)
+
+    if user_id:
+        qs = qs.filter(user_id=user_id)
+
+    agg = (qs.annotate(day=TruncDate("created_at")).values("day", "user_id", "user__username").annotate(words=Coalesce(Sum("word_count"), 0),corrections=Coalesce(Count("corrections"), 0),).order_by("day", "user__username"))
+    rows = list(agg)
+    labels = []
+    d = start
+    while d <= end:
+        labels.append(d.isoformat())
+        d += datetime.timedelta(days=1)
+
+    users = {}
+    by_user_day = {}
+    for r in rows:
+        uid = r["user_id"]
+        uname = r["user__username"] or "Anonymous"
+        users.setdefault(uid, {"id": uid, "username": uname})
+        by_user_day.setdefault(uid, {})[r["day"].isoformat()] = {"w": int(r["words"] or 0),"c": int(r["corrections"] or 0), }
+
+    series = []
+    for uid, meta in users.items():
+        vals = []
+        daymap = by_user_day.get(uid, {})
+        for day in labels:
+            w = daymap.get(day, {}).get("w", 0)
+            c = daymap.get(day, {}).get("c", 0)
+            pct = (100.0 * c / w) if w > 0 else 0.0
+            vals.append(round(pct, 2))
+        series.append({"user_id": uid, "username": meta["username"], "data": vals})
+
+    return Response({"labels": labels, "series": series, "unit": "percent"})
