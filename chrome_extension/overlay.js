@@ -300,7 +300,9 @@ function setupTextAreaOverlay(textarea) {
 		
 		const inputWords = textarea.value.match(/[a-zA-Z]+(?:'[a-zA-Z]+)?| +|[^a-zA-Z\s]+/g) || []; // splits every time a 
 		
-		inputWords.forEach((word) => {
+		var currentWord = "NULL"
+		
+		inputWords.forEach((word, index) => {
 			const wordSpan = document.createElement("span");
 			wordSpan.style.userSelect = '';
 			wordSpan.textContent = word;
@@ -315,6 +317,7 @@ function setupTextAreaOverlay(textarea) {
 					alterAllWordPopUps(1);
 					if (displayState === 'none') {
 						existingPopUpCheck.style.display = 'block';
+						currentWord = wordSpan.textContent;
 					} 
 					else {
 						existingPopUpCheck.style.display = 'none';
@@ -324,6 +327,7 @@ function setupTextAreaOverlay(textarea) {
 				else {
 					
 					alterAllWordPopUps(1);
+					currentWord = wordSpan.textContent;
 					
 					const suggestTemp = document.createElement('template');	// get the suggestionPopup template				
 					suggestTemp.innerHTML = suggest_html.trim();
@@ -345,7 +349,26 @@ function setupTextAreaOverlay(textarea) {
 					
 					// Set result text
 					const wordCorrectResult = suggestTemp.content.querySelector('#lm-result');
-					wordCorrectResult.textContent = wordSpan.textContent + " ";
+					wordCorrectResult.id = 'lm-result-' + (assignUID-1)
+					
+					if (wordCorrectResult.textContent === "Result Placeholder ") {
+					
+					console.log("Attempting to fetch to server...")
+					chrome.runtime.sendMessage(
+					  { type: "getFetchLLM", url: "http://localhost:8000", text : currentWord },
+					  (response) => {
+						if (chrome.runtime.lastError) {
+						  console.log("Runtime Error Message: ", chrome.runtime.lastError.message);
+						} else {
+							const result_element = document.getElementById('lm-result-'+(assignUID-1));
+							result_element.textContent = response.data.correctText + " ";
+						}
+					  }
+					);
+					
+					}
+			
+					//wordCorrectResult.textContent = wordSpan.textContent + " ";
 
 					// Positioning
 					const wordBounds = wordSpan.getBoundingClientRect();
@@ -357,7 +380,14 @@ function setupTextAreaOverlay(textarea) {
 					
 					// Give buttons click functionality.
 					document.getElementById(`scwp-${assignUID}-yes-button`).addEventListener("click", () => {
+						
+					  // Update text on screen with change.
+					  const result_element = document.getElementById('lm-result-'+(assignUID-1));
+					  inputWords[index] = result_element.textContent.trim();
+					  textarea.value = inputWords.join('');
+					  updateDivText();
 					  alterAllWordPopUps(1);
+					  
 					});
 					document.getElementById(`scwp-${assignUID}-no-button`).addEventListener("click", () => {
 					  alterAllWordPopUps(1);

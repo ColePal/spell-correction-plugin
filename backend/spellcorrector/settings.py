@@ -50,6 +50,10 @@ INSTALLED_APPS = [
     'api',
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    "chrome-extension://cpocjnikbjfienmniladcgdhgjcfhgkc"
+]
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware', #apparently is needed
     'django.middleware.security.SecurityMiddleware',
