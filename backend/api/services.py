@@ -118,3 +118,11 @@ def most_misspelled_word(request):
     return word, totals
 
 
+def vocab_richness(request):
+    user = request.user
+    text = (CorrectionRequest.objects.filter(user_id=user.id).values_list('original_text', flat=True))
+    text=" ".join(t for t in text if t) or ""
+    model=LexicalRichness(text)
+    richness=model.mtld()
+    return richness
+
