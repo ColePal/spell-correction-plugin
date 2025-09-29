@@ -300,7 +300,7 @@
              const response = await fetch("{% url 'misspelled_word' %}");
              const data = await response.json();
                if (data.word) {
-                   document.getElementById("most_misspelled").innerText = `${data.word} (${data.count} times)`;
+                   document.getElementById("most_misspelled").innerText = ` '${data.word}' (${data.count} times mispelled)`;
                }
                else {
                     document.getElementById("most_misspelled").innerText = "No data yet";
