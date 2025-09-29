@@ -162,10 +162,47 @@
                 text-align: center;
                  line-height: 3;
             }
+            ul {
+              list-style-type: none;
+              padding-left: 0;
+            }
         </style>
     </head>
 
     <body class="text-center">
+
+<div class="d-flex">
+  <div class="flex-shrink-0 p-3 bg-dark text-white" style="width: 220px;">
+    <h5>Customize Dashboard</h5>
+    <br>
+    <h6>Select analytics you want to see</h6>
+    <br>
+
+    <form id="widget-picker" class="vstack gap-2">
+        <ul >
+            <li>
+      <label class="form-check">
+        <input class="form-check-input" type="checkbox" value="languages" />
+        <span class="form-check-label">Language Usage</span>
+      </label>
+                </li>
+            <li>
+      <label class="form-check">
+        <input class="form-check-input" type="checkbox" value="mistakes" />
+        <span class="form-check-label">Mistakes Chart</span>
+      </label>
+            </li>
+            <li>
+         <label class="form-check">
+        <input class="form-check-input" type="checkbox" value="mistakes" />
+        <span class="form-check-label">Spelling Analytics</span>
+      </label>
+            </li>
+        </ul>
+    </form>
+  </div>
+</div>
+
         <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
             <header class="masthead mb-auto">
                 <div class="inner nav-inner" style="max-width: 80%; margin: 0 auto;">
@@ -180,6 +217,9 @@
                     </nav>
                 </div>
             </header>
+
+            <section id="analytic_space" class="dash-grid"></section>
+
             <div class="row g-3 mb-3">
                 <div class="col-12 col-md-4">
                     <div class="card">
@@ -214,8 +254,9 @@
                     </div>
                 </div>
                 <div class="col-12 col-md-4">
-                    <div class="card h-100">
-                        <div class="card-body">Session Analytics</div>
+                    <div class="card">
+                        <div class="card-body">Vocabulary Richness</div>
+                        <p id="vocab"></p>
                     </div>
                 </div>
             </div>
@@ -362,6 +403,11 @@
           mistakeChart.data.datasets = [dataset]
           mistakeChart.update();
         }
+         async function richness(){
+            const response=await fetch("{% url 'richness' %}");
+             const data = await response.json();
+             document.getElementById("vocab").innerText = data.richness;
+         }
 
         document.addEventListener('DOMContentLoaded', async () => {
           await renderMistakePct();
@@ -369,10 +415,11 @@
           document.getElementById("pctRange").addEventListener("change", renderMistakePct);
          });
 
-         document.addEventListener('DOMContentLoaded', () => {
+       document.addEventListener('DOMContentLoaded', () => {
      initCharts();
      all_languages();
      misspelled();
+     richness()
   });
     </script>
     </body>
