@@ -10,7 +10,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     (async () => {
         if (!csrfToken) {
             let csrfTokenResponse = await getCSRFToken(message.csrfTokenUrl);
-            csrfToken = csrfTokenResponse.csrfToken;
+			if (csrfTokenResponse) {
+				csrfToken = csrfTokenResponse.csrfToken;
+			}
         }
         let result = null
         if (message.type === "SPELL_CHECK") {

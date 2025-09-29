@@ -24,3 +24,5 @@ backend/.env
 .env
 *.env
 .env*
+.idea/workspace.xml
+.idea/workspace.xml
