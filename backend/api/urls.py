@@ -13,5 +13,6 @@ urlpatterns = [
     path('dashboard/misspelled/', views.misspelled_word, name='misspelled_word'),
     path('dashboard/timeseries/mistake-percentage/', views.mistakes_percentage_timeseries,
          name='mistakes_percentage_timeseries'),
+     path('dashboard/richness/', views.richness,name='richness'),
 
 ]
