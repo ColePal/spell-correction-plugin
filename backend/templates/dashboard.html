@@ -227,9 +227,8 @@
                         <div class="d-flex align-items-center justify-content-between mb-2">
                           <h5 class="mb-0">Mistakes % Over Time</h5>
                           <div class="d-flex gap-2">
-                            <select id="pctUser" class="form-select form-select-sm" style="min-width:200px">
-                              <option value="">All users</option>
-                            </select>
+                            <p id="pctUser" style="min-width:200px">
+                            </p>
                             <select id="pctRange" class="form-select form-select-sm">
                               <option value="30" selected>Last 30 days</option>
                               <option value="90">Last 90 days</option>
@@ -306,86 +305,65 @@
                else {
                     document.getElementById("most_misspelled").innerText = "No data yet";
                 }
-               document.getElementById("total_corrections").textContent = data.total_corrections ?? 0;
-               document.getElementById("unique_misspelled").textContent = data.unique_misspelled ?? 0;
-               document.getElementById("unique_corrected").textContent  = data.unique_corrected ?? 0;
-               document.getElementById("total_requests").textContent    = data.total_requests ?? 0;
+               document.getElementById("total_corrections").textContent = data.total_corrections;
+               document.getElementById("unique_misspelled").textContent = data.unique_misspelled;
+               document.getElementById("unique_corrected").textContent  = data.unique_corrected;
+               document.getElementById("total_requests").textContent    = data.total_requests;
 
         }
 
-        let mistakePctChart;
+        let mistakeChart;
 
 
-        async function fetchPct(days, userId){
-          const url = new URL("{% url 'mistakes_percentage_timeseries' %}", window.location.origin);
-          url.searchParams.set("days", days);
-          if (userId) url.searchParams.set("user_id", userId);
-          const res = await fetch(url);
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          return res.json();
+        async function percentage(days){
+          const query_url = new URL("{% url 'mistakes_percentage_timeseries' %}", window.location.origin);
+          query_url.searchParams.set("days", days);
+            const response = await fetch(query_url);
+          if (!response.ok){
+              return { labels: [], series: [] };
+          }
+          return response.json();
         }
 
-        async function loadPctUsers() {
-          try {
-            const data = await fetchPct(90, "");
-            const sel = document.getElementById("pctUser");
-            const seen = new Set();
-            (data.series || []).forEach(s => {
-              if (!s.user_id || seen.has(s.user_id)) return;
-              seen.add(s.user_id);
-              const opt = document.createElement("option");
-              opt.value = s.user_id;
-              opt.textContent = s.username ?? `User ${s.user_id}`;
-              sel.appendChild(opt);
-            });
-          } catch(e) { console.error(e); }
-        }
 
         async function renderMistakePct() {
           const days = document.getElementById("pctRange").value;
-          const userId = document.getElementById("pctUser").value;
-          const payload = await fetchPct(days, userId);
+          const payload = await percentage(days);
           const labels = payload.labels || [];
-          const series = payload.series || [];
+          const series = (payload.series && payload.series[0]) || { data: [], username: "You", user_id: null };
 
-          if (!mistakePctChart) {
-            const ctx = document.getElementById("mistake_pct_chart").getContext("2d");
-            mistakePctChart = new Chart(ctx, {
+          if (!mistakeChart) {
+            const context = document.getElementById("mistake_pct_chart").getContext("2d");
+            mistakeChart = new Chart(context, {
               type: "line",
               data: { labels, datasets: [] },
               options: {
                 responsive: true,
                 interaction: { mode: 'index', intersect: false },
-                plugins: {
-                  legend: { position: 'bottom' },
-                  tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y?.toFixed(2)}%` } }
-                },
-                scales: {
-                  y: { beginAtZero: true, ticks: { callback: v => `${v}%` }, title: { display: true, text: "Mistakes (%)" } }
-                }
+                plugins: {legend: { position: 'bottom' }, tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y?.toFixed(2)}%` } }},
+                scales: {y: { beginAtZero: true, ticks: { callback: v => `${v}%` }, title: { display: true, text: "Mistakes (%)" } }}
               }
-            });
+            }
+            );
           }
-
-          const datasets = series.map(s => ({
-            label: s.username ?? `User ${s.user_id ?? 'Unknown'}`,
-            data: s.data,
+          let dataset;
+          if (series) {
+          dataset ={
+            label: series.username || (series.user_id ? `User ${series.user_id}` : "You"), data: Array.isArray(series.data) ? series.data : [],
             borderColor: randomColour(),
             fill: false,
             tension: 0.25,
-            pointRadius: 0
-          }));
-
-          mistakePctChart.data.labels = labels;
-          mistakePctChart.data.datasets = datasets.length ? datasets : [{
-            label: "No data",
-            data: labels.map(_ => 0)
-          }];
-          mistakePctChart.update();
+            pointRadius: 1
+          };}
+          else {
+               dataset = { label: "No data", data: labels.map(() => 0) };
+          }
+          mistakeChart.data.labels = labels;
+          mistakeChart.data.datasets = [dataset]
+          mistakeChart.update();
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
-          await loadPctUsers();
           await renderMistakePct();
           document.getElementById("pctUser").addEventListener("change", renderMistakePct);
           document.getElementById("pctRange").addEventListener("change", renderMistakePct);
