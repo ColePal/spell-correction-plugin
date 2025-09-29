@@ -32,7 +32,7 @@ SECRET_KEY = 'django-insecure-it!bm9_v=x4r!cu45r(pkon^opch^xb88!el-(@tl$1)$ngqsn
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['spellpal.compose.co.nz', '127.0.0.1']
+ALLOWED_HOSTS = ['spellpal.compose.co.nz', '127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -50,9 +50,7 @@ INSTALLED_APPS = [
     'api',
 ]
 
-CSRF_TRUSTED_ORIGINS = [
-    "chrome-extension://cpocjnikbjfienmniladcgdhgjcfhgkc"
-]
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware', #apparently is needed
@@ -97,7 +95,7 @@ tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': tmpPostgres.path.decode("utf-8").replace('/', ''),
+        'NAME': tmpPostgres.path.replace('/', ''),
         'USER': tmpPostgres.username,
         'PASSWORD': tmpPostgres.password,
         'HOST': tmpPostgres.hostname,
@@ -106,10 +104,6 @@ DATABASES = {
     }
 }
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://yourdomain.com",       # keep your existing trusted origins
-    "chrome-extension://gahipoojgiclkgjhdndbjpefcoijadfl"
-]
 MODEL_DIRECTORY = BASE_DIR / "api" / "language_detect_model"
 
 
@@ -163,7 +157,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = True
 """This line of code will be made false. (=True : during development & Testing)"""
 
-CSRF_TRUSTED_ORIGINS = ["https://spellpal.compose.co.nz"]
+CSRF_TRUSTED_ORIGINS = ["https://spellpal.compose.co.nz","chrome-extension://cbbolmghglpmikipongjjadakkmajmek",
+    "chrome-extension://cpocjnikbjfienmniladcgdhgjcfhgkc",]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React default

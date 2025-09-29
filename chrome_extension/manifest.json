@@ -3,6 +3,7 @@
   "description": "Spell Correction Extension Made Using the LMSpell Toolkit. 2",
   "version": "1.0",
   "manifest_version": 3,
+  "key": "lfpncoikdcpdajfemolikbcgeakkjphf",
   "action": {
     "default_popup": "index.html",
     "default_icon": "icon.png"
