@@ -1,6 +1,6 @@
 {
   "name": "Spell Corrector",
-  "description": "Spell Correction Extension Made Using the LMSpell Toolkit. 2",
+  "description": "Spell Correction Extension Made Using the LMSpell Toolkit.",
   "version": "1.0",
   "manifest_version": 3,
   "action": {
@@ -23,8 +23,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["pageScript.js","popup.js","controller.js"],
-      "css": ["spellCheckerStyles.css"]
+      "js": ["overlay.js","popup.js"]
     }
   ]
 }
