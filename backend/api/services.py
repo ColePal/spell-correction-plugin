@@ -98,19 +98,23 @@ def evaluate(full_text: str, length: int = 600):
         "readability": readability,
     }
 
-def all_languages():
-    return ( CorrectionRequest.objects.annotate(detected_language=Coalesce('language', Value('undetected'),output_field=CharField()))
+def all_languages(request):
+    user = request.user
+    return ( CorrectionRequest.objects.annotate(detected_language=Coalesce('language', Value('undetected'),output_field=CharField())).filter(user_id=user.id)
         .values('detected_language')
         .annotate(count=Count('id'))
         .order_by('-count'))
 
 
-def most_misspelled_word():
-    word=list(CorrectedWord.objects.values("incorrect_word").annotate(count=Count("id")) .order_by("-count")[:1])
+def most_misspelled_word(request):
+    user = request.user
+    word=list(CorrectedWord.objects.values("incorrect_word").annotate(count=Count("id")).filter(query_id__user_id=user.id).order_by("-count")[:1] )
     totals={
-        "total_corrections": CorrectedWord.objects.count(),
-        "unique_misspelled": CorrectedWord.objects.values("incorrect_word").distinct().count(),
-        "unique_corrected": CorrectedWord.objects.values("corrected_word").distinct().count(),
-        "total_requests": CorrectionRequest.objects.count(),
+        "total_corrections": CorrectedWord.objects.filter(query_id__user_id=user.id).count(),
+        "unique_misspelled": CorrectedWord.objects.values("incorrect_word").filter(query_id__user_id=user.id).distinct().count(),
+        "unique_corrected": CorrectedWord.objects.values("corrected_word").filter(query_id__user_id=user.id).distinct().count(),
+        "total_requests": CorrectionRequest.objects.filter(user_id=user.id).count(),
     }
     return word, totals
+
+
