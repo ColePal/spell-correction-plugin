@@ -9,12 +9,49 @@
     *   important as we don't want to break the functionality of the pages we are
     *   spell correcting for.
 * Current issues:
-*   When the page is resized the *shadow div* does not resize or change location.
+*   None found.
 */
-loginWarning = true
+import onInputEventListener from "{% static 'js/requester.js' %}";
+
+/*
+//indices are calculated on a word by word basis. If a word is longer than the context window,
+//there might be some troubles
+const CONTEXT_WINDOW_SIZE = 50;
+
+//There two maps work together to make sure the user input is sent to the
+//server in a timely manner. changemap tracks total keystrokes up to a max. This
+//is determined by the CONTEXT_WINDOW_SIZE.
+//debounceTimers tracks elapsed time with no keystrokes.
+
+//#A map variable for storing how many changes have occurred
+const changeMap = new Map();
+//create a debounce timer for each input so that it does not just continually
+//send requests to the server.
+const debounceTimers = new Map();
+
+//#A map variable that keeps track of whether or not an Input has changed when sending a Query to server.
+//#if Input has not changed, no query will be sent.
+const previouslySentQueries = new Map();
+
+const CorrectionType = Object.freeze({
+    INSERTION:"insertion",
+    REPLACEMENT:"replacement",
+    DELETION:"deletion"
+})
+
+//A map variable that keeps track of the errors discovered within each input element.
+const errorMap = new Map();
+let blackList = new Map();
+
+let lastIndex = 0;
+
+
+
+var loginWarning = true
+*/
+
 
 window.addEventListener("load", () => findAllInput());
-
 
 function findAllInput() {
       let textInputs = document.getElementsByTagName("input");
@@ -38,7 +75,7 @@ function findAllInput() {
       inputs.forEach(element => {
 
         //add an input event listener for sending to server
-        element.addEventListener("input", () => onInputEventListener(element.id))
+        element.addEventListener("input", () => onInputEventListener(element.id, lastIndex, loginWarning))
         //initialise previouslySentQueries SOMEWHERE ELSE DONT DO IT HERE YOU IDIOT
         previouslySentQueries.set(element.id, "");
 
@@ -52,10 +89,11 @@ function findAllInput() {
         shadowDiv.style.whiteSpace = "pre-wrap";
         shadowDiv.style.overflowWrap = "break-word";
         shadowDiv.style.color = "Black";
-        shadowDiv.style.left = element.getBoundingClientRect().left + "px";
-        shadowDiv.style.top = element.getBoundingClientRect().top + "px";
-        shadowDiv.style.width = element.getBoundingClientRect().width + "px";
-        shadowDiv.style.height = element.getBoundingClientRect().height + "px";
+        const rect = element.getBoundingClientRect();
+        shadowDiv.style.left = rect.left + "px";
+        shadowDiv.style.top = rect.top + "px";
+        shadowDiv.style.width = rect.width + "px";
+        shadowDiv.style.height = rect.height + "px";
         let inputStyle = window.getComputedStyle(element);
         shadowDiv.style.font = inputStyle.font;
         shadowDiv.style.fontWeight = inputStyle.fontWeight;
@@ -68,7 +106,7 @@ function findAllInput() {
         shadowDiv.style.lineHeight = window.getComputedStyle(element).lineHeight;
         shadowDiv.style.padding = window.getComputedStyle(element).padding;
 
-        function updateOverlay(shadowDiv) {
+        function updateOverlay(element, shadowDiv) {
             const rect = element.getBoundingClientRect();
             shadowDiv.style.left = rect.left + window.scrollX + "px";
             shadowDiv.style.top = rect.top + window.scrollY + "px";
@@ -77,19 +115,21 @@ function findAllInput() {
         }
         //shadowDiv.style.pointerEvents = "none";
           let observer = new ResizeObserver(() => {
-            updateOverlay(shadowDiv)
+            updateOverlay(element, shadowDiv)
         });
         observer.observe(element);
 
         let mutationObserver = new MutationObserver(() => {
-            updateOverlay(shadowDiv)
+            updateOverlay(element,shadowDiv)
         })
           mutationObserver.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true });
 
-        window.addEventListener("scroll", updateOverlay);
-        window.addEventListener("resize", updateOverlay);
-
         document.body.appendChild(shadowDiv);
+
+        window.addEventListener("scroll", () => updateOverlay(element,shadowDiv));
+        window.addEventListener("resize", () => updateOverlay(element, shadowDiv));
+
+
 
         //add a second input event listener for updating shadowDiv
         element.addEventListener("input", () => updateShadowDIV(element.id))
@@ -97,7 +137,10 @@ function findAllInput() {
         //Make it disappear!!
         element.style.background="transparent";
         element.style.color="transparent";
+        //but keep the caret because we need to see where we are editing
         element.style.caretColor="black";
+
+        updateShadowDIV(element.id);
       });
     }
 

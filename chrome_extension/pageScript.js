@@ -1,10 +1,124 @@
+
+const rootUrl = "http://localhost:8000";
+const spellCheckUrl = rootUrl+"/api/spell-check/";
+const acceptChangeUrl = rootUrl+"/api/accept-change/";
+const fetchCSRFTokenUrl = rootUrl+"/api/fetch-csrf-token/";
+
+const previouslySentQueries = new Map();
+
+
+function updateShadowDIV(inputId) {
+    let textInput = document.getElementById(inputId);
+    let shadowDiv = document.getElementById(inputId+"-lmspelldiv");
+    shadowDiv.innerHTML = textInput.value;
+    //updateHighlightedWords(inputId);
+}
+
+function findAllInput() {
+      let textInputs = document.getElementsByTagName("input");
+      let textAreas = document.getElementsByTagName("textarea");
+      //console.log(inputs);
+      let inputs = Array.from(textInputs).concat(Array.from(textAreas));
+
+      // Rob note
+      // Without this the model tries and sends "on" when the switch is clicked
+      // doing this prevents that
+      inputs = inputs.filter(element => {
+        return (
+            element.tagName.toLowerCase() === "textarea" ||
+            (element.tagName.toLowerCase() === "input" &&
+            !["checkbox", "radio"].includes(element.type))
+        );
+      });
+
+
+      //for each input element found:
+      inputs.forEach(element => {
+
+          if (!element.id) {
+              element.id = "input-" + Math.random().toString(36).substring(2, 9);
+          }
+
+        //add an input event listener for sending to server
+        element.addEventListener("input", () => onInputEventListener(element.id, previouslySentQueries))
+
+        previouslySentQueries.set(element.id, "");
+
+        //Add a shadow div for highlighting mischief
+        let shadowDiv = document.createElement("div");
+        shadowDiv.id = element.id + "-lmspelldiv";
+        shadowDiv.className = "shadowDiv"
+
+        shadowDiv.style.position = "absolute";
+        shadowDiv.style.zIndex = 2;
+        shadowDiv.style.whiteSpace = "pre-wrap";
+        shadowDiv.style.overflowWrap = "break-word";
+        shadowDiv.style.color = "Black";
+        const rect = element.getBoundingClientRect();
+        shadowDiv.style.left = rect.left + "px";
+        shadowDiv.style.top = rect.top + "px";
+        shadowDiv.style.width = rect.width + "px";
+        shadowDiv.style.height = rect.height + "px";
+        let inputStyle = window.getComputedStyle(element);
+        shadowDiv.style.font = inputStyle.font;
+        shadowDiv.style.fontWeight = inputStyle.fontWeight;
+        shadowDiv.style.fontStyle = inputStyle.fontStyle;
+        shadowDiv.style.textDecoration = inputStyle.textDecoration;
+        shadowDiv.style.letterSpacing = inputStyle.letterSpacing;
+        shadowDiv.style.textTransform = inputStyle.textTransform;
+        shadowDiv.style.textAlign = inputStyle.textAlign;
+
+        shadowDiv.style.lineHeight = window.getComputedStyle(element).lineHeight;
+        shadowDiv.style.padding = window.getComputedStyle(element).padding;
+
+        function updateOverlay(element, shadowDiv) {
+            const rect = element.getBoundingClientRect();
+            shadowDiv.style.left = rect.left + window.scrollX + "px";
+            shadowDiv.style.top = rect.top + window.scrollY + "px";
+            shadowDiv.style.width = rect.width + "px";
+            shadowDiv.style.height = rect.height + "px";
+        }
+        //shadowDiv.style.pointerEvents = "none";
+          let observer = new ResizeObserver(() => {
+            updateOverlay(element, shadowDiv)
+        });
+        observer.observe(element);
+
+        let mutationObserver = new MutationObserver(() => {
+            updateOverlay(element,shadowDiv)
+        })
+          mutationObserver.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true });
+
+        document.body.appendChild(shadowDiv);
+
+        window.addEventListener("scroll", () => updateOverlay(element,shadowDiv));
+        window.addEventListener("resize", () => updateOverlay(element, shadowDiv));
+
+
+
+        //add a second input event listener for updating shadowDiv
+        element.addEventListener("input", () => updateShadowDIV(element.id))
+
+        //Make it disappear!!
+        element.style.background="transparent";
+        element.style.color="transparent";
+        //but keep the caret because we need to see where we are editing
+        element.style.caretColor="black";
+
+        updateShadowDIV(element.id);
+      });
+    }
+
+//window.findAllInput = findAllInput;
+window.addEventListener("load", () => findAllInput());
+
 /*
 This script is an OnInputEventHandler. When the user interacts with an input,
 this script is going to decide when is a good time to send a query to the server,
 receive the response and make changes to the text using the response.
  */
 
-/**
+
 //indices are calculated on a word by word basis. If a word is longer than the context window,
 //there might be some troubles
 const CONTEXT_WINDOW_SIZE = 50;
@@ -22,7 +136,7 @@ const debounceTimers = new Map();
 
 //#A map variable that keeps track of whether or not an Input has changed when sending a Query to server.
 //#if Input has not changed, no query will be sent.
-const previouslySentQueries = new Map();
+//const previouslySentQueries = new Map();
 
 const CorrectionType = Object.freeze({
     INSERTION:"insertion",
@@ -35,10 +149,10 @@ const errorMap = new Map();
 let blackList = new Map();
 
 let lastIndex = 0;
-**/
-import updateHighlightedWords from "/js/highlighting.js"
+let loginWarning = true;
 
-export async function onInputEventListener(inputId, lastIndex, loginWarning) {
+
+async function onInputEventListener(inputId, previouslySentQueries) {
     /*
     The eventListener is going to handle requesting different depending on which condition
     was satisfied for sending. Timeouts get treated as terminated sentences. isTimedOut
@@ -97,13 +211,36 @@ export async function onInputEventListener(inputId, lastIndex, loginWarning) {
     let updatedSentText = updatedSentWords.join(" ");
     previouslySentQueries.set(inputId, updatedSentText);
     lastIndex = updatedSentWords.length;
+
+    /*
+    Formulate message for the server
+     */
+    let JSONQuery = {
+        "text": queryString,
+        "sentenceIndex": sentenceIndex,
+        "index": startIndex,
+        "language": "en",
+        "premium": false
+    };
     /*
     Makes a request to the server.
      */
     //CURRENT CHANGES
-    let queryResponse = await SpellCorrectionQuery(queryString, inputId, startIndex, sentenceIndex, loginWarning);
+    const queryResponse = await chrome.runtime.sendMessage({
+        type: "SPELL_CHECK",
+        data: JSONQuery,
+        warning: loginWarning,
+        url: spellCheckUrl,
+        csrfTokenUrl: fetchCSRFTokenUrl
+      });
+
+
+
     //let queryResponse = await SpellCorrectionQuery(queryString, inputId, sentenceIndex, sentenceIndex);
-    if (queryResponse == null) return
+    if (queryResponse == null) {
+        console.log("Query Response:", queryResponse);
+        return
+    }
     /*
     If the response from the server was what we were expecting we should find the misspelled words and store them.
     */
@@ -119,9 +256,7 @@ export async function onInputEventListener(inputId, lastIndex, loginWarning) {
 
     //Because the corrections have been updated, update the highlighting for this particular input.
     console.log("errormap",errorMap)
-    updateHighlightedWords(inputId);
-
-    executeAllChanges(inputId);
+    updateHighlightedWords(inputId, errorMap);
 }
 
 function executeChange(correction, currentWords) {
@@ -226,70 +361,10 @@ function detectFirstDifference(textA, textB) {
     //return -1;
     return textAWords.length-1;
 }
+
 /*
 Send a correction request to the server. The server will respond with corrections or with null.
  */
-async function SpellCorrectionQuery(queryText, inputId, startingIndex, sentenceIndex, loginWarning) {
-    //get the csrftoken from cookies.
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-
-
-    let JSONQuery = JSON.stringify({
-        "text": queryText,
-        "sentenceIndex": sentenceIndex,
-        "index": startingIndex,
-        "language": "en",
-        "premium": document.getElementById("textSwitch").checked
-    });
-    console.log("Sending to server", JSONQuery);
-    const spellCheckUrl = "{% url 'spell_check' %}";
-    const csrfToken = getCookie("csrftoken");
-    try {
-        let response = await fetch(spellCheckUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
-            },
-            body: JSONQuery
-        })
-        if (!response.ok) {
-            const text = await response.text();
-            console.error("Server error:", response.status, text);
-
-            if (response.status === 401) {
-                if (loginWarning === true ) {
-                    //pop up
-                    alert("You need to log in to use spell correction")
-                    loginWarning = false
-                }
-            }
-            return;
-        }
-
-
-        const queryResponse = await response.json();
-        //let misspelledWords = findMisspelledWords(queryResponse);
-        console.log("queryResponse after unpacking:",queryResponse);
-        return queryResponse;
-    } catch(error) {
-        console.log(error);
-    }
-    return null;
-}
 
 function updateErrorMap(queryResponse, inputId, startIndex) {
     //make sure the errorMap for this input is initialised
@@ -333,43 +408,20 @@ function updateErrorMap(queryResponse, inputId, startIndex) {
 
     })
 }
-/*
-async function acceptChangeRequest(feedback, isAccepted) {
-    console.log("QUERYIDENTIFIER", correction.identifier)
 
-        const data = JSON.stringify({
-            "identifier": correction.identifier,
-            "accept": isAccepted,
-            "feedback": feedback
-        })
 
-        const spellCheckUrl = "{% url 'accept_change' %}";
-        const csrfToken = getCookie("csrftoken");
-        try {
-            let response = await fetch(spellCheckUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken
-                },
-                body: data
-            })
-            if (!response.ok) {
-                const text = await response.text();
-                console.error("Server error:", response.status, text);
-                return;
-            }
-
-            const queryResponse = await response.json();
-            //let misspelledWords = findMisspelledWords(queryResponse);
-            console.log("Feedback response:", queryResponse);
-            return queryResponse;
-        } catch (error) {
-            console.log(error);
-        }
+function detectSentenceIndex(text, queryStartIndex) {
+    let firstText = text.split(" ").slice(0,queryStartIndex).join(" ");
+    let lastSentenceStopper = firstText.search(/[.?!](?=[^?.!]*$)/);
+    console.log(lastSentenceStopper)
+    if (lastSentenceStopper === -1) {
+        return 0;
+    }
+    return firstText.slice(0,lastSentenceStopper).split(" ").length;
+    //return lastSentenceStopper;
 }
 
-function createCorrectionPanel(correction, span, parent, plainText, inputId) {
+function createCorrectionPanel(correction, span, parent, plainText, inputId, errorMap) {
 
     //Correction panel that holds the "corrected word", accept and reject buttons
 
@@ -398,13 +450,31 @@ function createCorrectionPanel(correction, span, parent, plainText, inputId) {
         //previouslySentQueries.set(inputId, plainText)
         parent.removeChild(correctionPanel)
         document.getElementById(inputId).value = parent.innerText
-        onInputEventListener(inputId)
+        //onInputEventListener(inputId, previouslySentQueries)
+        const el = document.getElementById(inputId);
+
+        // Update the value as you already do
+        el.value = parent.innerText;
+
+        // Trigger the input event so listeners fire
+        el.dispatchEvent(new Event("input", { bubbles: true }));
 
         if (correction.queryIdentifier === 0) {
             return
         }
+        const data = {
+            "identifier": correction.identifier,
+            "accept": true,
+            "feedback": ""
+        }
 
-        await acceptChangeRequest("", true)
+        const queryResponse = await chrome.runtime.sendMessage({
+        type: "ACCEPT_CHANGE",
+        data: data,
+        url: acceptChangeUrl,
+        csrfTokenUrl: fetchCSRFTokenUrl
+      });
+
 
     })
 
@@ -425,26 +495,35 @@ function createCorrectionPanel(correction, span, parent, plainText, inputId) {
             return
         }
 
-        await acceptChangeRequest("", false)
+        const data = {
+            "identifier": correction.identifier,
+            "accept": false,
+            "feedback": ""
+        }
+
+        const queryResponse = await chrome.runtime.sendMessage({
+        type: "ACCEPT_CHANGE",
+        data: data,
+        url: acceptChangeUrl,
+        csrfTokenUrl: fetchCSRFTokenUrl
+      });
     })
     correctionPanel.appendChild(correctionText)
 
     buttonPanel.appendChild(acceptButton)
     buttonPanel.appendChild(rejectButton)
-
     correctionPanel.appendChild(buttonPanel)
-
 
     parent.appendChild(correctionPanel)
     console.log("correctionPanel", correctionPanel)
     return correctionPanel
 }
 
-function updateHighlightedWords(inputId) {
+function updateHighlightedWords(inputId, errorMap) {
 
     //sort the corrections by index so that they can be applied in reverse order.
     const corrections = [...errorMap.get(inputId).values()].sort((a, b) => b.startIndex - a.startIndex);
-    //don't do anythign
+    //don't do anything
     if (!corrections || corrections.length === 0) return;
 
     let shadowDiv = document.getElementById(inputId + "-lmspelldiv");
@@ -469,10 +548,7 @@ function updateHighlightedWords(inputId) {
         const span = document.createElement("span");
         span.className = correction.type;
         span.textContent = targetWords.join(" ");
-        const correctionPanel = createCorrectionPanel(correction, span, shadowDiv, plainText, inputId)
-
-
-
+        const correctionPanel = createCorrectionPanel(correction, span, shadowDiv, plainText, inputId, errorMap)
 
         span.addEventListener("mousedown", () => {
             if (correctionPanel.style.visibility === "visible") {
@@ -497,16 +573,3 @@ function updateHighlightedWords(inputId) {
         }
     });
 }
-*/
-
-function detectSentenceIndex(text, queryStartIndex) {
-    let firstText = text.split(" ").slice(0,queryStartIndex).join(" ");
-    let lastSentenceStopper = firstText.search(/[.?!](?=[^?.!]*$)/);
-    console.log(lastSentenceStopper)
-    if (lastSentenceStopper === -1) {
-        return 0;
-    }
-    return firstText.slice(0,lastSentenceStopper).split(" ").length;
-    //return lastSentenceStopper;
-}
-

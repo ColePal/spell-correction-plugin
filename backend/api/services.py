@@ -1,13 +1,13 @@
 import os
 from multiprocessing import Value
 
-import fasttext
+#import fasttext
 from django.db.models import CharField, Count
 from django.db.models.functions import Coalesce
 from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
 import torch
 
-import textstat
+#import textstat
 
 from spellcorrector import settings
 from .models import CorrectionRequest, CorrectedWord
@@ -22,7 +22,7 @@ formality_model = "s-nlp/deberta-large-formality-ranker"
 emotional_pipeline = pipeline("text-classification", model=emotion_model, tokenizer=emotion_model, top_k=None, device=-1)
 formal_tokens  = AutoTokenizer.from_pretrained(formality_model)
 form_model = AutoModelForSequenceClassification.from_pretrained(formality_model, torch_dtype=torch.float32)
-lang_model_path= settings.MODEL_DIRECTORY / "lid.176.ftz"
+#lang_model_path= settings.MODEL_DIRECTORY / "lid.176.ftz"
 
 form_model.to("cpu")
 form_model.eval()
@@ -43,7 +43,7 @@ def language_detection(text: str, length: int = 600):
     threshold = 0.60
     if len(text) < 3:
         return "Need more text"
-    labels, probability = fasttext.load_model(str(lang_model_path)).predict(text, k=3)
+    labels, probability = ()#fasttext.load_model(str(lang_model_path)).predict(text, k=3)
     pairs = []
     for lab, p in zip(labels, probability):
        clean = lab.replace("__label__", "")
@@ -84,9 +84,9 @@ def evaluate(full_text: str, length: int = 600):
 
     try:
         readability = {
-            "flesch_reading_ease": float(textstat.flesch_reading_ease(text)),
-            "fk_grade": float(textstat.flesch_kincaid_grade(text)),
-            "gunning_fog": float(textstat.gunning_fog(text)),
+            #"flesch_reading_ease": float(textstat.flesch_reading_ease(text)),
+            #"fk_grade": float(textstat.flesch_kincaid_grade(text)),
+            #"gunning_fog": float(textstat.gunning_fog(text)),
         }
     except Exception as e:
         readability = {"error": str(e)}
@@ -98,19 +98,31 @@ def evaluate(full_text: str, length: int = 600):
         "readability": readability,
     }
 
-def all_languages():
-    return ( CorrectionRequest.objects.annotate(detected_language=Coalesce('language', Value('undetected'),output_field=CharField()))
+def all_languages(request):
+    user = request.user
+    return ( CorrectionRequest.objects.annotate(detected_language=Coalesce('language', Value('undetected'),output_field=CharField())).filter(user_id=user.id)
         .values('detected_language')
         .annotate(count=Count('id'))
         .order_by('-count'))
 
 
-def most_misspelled_word():
-    word=list(CorrectedWord.objects.values("incorrect_word").annotate(count=Count("id")) .order_by("-count")[:1])
+def most_misspelled_word(request):
+    user = request.user
+    word=list(CorrectedWord.objects.values("incorrect_word").annotate(count=Count("id")).filter(query_id__user_id=user.id).order_by("-count")[:1] )
     totals={
-        "total_corrections": CorrectedWord.objects.count(),
-        "unique_misspelled": CorrectedWord.objects.values("incorrect_word").distinct().count(),
-        "unique_corrected": CorrectedWord.objects.values("corrected_word").distinct().count(),
-        "total_requests": CorrectionRequest.objects.count(),
+        "total_corrections": CorrectedWord.objects.filter(query_id__user_id=user.id).count(),
+        "unique_misspelled": CorrectedWord.objects.values("incorrect_word").filter(query_id__user_id=user.id).distinct().count(),
+        "unique_corrected": CorrectedWord.objects.values("corrected_word").filter(query_id__user_id=user.id).distinct().count(),
+        "total_requests": CorrectionRequest.objects.filter(user_id=user.id).count(),
     }
     return word, totals
+
+
+def vocab_richness(request):
+    user = request.user
+    text = (CorrectionRequest.objects.filter(user_id=user.id).values_list('original_text', flat=True))
+    text=" ".join(t for t in text if t) or ""
+    model=LexicalRichness(text)
+    richness=model.mtld()
+    return richness
+

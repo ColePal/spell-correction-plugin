@@ -10,10 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-# Add these at the top of your settings.py
 import os
 from dotenv import load_dotenv
 from urllib.parse import urlparse, parse_qsl
+
 
 load_dotenv()
 
@@ -32,7 +32,7 @@ SECRET_KEY = 'django-insecure-it!bm9_v=x4r!cu45r(pkon^opch^xb88!el-(@tl$1)$ngqsn
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['spellpal.compose.co.nz', '127.0.0.1']
 
 
 # Application definition
@@ -48,6 +48,10 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'api',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "chrome-extension://cpocjnikbjfienmniladcgdhgjcfhgkc"
 ]
 
 MIDDLEWARE = [
@@ -86,29 +90,14 @@ WSGI_APPLICATION = 'spellcorrector.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-"""
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': '',
-        'USER': 'your_username',
-        'PASSWORD': 'your_password',
-        'HOST': 'your_neon_host',  # e.g., ep-misty-smoke-123456.ap-southeast-1.aws.neon.tech
-        'PORT': '5432',            # or 5433 (check Neon dashboard)
-        'OPTIONS': {
-            'sslmode': 'require',  # Neon requires SSL
-        },
-    }
-}"""
-
 # Code provided by Neon
 tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
-print(tmpPostgres)
+
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': tmpPostgres.path.replace('/', ''),
+        'NAME': tmpPostgres.path.decode("utf-8").replace('/', ''),
         'USER': tmpPostgres.username,
         'PASSWORD': tmpPostgres.password,
         'HOST': tmpPostgres.hostname,
@@ -116,6 +105,12 @@ DATABASES = {
         'OPTIONS': dict(parse_qsl(tmpPostgres.query)),
     }
 }
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://yourdomain.com",       # keep your existing trusted origins
+    "chrome-extension://gahipoojgiclkgjhdndbjpefcoijadfl"
+]
+MODEL_DIRECTORY = BASE_DIR / "api" / "language_detect_model"
 
 
 # Password validation
@@ -153,6 +148,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
@@ -163,6 +159,11 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+
+CORS_ALLOW_ALL_ORIGINS = True
+"""This line of code will be made false. (=True : during development & Testing)"""
+
+CSRF_TRUSTED_ORIGINS = ["https://spellpal.compose.co.nz"]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React default
