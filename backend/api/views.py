@@ -313,3 +313,11 @@ def mistakes_percentage_timeseries(request):
      dates += datetime.timedelta(days=1)
 
     return Response({ "labels": labels,"series": [{"user_id": user.id,"username": user.username, "data":""}]})
+
+
+@api_view(['GET'])
+def richness(request):
+    mark=vocab_richness(request)
+    mark=str(mark)+"/10"
+    return Response({"richness":mark})
+
