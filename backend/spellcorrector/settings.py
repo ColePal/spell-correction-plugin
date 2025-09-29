@@ -32,7 +32,7 @@ SECRET_KEY = 'django-insecure-it!bm9_v=x4r!cu45r(pkon^opch^xb88!el-(@tl$1)$ngqsn
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['spellpal.compose.co.nz', '127.0.0.1']
+ALLOWED_HOSTS = ['spellpal.compose.co.nz', '127.0.0.1', 'localhost']
 
 
 # Application definition
