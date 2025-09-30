@@ -323,11 +323,6 @@ def mistakes_percentage_timeseries(request):
 def richness(request):
     return Response({"richness":vocab_richness(request)})
 
-@api_view(['GET'])
-def richness(request):
-    mark=vocab_richness(request)
-    mark=str(mark)+"/10"
-    return Response({"richness":mark})
 
 @api_view(['GET'])
 def typing_speed(request):
