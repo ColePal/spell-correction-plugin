@@ -90,12 +90,14 @@ WSGI_APPLICATION = 'spellcorrector.wsgi.application'
 
 # Code provided by Neon
 tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
-
+db_name = tmpPostgres.path.lstrip('/')
+if isinstance(db_name, bytes):  # Defensive: sometimes comes out as bytes
+    db_name = db_name.decode()
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': tmpPostgres.path.replace('/', ''),
+        'NAME': db_name,
         'USER': tmpPostgres.username,
         'PASSWORD': tmpPostgres.password,
         'HOST': tmpPostgres.hostname,

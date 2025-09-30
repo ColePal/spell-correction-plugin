@@ -11,7 +11,7 @@ import torch
 
 from spellcorrector import settings
 from .models import CorrectionRequest, CorrectedWord
-from .textstat import flesch_reading_ease, flesch_kincaid_grade, gunning_fog
+#from .textstat import flesch_reading_ease, flesch_kincaid_grade, gunning_fog
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
 os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
@@ -22,7 +22,7 @@ formality_model = "s-nlp/deberta-large-formality-ranker"
 emotional_pipeline = pipeline("text-classification", model=emotion_model, tokenizer=emotion_model, top_k=None, device=-1)
 formal_tokens  = AutoTokenizer.from_pretrained(formality_model)
 form_model = AutoModelForSequenceClassification.from_pretrained(formality_model, torch_dtype=torch.float32)
-#lang_model_path= settings.MODEL_DIRECTORY / "lid.176.ftz"
+lang_model_path= settings.MODEL_DIRECTORY / "lid.176.ftz"
 
 form_model.to("cpu")
 form_model.eval()
@@ -33,8 +33,7 @@ def text_input(text: str, n: int):
         text = text.strip()
         if len(text) > n:
             return text[:n]
-        else:
-            return text
+    return text
 
 
 

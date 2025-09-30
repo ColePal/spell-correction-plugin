@@ -1,3 +1,5 @@
+import {executeAllChanges} from "./frontendOutput.js";
+
 async function acceptChangeRequest(feedback, isAccepted, correction) {
     console.log("QUERYIDENTIFIER", correction.identifier)
 
@@ -33,17 +35,13 @@ async function acceptChangeRequest(feedback, isAccepted, correction) {
         }
 }
 
-function createCorrectionPanel(correction, span, parent, plainText, inputId, errorMap) {
+function createCorrectionPanel(correction, span, parent, plainText, inputId, errorMap, blackList) {
 
     //Correction panel that holds the "corrected word", accept and reject buttons
 
     const correctionPanel = document.createElement("div")
     correctionPanel.className = "correction-panel"
-    const rect = span.getBoundingClientRect();
-    // position left edge same as span
-    correctionPanel.style.left = rect.left + window.scrollX + "px";
-    // position top edge just below span
-    correctionPanel.style.top = rect.bottom + 30 + window.scrollY + "px";
+
 
     const buttonPanel = document.createElement("div");
     buttonPanel.className = "button-panel";
@@ -60,7 +58,8 @@ function createCorrectionPanel(correction, span, parent, plainText, inputId, err
         span.replaceWith(newTextNode)
         errorMap.get(inputId).delete(correction.startIndex)
         //previouslySentQueries.set(inputId, plainText)
-        parent.removeChild(correctionPanel)
+        //parent.removeChild(correctionPanel)
+        document.body.removeChild(correctionPanel)
         document.getElementById(inputId).value = parent.innerText
         //onInputEventListener(inputId, previouslySentQueries)
         const el = document.getElementById(inputId);
@@ -87,10 +86,12 @@ function createCorrectionPanel(correction, span, parent, plainText, inputId, err
         correctionPanel.style.visibility = "hidden"
         errorMap.get(inputId).delete(correction.startIndex)
         blackList.get(inputId).set(correction.startIndex, correction)
-        parent.removeChild(correctionPanel)
+        //parent.removeChild(correctionPanel)
+        document.body.removeChild(correctionPanel)
+
         const newTextNode = document.createTextNode(correction.originalText)
         span.replaceWith(newTextNode)
-        executeAllChanges(inputId)
+        executeAllChanges(inputId, errorMap)
 
         if (correction.identifier === 0) {
             return
@@ -104,12 +105,13 @@ function createCorrectionPanel(correction, span, parent, plainText, inputId, err
     buttonPanel.appendChild(rejectButton)
     correctionPanel.appendChild(buttonPanel)
 
-    parent.appendChild(correctionPanel)
+    document.body.appendChild(correctionPanel);
+    //parent.appendChild(correctionPanel)
     console.log("correctionPanel", correctionPanel)
     return correctionPanel
 }
 
-export default function updateHighlightedWords(inputId, errorMap) {
+export default function updateHighlightedWords(inputId, errorMap, blackList) {
 
     //sort the corrections by index so that they can be applied in reverse order.
     const corrections = [...errorMap.get(inputId).values()].sort((a, b) => b.startIndex - a.startIndex);
@@ -125,6 +127,8 @@ export default function updateHighlightedWords(inputId, errorMap) {
 
     const words = plainText.split(/\s+/);
 
+    const spans = new Map();
+
     corrections.forEach((correction) => {
         const numberOfTargetedWords = correction.originalText.split(" ").length;
         const startIndex = correction.startIndex;
@@ -135,10 +139,21 @@ export default function updateHighlightedWords(inputId, errorMap) {
         .slice(startIndex, startIndex + numberOfTargetedWords)
         .map(w => (typeof w === "string" ? w : w.textContent));
 
+        function generateRandomId(length = 8) {
+          const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+          let id = '';
+          for (let i = 0; i < length; i++) {
+            id += chars.charAt(Math.floor(Math.random() * chars.length));
+          }
+          return id;
+        }
+
         const span = document.createElement("span");
         span.className = correction.type;
         span.textContent = targetWords.join(" ");
-        const correctionPanel = createCorrectionPanel(correction, span, shadowDiv, plainText, inputId, errorMap)
+        span.id = generateRandomId()
+        const correctionPanel = createCorrectionPanel(correction, span, shadowDiv, plainText, inputId, errorMap, blackList)
+        correctionPanel.id = span.id + "-panel";
 
         span.addEventListener("mousedown", () => {
             if (correctionPanel.style.visibility === "visible") {
@@ -151,6 +166,8 @@ export default function updateHighlightedWords(inputId, errorMap) {
 
         words.splice(startIndex, numberOfTargetedWords, span);
 
+        spans.set(span,correctionPanel);
+
     });
     words.forEach((word, i) => {
         if (typeof word === "string") {
@@ -162,4 +179,14 @@ export default function updateHighlightedWords(inputId, errorMap) {
             shadowDiv.appendChild(document.createTextNode(" ")); // restore spaces
         }
     });
+    spans.forEach((panel,span) => {
+
+        const spanRect = span.getBoundingClientRect()
+        const panelRect = panel.getBoundingClientRect();
+
+        console.log("spanRect",spanRect);
+
+        panel.style.left = (spanRect.left + window.scrollX - (panelRect.width / 2)) + "px";
+        panel.style.top = (spanRect.bottom + window.scrollY) + "px";
+    })
 }
