@@ -143,7 +143,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 			text: message.text,
 			sentenceIndex: 0,
 			index: 0,
-			language: "en"
+			language: "en",
+            premium: false
 		  })
 		})
 		.then(response => {
