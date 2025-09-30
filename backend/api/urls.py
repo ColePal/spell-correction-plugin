@@ -14,5 +14,6 @@ urlpatterns = [
     path('dashboard/timeseries/mistake-percentage/', views.mistakes_percentage_timeseries,
          name='mistakes_percentage_timeseries'),
      path('dashboard/richness/', views.richness,name='richness'),
+    path('dashboard/typing-speed/', views.typing_speed,name='type_speed'),
 
 ]
