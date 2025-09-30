@@ -2,8 +2,10 @@
 const toggleButton = document.createElement('div');
 const logo = document.createElement('img');
 const overlayContainer = document.createElement('div');
+let userEditEvent;
 
 let suggest_html;
+let mostRecentlyEditedField;
 
 async function createOverlayInteractable() {
   
@@ -71,6 +73,13 @@ async function createOverlayInteractable() {
   const overlay_html = await overlay.text();
   overlayContainer.innerHTML = overlay_html;
   
+  // Make Query for All Text Button on Overlay.html functional
+  const query_all_text_button = await  overlayContainer.querySelector('button#query-all-text-button');
+  query_all_text_button.addEventListener('click', (event) => {
+	queryForWholeTextBox(event);
+  });
+
+  
   // Get suggestionPopup.html for word popups.
   const suggest = await fetch(chrome.runtime.getURL('suggestionPopup.html')); // fetch suggestion, get response
   suggest_html = await suggest.text();
@@ -86,6 +95,9 @@ async function createOverlayInteractable() {
 		overlayContainer.style.right = (right_offset + 0) + 'px';
 		break;
   }
+  
+  
+  
   
   // Inject into Webpage/Document
   toggleButton.appendChild(logo);
@@ -180,6 +192,9 @@ const editable_fields_list = document.querySelectorAll(valid_field_types); // Li
 
 
 }
+
+
+
 
 
 
@@ -308,6 +323,7 @@ function setupTextAreaOverlay(textarea) {
 			wordSpan.textContent = word;
 			wordSpan.style.whiteSpace = "pre"; // fixes "     " becoming " "
 			
+			// per word popup
 			const wordClick = () => {
 				
 				const existingPopUpCheck = document.getElementById(wordSpan.id + "-popup");
@@ -352,20 +368,11 @@ function setupTextAreaOverlay(textarea) {
 					wordCorrectResult.id = 'lm-result-' + (assignUID-1)
 					
 					if (wordCorrectResult.textContent === "Result Placeholder ") {
-					
-					console.log("Attempting to fetch to server...")
-					chrome.runtime.sendMessage(
-					  { type: "getFetchLLM", url: "http://localhost:8000", text : currentWord },
-					  (response) => {
-						if (chrome.runtime.lastError) {
-						  console.log("Runtime Error Message: ", chrome.runtime.lastError.message);
-						} else {
+						getLLMResponse(currentWord).then(response => {
 							const result_element = document.getElementById('lm-result-'+(assignUID-1));
-							result_element.textContent = response.data.correctText + " ";
-						}
-					  }
-					);
-					
+						    result_element.textContent = response.data.correctText + " ";
+						});
+
 					}
 			
 					//wordCorrectResult.textContent = wordSpan.textContent + " ";
@@ -387,6 +394,7 @@ function setupTextAreaOverlay(textarea) {
 					  textarea.value = inputWords.join('');
 					  updateDivText();
 					  alterAllWordPopUps(1);
+					  injectText(mostRecentlyEditedField);
 					  
 					});
 					document.getElementById(`scwp-${assignUID}-no-button`).addEventListener("click", () => {
@@ -444,95 +452,152 @@ document.querySelectorAll(valid_field_types).forEach(setupTextAreaOverlay);
 
 
 
-const existingInputsList = {};
+
+
 
 // Listen for changes user makes to editable text.
 document.addEventListener('input', (event) => {
-  const changed_element = event.target;
-  const field_elements_div = overlayContainer.querySelector('div#field-elements'); // div where overlay.html can be updated.
-
-  // If matching a defined valid field type.
-  if (changed_element.matches(valid_field_types)) {
-    // If field is enabled and editable
-    if (!changed_element.disabled && !changed_element.readOnly) {
-		
-		// if field doesn't have id, set one.
-		if (changed_element.id == ""){
-			let i = 0;
-			while (("textbox"+i.toString()) in existingInputsList) {
-				i += 1;
-			}
-			changed_element.id = "textbox"+i.toString()
-		}
-	
-	    // Print Element Id and Text to console
-        console.log("Edited Field:", changed_element.id);
-        console.log("Field Text:", changed_element.value);
-	    //changed_element.style.backgroundColor = highlight_colour // Highlights the text.
-	  
-	    // If div is found
-	    if (field_elements_div) {
-			
-			// Find if changed_element already added to div
-			const changed_element_textbox = field_elements_div.querySelector(('textarea#'+changed_element.id+'-sctextbox'));
-			
-			// Add changed_element to div if not yet in div
-			if (!changed_element_textbox) {
-				if (!field_elements_div.querySelector(('textarea#'+changed_element.id))) {
-					// Title
-					const changed_title = document.createElement('h3');
-					changed_title.id = changed_element.id + '-title';
-					changed_title.textContent = changed_element.id;
-					changed_title.className = "fancy-textbox-name" 
-					changed_title.style.userSelect = 'none';
-					
-					// Textbox
-					existingInputsList[changed_element.id] = changed_element;
-					const changed_textbox = document.createElement('textarea');
-					changed_textbox.id = changed_element.id + '-sctextbox';
-					changed_textbox.textContent = changed_element.value;
-					changed_textbox.className = "fancy-textbox" 
-
-					// Add Elements to field-elements Div
-					field_elements_div.appendChild(changed_title);	
-					field_elements_div.appendChild(changed_textbox);
-				}
-				
-				// get text from popup textbox and inject back into original page textbox
-				else {
-					if (changed_element.id.endsWith('-sctextbox')) {
-						var cursorPos = changed_element.selectionStart
-						let original_element_name = changed_element.id.replace(/-sctextbox$/, '');
-						const original_changed_element_textbox = existingInputsList[original_element_name];
-						original_changed_element_textbox.focus();
-						original_changed_element_textbox.value = changed_element.value;
-						// Tell the textbox to update its values.
-						var event = new Event('input');
-						original_changed_element_textbox.dispatchEvent(event);
-						// When focus changes, make sure cursor index remains same
-						original_changed_element_textbox.setSelectionRange(cursorPos, cursorPos);
-						// Steal back focus
-						changed_element.focus();
-						setTimeout(0);
-					}
-				}
-				
-				
-		    }
-			else {
-				// Just update the value if changed_element already in div
-			    changed_element_textbox.value = changed_element.value; 
-				setTimeout(0);
-		    }
-		
-        }
-	
-	
-    } 
-  }
+	userEditEvent = event;
+	onUserTextChange(userEditEvent);
 });
 
 }
+
+const existingInputsList = {};
+
+
+function getLLMResponse(message) {
+	console.log("Attempting to fetch to server...");
+	return new Promise((resolve, reject) => {
+		chrome.runtime.sendMessage(
+		  { type: "getFetchLLM", url: "http://localhost:8000", text : message },
+		  (response) => {
+			if (chrome.runtime.lastError) {
+			  reject(chrome.runtime.lastError.message);
+			} else {
+				resolve(response);
+			}
+		  }
+		);
+	});
+}
+
+function injectText(textbox) {
+    const changed_element = textbox;
+    const cursorPos = changed_element.selectionStart;
+    const original_element_name = changed_element.id.replace(/-sctextbox$/, '');
+    const original_changed_element_textbox = existingInputsList[original_element_name];
+    changed_element.blur(); // Flush the old input!!!
+
+    setTimeout(() => {
+        original_changed_element_textbox.value = changed_element.value;
+		var event = new Event('input', { bubbles: true }); // bubbles tells other js to update if listening for changes!!
+        original_changed_element_textbox.dispatchEvent(event);
+        original_changed_element_textbox.setSelectionRange(cursorPos, cursorPos);
+        changed_element.focus();
+    }, 0);
+}
+
+function onUserTextChange(event) {
+	
+	if (event) {
+	
+		let changed_element;
+
+		changed_element = event.target;
+		
+		
+	  const field_elements_div = overlayContainer.querySelector('div#field-elements'); // div where overlay.html can be updated.
+
+	  // If matching a defined valid field type.
+	  if (changed_element.matches(valid_field_types)) {
+		// If field is enabled and editable
+		if (!changed_element.disabled && !changed_element.readOnly) {
+			
+			// if field doesn't have id, set one.
+			if (changed_element.id == ""){
+				let i = 0;
+				while (("textbox"+i.toString()) in existingInputsList) {
+					i += 1;
+				}
+				changed_element.id = "textbox"+i.toString()
+			}
+		
+			// Print Element Id and Text to console
+			console.log("Edited Field:", changed_element.id);
+			console.log("Field Text:", changed_element.value);
+			mostRecentlyEditedField = changed_element;
+			//changed_element.style.backgroundColor = highlight_colour // Highlights the text.
+		  
+			// If div is found
+			if (field_elements_div) {
+				
+				// Find if changed_element already added to div
+				const changed_element_textbox = field_elements_div.querySelector(('textarea#'+changed_element.id+'-sctextbox'));
+				
+				// Add changed_element to div if not yet in div
+				if (!changed_element_textbox) {
+					if (!field_elements_div.querySelector(('textarea#'+changed_element.id))) {
+						// Title
+						const changed_title = document.createElement('h3');
+						changed_title.id = changed_element.id + '-title';
+						changed_title.textContent = changed_element.id;
+						changed_title.className = "fancy-textbox-name" 
+						changed_title.style.userSelect = 'none';
+						
+						// Textbox
+						existingInputsList[changed_element.id] = changed_element;
+						const changed_textbox = document.createElement('textarea');
+						changed_textbox.id = changed_element.id + '-sctextbox';
+						changed_textbox.textContent = changed_element.value;
+						changed_textbox.className = "fancy-textbox" 
+
+						// Add Elements to field-elements Div
+						field_elements_div.appendChild(changed_title);	
+						field_elements_div.appendChild(changed_textbox);
+					}
+					
+					// get text from popup textbox and inject back into original page textbox
+					else {
+						if (changed_element.id.endsWith('-sctextbox')) {
+							injectText(changed_element.selectionStart);
+						}
+					}
+					
+					
+				}
+				else {
+					// Just update the value if changed_element already in div
+					changed_element_textbox.value = changed_element.value; 
+					setTimeout(0);
+				}
+			
+			}
+		
+		
+		} 
+	  }
+  
+	}
+	else {
+		injectText(mostRecentlyEditedField);
+	}
+  
+  
+
+}
+
+
+function queryForWholeTextBox() { // Eventually will automatically send text stuffs to the LLM and then add yes no boxes for the changes.
+	console.log("Pressed...",userEditEvent);
+	getLLMResponse(mostRecentlyEditedField.value).then(response => {
+		mostRecentlyEditedField.value = response.data.correctText + " ";
+	});
+	injectText(mostRecentlyEditedField);
+}
+
+
+
 
 
 chrome.storage.local.get('extensionToggleButton', function(uservar) {
@@ -548,5 +613,11 @@ chrome.storage.local.get('overlayToggleButton', function(uservar) {
 		createOverlay()
     }
 });
+
+
+
+
+
+
 
 findTextBoxes();
