@@ -13,7 +13,7 @@ from django.contrib.auth import authenticate
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .models import CorrectionRequest, CorrectedWord, WordFeedback
+from .models import CorrectionRequest, CorrectedWord, WordFeedback, UserSession
 from django.contrib.auth.models import User
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.shortcuts import render, redirect
@@ -164,6 +164,12 @@ def login(request):
 
         if user is not None:
             auth_login(request, user)
+
+            session_key = request.session.session_key
+
+            UserSession.objects.create(user=user, session_key=session_key)
+            
+
             return redirect("experimental")
         else:
             print("User does not exist")
