@@ -482,7 +482,7 @@ function getLLMResponse(message) {
 	});
 }
 
-function injectText(textbox) {
+function injectText(textbox, text) {
     const changed_element = textbox;
     const cursorPos = changed_element.selectionStart;
     const original_element_name = changed_element.id.replace(/-sctextbox$/, '');
@@ -490,13 +490,15 @@ function injectText(textbox) {
     changed_element.blur(); // Flush the old input!!!
 
     setTimeout(() => {
-        original_changed_element_textbox.value = changed_element.value;
+		if (text) {original_changed_element_textbox.value = text;}
+        else {original_changed_element_textbox.value = changed_element.value;}
 		var event = new Event('input', { bubbles: true }); // bubbles tells other js to update if listening for changes!!
         original_changed_element_textbox.dispatchEvent(event);
         original_changed_element_textbox.setSelectionRange(cursorPos, cursorPos);
         changed_element.focus();
     }, 0);
 }
+
 
 function onUserTextChange(event) {
 	
@@ -590,10 +592,12 @@ function onUserTextChange(event) {
 
 function queryForWholeTextBox() { // Eventually will automatically send text stuffs to the LLM and then add yes no boxes for the changes.
 	console.log("Pressed...",userEditEvent);
+	let textResponse;
 	getLLMResponse(mostRecentlyEditedField.value).then(response => {
-		mostRecentlyEditedField.value = response.data.correctText + " ";
+		textResponse = response.data.correctText;
+		mostRecentlyEditedField.value = textResponse;
+		injectText(mostRecentlyEditedField,textResponse);
 	});
-	injectText(mostRecentlyEditedField);
 }
 
 
