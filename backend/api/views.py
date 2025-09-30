@@ -1,24 +1,18 @@
 from django.utils import timezone
 import datetime
-import random
 import re
 from django.db.models.aggregates import Sum, Count
 from django.db.models.functions.comparison import Coalesce
 from django.db.models.functions.datetime import TruncDate
 from django.http import JsonResponse
-from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
 import json
-from regex import regex
+from django.middleware.csrf import get_token
 from .services import evaluate, language_detection, all_languages, most_misspelled_word, vocab_richness, \
     calculate_typing_speed
 from django.contrib.auth import authenticate
-from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from django.shortcuts import render, redirect
-from django.shortcuts import render
 from .models import CorrectionRequest, CorrectedWord, WordFeedback
 from django.contrib.auth.models import User
 from django.contrib.auth import login as auth_login, logout as auth_logout
@@ -29,8 +23,6 @@ from . import lmspell
 from .sentencebuffer import sentencebuffer
 from django.contrib import messages
 from .services import evaluate
-from django.utils import timezone
-
 import uuid
 
 
@@ -258,6 +250,8 @@ def contact_view(request):
 
     return render(request, 'contact.html', {'form': form, 'alert_message': alert_message})
 
+def fetch_csrf_token(request):
+    return JsonResponse({"csrfToken": get_token(request)})
 
 @api_view(['POST'])
 def language(request):
@@ -289,7 +283,6 @@ def mistakes_percentage_timeseries(request):
         days = int(request.GET.get("days", 30))
     except ValueError:
         days = 30
-    user_id = request.GET.get("user_id")
 
     end = timezone.now().date()
     start = end - datetime.timedelta(days=days)
