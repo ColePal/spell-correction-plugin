@@ -1,18 +1,19 @@
 import os
 from pathlib import Path
+
+import pandas as pd
 from django.db.models.aggregates import Count
 from django.db.models import Value, CharField
 from django.db.models.functions.comparison import Coalesce
 from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
 import torch
-
 import textstat
 import fasttext
 from lexicalrichness import LexicalRichness
 
 from spellcorrector import settings
 from .models import CorrectionRequest, CorrectedWord
-#from .textstat import flesch_reading_ease, flesch_kincaid_grade, gunning_fog
+from .textstat import flesch_reading_ease, flesch_kincaid_grade, gunning_fog
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
 os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
