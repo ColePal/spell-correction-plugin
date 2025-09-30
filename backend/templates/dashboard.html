@@ -166,6 +166,19 @@
               list-style-type: none;
               padding-left: 0;
             }
+
+            #vocab {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            font: 600 22px system-ui, -apple-system, Segoe UI, Roboto, Arial;
+            color: #fff; background: #adb5bd;
+          }
+
         </style>
     </head>
 
@@ -256,7 +269,13 @@
                 <div class="col-12 col-md-4">
                     <div class="card">
                         <div class="card-body">Vocabulary Richness</div>
-                        <p id="vocab"></p>
+                        <div id="vocab"></div>
+                        <br><br>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">Typing Speed</div>
+                        <div id="tspeed"></div>
+                        <br><br>
                     </div>
                 </div>
             </div>
@@ -406,10 +425,30 @@
          async function richness(){
             const response=await fetch("{% url 'richness' %}");
              const data = await response.json();
-             document.getElementById("vocab").innerText = data.richness;
+             let colour;
+             if (data.richness<4){
+                 colour = '#dc3545'
+             }
+             else if (data.richness<7){
+             colour = '#ffc107'
+              }
+             else{
+                 colour = '#28a745'
+             }
+            const vocab= document.getElementById("vocab");
+             vocab.textContent = `${data.richness.toFixed(1)}/10`;
+             vocab.style.backgroundColor = colour;
+         }
+
+         async function typeSpeed(){
+            const response=await fetch("{% url 'type_speed' %}");
+            const data = await response.json();
+             document.getElementById("tspeed").innerText = data.speed+" wpm";
+
          }
 
         document.addEventListener('DOMContentLoaded', async () => {
+          await loadPctUsers();
           await renderMistakePct();
           document.getElementById("pctUser").addEventListener("change", renderMistakePct);
           document.getElementById("pctRange").addEventListener("change", renderMistakePct);
@@ -419,7 +458,9 @@
      initCharts();
      all_languages();
      misspelled();
-     richness()
+     richness();
+     typeSpeed();
+
   });
     </script>
     </body>

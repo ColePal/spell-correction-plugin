@@ -1,13 +1,15 @@
 import os
-from multiprocessing import Value
+from pathlib import Path
 
-#import fasttext
-from django.db.models import CharField, Count
-from django.db.models.functions import Coalesce
+import pandas as pd
+from django.db.models.aggregates import Count
+from django.db.models import Value, CharField
+from django.db.models.functions.comparison import Coalesce
 from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
 import torch
-
-#import textstat
+import textstat
+import fasttext
+from lexicalrichness import LexicalRichness
 
 from spellcorrector import settings
 from .models import CorrectionRequest, CorrectedWord
@@ -19,23 +21,24 @@ os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
 
 emotion_model = "j-hartmann/emotion-english-distilroberta-base"
 formality_model = "s-nlp/deberta-large-formality-ranker"
-emotional_pipeline = pipeline("text-classification", model=emotion_model, tokenizer=emotion_model, top_k=None, device=-1)
+emotional_pipeline = pipeline("text-classification", truncation=True, max_length=512,  model=emotion_model, tokenizer=emotion_model, top_k=None, device=-1)
 formal_tokens  = AutoTokenizer.from_pretrained(formality_model)
 form_model = AutoModelForSequenceClassification.from_pretrained(formality_model, torch_dtype=torch.float32)
-#lang_model_path= settings.MODEL_DIRECTORY / "lid.176.ftz"
-
+lang_model_path= settings.MODEL_DIRECTORY / "lid.176.ftz"
 form_model.to("cpu")
 form_model.eval()
 mapping = form_model.config.id2label
+fasttext_cache = None
+
 
 def text_input(text: str, n: int):
-    if text != "":
-        text = text.strip()
-        if len(text) > n:
-            return text[:n]
-        else:
-            return text
-
+    text = text.strip()
+    text = text.replace("\r\n", " ").replace("\n", " ").replace("\r", " ")
+    text = " ".join(text.split())
+    if len(text) > n:
+        return text[:n]
+    else:
+        return text
 
 
 def language_detection(text: str, length: int = 600):
@@ -43,14 +46,14 @@ def language_detection(text: str, length: int = 600):
     threshold = 0.60
     if len(text) < 3:
         return "Need more text"
-    labels, probability = ()#fasttext.load_model(str(lang_model_path)).predict(text, k=3)
+    labels, probability = fasttext.load_model(str(lang_model_path)).predict(text, k=3)
     pairs = []
     for lab, p in zip(labels, probability):
        clean = lab.replace("__label__", "")
        pairs.append((clean, float(p)))
     language,confidence = pairs[0]
     if confidence < threshold:
-      language = "Failed to recognize the language"
+      language = "Couldn't recognize the language"
       return language
     if language == "en":
         language = "English"
@@ -84,9 +87,9 @@ def evaluate(full_text: str, length: int = 600):
 
     try:
         readability = {
-            #"flesch_reading_ease": float(textstat.flesch_reading_ease(text)),
-            #"fk_grade": float(textstat.flesch_kincaid_grade(text)),
-            #"gunning_fog": float(textstat.gunning_fog(text)),
+            "flesch_reading_ease": float(textstat.flesch_reading_ease(text)),
+            "fk_grade": float(textstat.flesch_kincaid_grade(text)),
+            "gunning_fog": float(textstat.gunning_fog(text)),
         }
     except Exception as e:
         readability = {"error": str(e)}
@@ -117,7 +120,6 @@ def most_misspelled_word(request):
     }
     return word, totals
 
-
 def vocab_richness(request):
     user = request.user
     text = (CorrectionRequest.objects.filter(user_id=user.id).values_list('original_text', flat=True))
@@ -125,4 +127,25 @@ def vocab_richness(request):
     model=LexicalRichness(text)
     richness=model.mtld()
     return richness
+
+
+def calculate_typing_speed(request):
+    user=request.user
+    session_key = request.session.session_key
+    type_speed=[]
+    session_queries=CorrectionRequest.objects.filter(user_id=user.id,session_id=session_key).order_by("created_at")
+
+    for i in range(1,len(session_queries)):
+        time_difference=((session_queries[i].created_at-session_queries[i-1].created_at).total_seconds())/60
+        word_count=session_queries[i].word_count
+        if time_difference>1 or time_difference==0:
+            continue #user maybe doing somthing else (not typing)
+        type_speed.append(word_count/time_difference)
+
+    if (type_speed):
+        return round(sum(type_speed)/len(type_speed))
+    else:
+        return 0
+
+
 
