@@ -1,3 +1,4 @@
+from django.contrib.sessions.models import Session
 from django.utils import timezone
 import datetime
 import re
@@ -152,6 +153,8 @@ def analyze(request):
     data = json.loads(request.body or "{}")
     return JsonResponse(evaluate(data.get("text", "")))
 
+
+from django.contrib.sessions.models import Session
 @api_view(['POST', 'GET'])
 def login(request):
     if request.method == "GET":
@@ -165,10 +168,17 @@ def login(request):
         if user is not None:
             auth_login(request, user)
 
-            session_key = request.session.session_key
+            #session = request.session
 
-            UserSession.objects.create(user=user, session_key=session_key)
-            
+
+
+            session_key = request.session.session_key
+            session, created = Session.objects.get_or_create(session_key=session_key)
+
+            UserSession.objects.create(user=user, session=session)
+
+
+
 
             return redirect("experimental")
         else:

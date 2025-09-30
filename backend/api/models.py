@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from django.contrib.sessions.models import Session
 
+
 class CorrectionRequest(models.Model):
     # keeping track of corrections
     id = models.AutoField(primary_key=True)
