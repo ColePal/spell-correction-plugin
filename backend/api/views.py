@@ -1,3 +1,4 @@
+from django.utils import timezone
 import datetime
 import random
 import re
@@ -9,8 +10,8 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 import json
 from regex import regex
-from django.middleware.csrf import get_token
-from .services import evaluate, language_detection, all_languages, most_misspelled_word
+from .services import evaluate, language_detection, all_languages, most_misspelled_word, vocab_richness, \
+    calculate_typing_speed
 from django.contrib.auth import authenticate
 from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view
@@ -229,8 +230,6 @@ def accept_change(request):
         status=200
     )
 
-def fetch_csrf_token(request):
-    return JsonResponse({"csrfToken": get_token(request)})
 
 def contact_view(request):
     alert_message = None
@@ -267,7 +266,7 @@ def language(request):
 
 @api_view(['GET'])
 def dashboard_languages(request):
-    lang_count=list(all_languages())
+    lang_count=list(all_languages(request))
     payload = [
         {"language": lc["detected_language"], "count": lc["count"]}
         for lc in lang_count
@@ -277,7 +276,7 @@ def dashboard_languages(request):
 
 @api_view(['GET'])
 def misspelled_word(request):
-    word,totals = most_misspelled_word()
+    word,totals = most_misspelled_word(request)
     if word==[]:
         return Response({"word": None, "count": 0,**totals})
     return Response({"word": word[0]["incorrect_word"], "count": word[0]["count"],**totals})
@@ -285,21 +284,25 @@ def misspelled_word(request):
 
 @api_view(['GET'])
 def mistakes_percentage_timeseries(request):
+
     try:
         days = int(request.GET.get("days", 30))
     except ValueError:
         days = 30
+    user_id = request.GET.get("user_id")
 
     end = timezone.now().date()
     start = end - datetime.timedelta(days=days)
     user=request.user
     database_query = CorrectionRequest.objects.filter(created_at__date__gte=start, created_at__date__lte=end).filter(user_id=user.id)
     data_list  = list(database_query.annotate(day=TruncDate("created_at")).values("day").annotate(words=Coalesce(Sum("word_count"), 0), corrections=Coalesce(Count("correctedword"), 0), ).order_by("day"))
-    rows = { r["day"].isoformat(): {
+    rows = {
+        r["day"].isoformat(): {
             "words": int(r["words"] or 0),
             "corrections": int(r["corrections"] or 0),
         }
-        for r in data_list }
+        for r in data_list
+    }
     data_list=rows
 
     labels = []
@@ -314,8 +317,11 @@ def mistakes_percentage_timeseries(request):
      values.append(round(percentage, 2))
      dates += datetime.timedelta(days=1)
 
-    return Response({ "labels": labels,"series": [{"user_id": user.id,"username": user.username, "data":""}]})
+    return Response({ "labels": labels,"series": [{"user_id": user.id,"username":getattr(user, "username", "You"), "data": values}],"unit": "percent"})
 
+@api_view(['GET'])
+def richness(request):
+    return Response({"richness":vocab_richness(request)})
 
 @api_view(['GET'])
 def richness(request):
@@ -323,3 +329,7 @@ def richness(request):
     mark=str(mark)+"/10"
     return Response({"richness":mark})
 
+@api_view(['GET'])
+def typing_speed(request):
+    request=request._request
+    return Response({"speed":calculate_typing_speed(request)})
