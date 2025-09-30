@@ -1,7 +1,5 @@
 import os
 from pathlib import Path
-
-import pandas as pd
 from django.db.models.aggregates import Count
 from django.db.models import Value, CharField
 from django.db.models.functions.comparison import Coalesce
