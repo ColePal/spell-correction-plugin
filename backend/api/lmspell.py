@@ -4,9 +4,11 @@ import torch
 import logging
 import requests
 import os
-from typing import Dict, Any, Optional #python stuff for typing
+from typing import Dict, Any, Optional
+import threading
 
 logger = logging.getLogger(__name__)
+_MODEL_LOCK = threading.Lock()
 
 _models = {
     'en': None, # Vennify/Gemini
@@ -26,39 +28,42 @@ HUGGINGFACE_API_KEY = os.getenv('HUGGINGFACE_API_KEY', '')
 
 
 def get_model(language='en'):
-    global _models, _tokenizers
+ global _models, _tokenizers
+ if language not in ['en', 'si', 'hi']:
+    language = 'en'
 
-    if language not in ['en', 'si', 'hi']:
-        language = 'en'
+ mdl, tok = _models.get(language), _tokenizers.get(language)
+ if mdl is not None and tok is not None:
+  return mdl, tok
 
-    if _models[language] is None:
+
+ with _MODEL_LOCK:
+        mdl, tok = _models.get(language), _tokenizers.get(language)
+        if mdl is not None and tok is not None:
+            return mdl, tok
+
         print(f"Loading {language.upper()} ")
+        try:
+            if language == 'en':
+                model_name = "vennify/t5-base-grammar-correction"
+                # Build in locals first
+                new_tok = T5TokenizerFast.from_pretrained(model_name, cache_dir="./model_cache")
+                new_mdl = T5ForConditionalGeneration.from_pretrained(model_name, cache_dir="./model_cache")
+            else:
+                model_name = "lm-spell/mt5-base-ft-ssc"
+                new_tok = MT5Tokenizer.from_pretrained(model_name, cache_dir="./model_cache")
+                new_mdl = MT5ForConditionalGeneration.from_pretrained(model_name, cache_dir="./model_cache")
 
-        if language == 'en':
-            model_name = "vennify/t5-base-grammar-correction"
-            _models[language] = T5ForConditionalGeneration.from_pretrained(
-                model_name,
-                cache_dir="./model_cache"
-            )
-            _tokenizers[language] = T5TokenizerFast.from_pretrained(
-                model_name,
-                cache_dir="./model_cache"
-            )
-        else:
-            model_name = "lm-spell/mt5-base-ft-ssc"
-            _models[language] = MT5ForConditionalGeneration.from_pretrained(
-                model_name,
-                cache_dir="./model_cache"
-            )
-            _tokenizers[language] = MT5Tokenizer.from_pretrained(
-                model_name,
-                cache_dir="./model_cache"
-            )
+            new_mdl.eval()
+            _models[language], _tokenizers[language] = new_mdl, new_tok
+            print(f"{language.upper()}")
+            return new_mdl, new_tok
 
-        _models[language].eval()
-        print(f"{language.upper()}")
-
-    return _models[language], _tokenizers[language]
+        except Exception:
+            _models[language] = None
+            _tokenizers[language] = None
+            logger.exception("Failed to load model/tokenizer for %s", language)
+            raise
 
 
 def spell_correction_gemini(text: str) -> Dict[str, Any]:

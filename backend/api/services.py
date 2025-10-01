@@ -1,19 +1,14 @@
 import os
-from pathlib import Path
-
-import pandas as pd
 from django.db.models.aggregates import Count
 from django.db.models import Value, CharField
-from django.db.models.functions.comparison import Coalesce
+from django.db.models.functions import Coalesce
 from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
 import torch
 import textstat
 import fasttext
 from lexicalrichness import LexicalRichness
-
 from spellcorrector import settings
 from .models import CorrectionRequest, CorrectedWord
-from .textstat import flesch_reading_ease, flesch_kincaid_grade, gunning_fog
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
 os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
@@ -103,7 +98,7 @@ def evaluate(full_text: str, length: int = 600):
 
 def all_languages(request):
     user = request.user
-    return ( CorrectionRequest.objects.annotate(detected_language=Coalesce('language', Value('undetected'),output_field=CharField())).filter(user_id=user.id)
+    return ( CorrectionRequest.objects.annotate(detected_language=Coalesce('language', Value('undetected'),output_field=CharField())).filter(user=user)
         .values('detected_language')
         .annotate(count=Count('id'))
         .order_by('-count'))
@@ -111,18 +106,18 @@ def all_languages(request):
 
 def most_misspelled_word(request):
     user = request.user
-    word=list(CorrectedWord.objects.values("incorrect_word").annotate(count=Count("id")).filter(query_id__user_id=user.id).order_by("-count")[:1] )
+    word=list(CorrectedWord.objects.values("incorrect_word").annotate(count=Count("id")).filter(query_id__user=user).order_by("-count")[:1] )
     totals={
-        "total_corrections": CorrectedWord.objects.filter(query_id__user_id=user.id).count(),
-        "unique_misspelled": CorrectedWord.objects.values("incorrect_word").filter(query_id__user_id=user.id).distinct().count(),
-        "unique_corrected": CorrectedWord.objects.values("corrected_word").filter(query_id__user_id=user.id).distinct().count(),
-        "total_requests": CorrectionRequest.objects.filter(user_id=user.id).count(),
+        "total_corrections": CorrectedWord.objects.filter(query_id__user=user).count(),
+        "unique_misspelled": CorrectedWord.objects.values("incorrect_word").filter(query_id__user=user).distinct().count(),
+        "unique_corrected": CorrectedWord.objects.values("corrected_word").filter(query_id__user=user).distinct().count(),
+        "total_requests": CorrectionRequest.objects.filter(user=user).count(),
     }
     return word, totals
 
 def vocab_richness(request):
     user = request.user
-    text = (CorrectionRequest.objects.filter(user_id=user.id).values_list('original_text', flat=True))
+    text = (CorrectionRequest.objects.filter(user=user).values_list('original_text', flat=True))
     text=" ".join(t for t in text if t) or ""
     model=LexicalRichness(text)
     richness=model.mtld()
@@ -133,7 +128,7 @@ def calculate_typing_speed(request):
     user=request.user
     session_key = request.session.session_key
     type_speed=[]
-    session_queries=CorrectionRequest.objects.filter(user_id=user.id,session_id=session_key).order_by("created_at")
+    session_queries=CorrectionRequest.objects.filter(user=user,session_id=session_key).order_by("created_at")
 
     for i in range(1,len(session_queries)):
         time_difference=((session_queries[i].created_at-session_queries[i-1].created_at).total_seconds())/60
