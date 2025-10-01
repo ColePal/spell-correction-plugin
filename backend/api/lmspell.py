@@ -75,7 +75,7 @@ def spell_correction_gemini(text: str) -> Dict[str, Any]:
     prompt = f"""Fix any spelling and grammar errors in the following text.
        Return (Important) only the corrected text without any explanation or additional text.
        If there are no errors, return the text exactly as is.
-       Do not add any formatting or quotes and if not english leave as is.
+       Do not add any formatting or quotes.
        Text: {text}"""
 
             # Definitions from GoogleAI Resource
