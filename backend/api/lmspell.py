@@ -96,7 +96,7 @@ def spell_correction_gemini(text: str) -> Dict[str, Any]:
                 "maxOutputTokens": 2048, #Max singular output should be fine "A token is approximately four characters."
             }
         },
-        timeout=10 # Waits 10 seconds
+         timeout=1 # Waits 1 seconds
     )
 
     if response.status_code != 200:
