@@ -15,6 +15,7 @@
 }
 .shadowDiv span {
     pointer-events: auto;
+    cursor: pointer;
 }
 .shadowDiv div {
     pointer-events: auto;
@@ -23,43 +24,63 @@
     position: absolute;
     z-index: 3;
     color: Black;
-    width: 200px;
-    height: 100px;
+    min-width: 100px;
+    height: fit-content;
     visibility: hidden;
     background-color: White;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    justify-items: center;
+
     border-radius: 10px;
     border: 2px solid dimgray;
+    padding: 10px;
+    align-items: center;
 }
 
 .button-panel {
-    border: 1px solid gray;
-    border-radius: 10px;
-    width: 100px;
-    height: 50px;
-
     display: flex;
     flex-direction: row;
-    justify-content: space-around;
-    justify-items: center;
-    vertical-align: center;
-    margin-left: auto;
-    margin-right: auto;
+    justify-content: space-between;
+    width: 100%;
 }
-.reject-button {
-    background-color: Red;
-    width: 30px;
+.feedback-button {
+    background-color: #ffffff;
+    min-width: fit-content;
     height: 30px;
+    /*
     margin-top: auto;
     margin-bottom: auto;
+    */
+    border-radius: 5px;
+    border: 1px solid black;
+    margin: 4px;
+    color: grey;
+}
+
+.reject-button {
+    background-color: #ffffff;
+    min-width: fit-content;
+    height: 30px;
+    /*
+    margin-top: auto;
+    margin-bottom: auto;
+    */
+    border-radius: 5px;
+    border: 1px solid black;
+    margin: 4px;
 }
 .accept-button {
-    background-color: Green;
-    width: 30px;
+    /*background-color: rgba(var(--bs-primary-rgb),var(--bs-bg-opacity)) !important;;*/
+    min-width: fit-content;
     height: 30px;
+    /*
     margin-top: auto;
     margin-bottom: auto;
+    */
+    border-radius: 5px;
+    border-color: white;
+    color:white;
+
+    margin: 4px;
+
 }
