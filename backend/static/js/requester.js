@@ -8,6 +8,7 @@ receive the response and make changes to the text using the response.
 //indices are calculated on a word by word basis. If a word is longer than the context window,
 //there might be some troubles
 const CONTEXT_WINDOW_SIZE = 50;
+const DEBOUNCE_TIMER = 500;
 
 //There two maps work together to make sure the user input is sent to the
 //server in a timely manner. changemap tracks total keystrokes up to a max. This
@@ -144,7 +145,7 @@ async function conditionsForSendingQuery(inputId) {
             const timer = setTimeout(() => {
                 debounceTimers.delete(inputId); // cleanup
                 resolve(true);
-            }, 3000);
+            }, DEBOUNCE_TIMER);
 
             //set the timer again
             debounceTimers.set(inputId, timer);

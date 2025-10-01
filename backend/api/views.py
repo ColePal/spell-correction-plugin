@@ -168,17 +168,10 @@ def login(request):
         if user is not None:
             auth_login(request, user)
 
-            #session = request.session
-
-
-
             session_key = request.session.session_key
             session, created = Session.objects.get_or_create(session_key=session_key)
 
             UserSession.objects.create(user=user, session=session)
-
-
-
 
             return redirect("experimental")
         else:
