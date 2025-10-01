@@ -1,7 +1,11 @@
-import {executeAllChanges} from "./frontendOutput.js";
+import {executeAllChanges, CorrectionType} from "./frontendOutput.js";
+//import {CorrectionType} from "./frontendOutput";
 
 async function acceptChangeRequest(feedback, isAccepted, correction) {
     console.log("QUERYIDENTIFIER", correction.identifier)
+    if (correction.identifier === 0) {
+        return
+    }
 
         const data = JSON.stringify({
             "identifier": correction.identifier,
@@ -90,24 +94,34 @@ function createCorrectionPanel(correction, span, parent, plainText, inputId, err
     acceptButton.className = "accept-button bg-primary"
     acceptButton.textContent = "Accept";
 
+    const input = document.getElementById(inputId);
+
     acceptButton.addEventListener("mousedown", async () => {
-        const newTextNode = document.createTextNode(correction.correctedText)
-        span.replaceWith(newTextNode)
+        if (correction.type !== CorrectionType.INSERTION ) {
+            const newTextNode = document.createTextNode(correction.correctedText)
+            span.replaceWith(newTextNode)
+        } else {
+            let newTextNode = null;
+            if (parent.firstChild === span) {
+                newTextNode = document.createTextNode(correction.correctedText + " ");
+            } else {
+                newTextNode = document.createTextNode(correction.correctedText);
+            }
+            const spanTextNode = document.createTextNode(span.textContent);
+
+            parent.insertBefore(newTextNode,span);
+            span.replaceWith(spanTextNode);
+        }
         errorMap.get(inputId).delete(correction.startIndex)
         //previouslySentQueries.set(inputId, plainText)
         //parent.removeChild(correctionPanel)
         document.body.removeChild(correctionPanel)
-        document.getElementById(inputId).value = parent.innerText
+        input.value = parent.innerText
         //onInputEventListener(inputId, previouslySentQueries)
-        const el = document.getElementById(inputId);
 
-        // Update the value as you already do
-        el.value = parent.innerText;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
 
-        // Trigger the input event so listeners fire
-        el.dispatchEvent(new Event("input", { bubbles: true }));
-
-        if (correction.queryIdentifier === 0) {
+        if (correction.identifier === 0) {
             return
         }
 

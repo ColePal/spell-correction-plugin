@@ -64,9 +64,9 @@
                                     <div class="card w-100">
                                         <div class="card-body d-flex flex-column p-2">
                                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                                <h2 class="card-title mb-0">Enter your text:</h2>
-                                                <div class="form-check form-switch">
-                                                    <input class="form-check-input" type="checkbox" id="textSwitch" />
+                                                <h5 class="card-title mb-0">Enter your text:</h5>
+                                                <div class="form-check form-switch" style="vertical-align: center">
+                                                    <input class="form-check-input" type="checkbox" id="textSwitch" style="border: 1px solid black"/>
                                                     <label class="form-check-label" for="textSwitch">Use Premium Model</label>
                                                 </div>
                                             </div>
@@ -77,8 +77,11 @@
                                 <div class="col-sm-6 d-flex">
                                     <div class="card w-100">
                                         <div class="card-body d-flex flex-column p-2">
-                                            <h2 class="card-title mb-1">LLM Output:</h2>
-                                            <textarea id="testTarget" class="w-100 flex-grow-1" rows="12"></textarea>
+                                            <h5 class="card-title mb-1">LLM Corrected Text:</h5>
+                                            <textarea id="testTarget" class="w-100 flex-grow-1" rows="12" style="pointer-events: none"></textarea>
+                                            <button class="btn btn-primary" id="copyButton"
+                                                style="position: absolute; bottom: 25px; right: 25px;">Copy
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -115,6 +118,13 @@
                 </div>
 
                 <script>
+                    document.getElementById("copyButton").addEventListener("mousedown", () => {
+                        const text = document.getElementById("testTarget-lmspelldiv").textContent;
+                        console.log("Coying", text);
+                        navigator.clipboard.writeText(text);
+                    })
+
+
                     function getCookie(name) {
                         const value = `; ${document.cookie}`;
                         const parts = value.split(`; ${name}=`);
@@ -175,6 +185,9 @@
                     }
 
                      async function analyze(text) {
+                        if (text === "") {
+                            return
+                        }
                         const statusText = document.getElementById('status-text');
 
                         statusText.innerText = "Analyzing...";
@@ -218,7 +231,11 @@
 
                         const fleschValue = Number(data.readability.flesch_reading_ease);
                         document.getElementById("readability").textContent = `${fleschMeaning(fleschValue)}\n`;
-                        document.getElementById("meterFlesch").value = Number(data.readability.flesch_reading_ease) || 0;
+
+                        const meterFlesch = document.getElementById("meterFlesch")
+                         if (meterFlesch) {
+                             meterFlesch.value = Number(data.readability.flesch_reading_ease) || 0;
+                         }
                     }
 
                     document.getElementById("testInput").addEventListener("input", () => {

@@ -81,7 +81,6 @@ export default async function onInputEventListener(inputId, previouslySentQuerie
     //CURRENT CHANGES
     let queryString = currentInputValue.split(" ").slice(startIndex).join(" ").trim();
     //let queryString = currentInputValue.split(" ").slice(sentenceIndex).join(" ").trim();
-    console.log('queryString',queryString)
 
     /*
     Update the previously sent queries here because the query can take too long to resolve.
@@ -98,16 +97,20 @@ export default async function onInputEventListener(inputId, previouslySentQuerie
     //CURRENT CHANGES
     let queryResponse = await SpellCorrectionQuery(queryString, inputId, startIndex, sentenceIndex, loginWarning);
     //let queryResponse = await SpellCorrectionQuery(queryString, inputId, sentenceIndex, sentenceIndex);
-    if (queryResponse == null) return
+    if (queryResponse === null) {
+        //executeAllChanges(inputId, errorMap)
+        //return
+    }
     /*
     If the response from the server was what we were expecting we should find the misspelled words and store them.
     */
     //let queryStartIndex = currentInputValue.slice(0,currentInputValue.search(/[.?!](?=[^?.!]*$)/)).split().length;
-    let queryStartIndex = queryResponse.index;
+
     if (queryResponse) {
-        updateErrorMap(queryResponse, inputId, queryStartIndex);
+        updateErrorMap(queryResponse, inputId, queryResponse.index);
     } else {
-        return;
+        updateErrorMap(queryResponse, inputId, 0);
+        //return;
     }
 
 
@@ -188,6 +191,9 @@ function getCookie(name) {
 Send a correction request to the server. The server will respond with corrections or with null.
  */
 async function SpellCorrectionQuery(queryText, inputId, startingIndex, sentenceIndex, loginWarning) {
+    if (!queryText || queryText.trim() === "") {
+        return null;
+    }
     //get the csrftoken from cookies.
     let JSONQuery = JSON.stringify({
         "text": queryText,
@@ -240,6 +246,12 @@ function updateErrorMap(queryResponse, inputId, startIndex) {
         errorMap.set(inputId, new Map());
         blackList.set(inputId, new Map());
     }
+
+    if (!queryResponse) {
+        errorMap.set(inputId, new Map());
+        return
+    }
+
     //get the span of the replacement
     const queryStartIndex = queryResponse.index;
     const queryEndIndex = queryResponse.index + queryResponse.incorrectText.split(" ").length
