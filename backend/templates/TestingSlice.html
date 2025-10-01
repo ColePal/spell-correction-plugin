@@ -1,6 +1,5 @@
-
-{% load static %}
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
     <head>
         <meta charset="utf-8" />
@@ -49,7 +48,7 @@
                 </div>
             </header>
 
-<main role="main" class="inner cover d-flex flex-column flex-grow-1">
+            <main role="main" class="inner cover d-flex flex-column flex-grow-1">
                 <div class="container-fluid d-flex flex-column flex-grow-1">
                     <div class="row align-items-stretch flex-grow-1">
                         <div class="col-sm-12 d-flex flex-column flex-grow-1">
@@ -86,7 +85,9 @@
                             </div>
                         </div>
                     </div>
-                    <div id="status" style="margin: 4px 0; color: white;"></div>
+                    <div id="status" style="margin: 12px; color: white;">
+                        <span id="status-text">&nbsp;</span>
+                    </div>
                     <div class="row mb-2 align-items-stretch" style="min-height: 60px;">
                         <div class="col-sm-3 d-flex">
                             <div class="card p-2 flex-fill">
@@ -174,7 +175,9 @@
                     }
 
                      async function analyze(text) {
-                        document.getElementById("status").textContent = "Analyzing Input...";
+                        const statusText = document.getElementById('status-text');
+
+                        statusText.innerText = "Analyzing...";
 
                         const response = await fetch("/api/analyze/", {
                             method: "POST",
@@ -183,7 +186,7 @@
                             body: JSON.stringify({ text }),
                         });
                         const data = await response.json();
-                        document.getElementById("status").textContent = "";
+                        statusText.innerHTML = "&nbsp;";
 
 
                         if (!data.ok) {
