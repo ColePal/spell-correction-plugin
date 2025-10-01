@@ -59,6 +59,7 @@
                                     This webpage uses a variety of LLMs (Large Language Models) to detect user error in there writing. Providing analytics such as emotion. Start by selecting a model and language then type a sentence!
                                 </p>
                             </div>
+                            <div id="status-llm" style="margin-bottom: 8px; color: white;">&nbsp;</div>
                             <div class="row align-items-stretch">
                                 <div class="col-sm-6 d-flex">
                                     <div class="card w-100">
@@ -143,6 +144,7 @@
                     }
 
                     let timer = null;
+                    let llmRequestObsAdded = false;
 
 
                      function initCharts() {
@@ -224,6 +226,23 @@
                     document.getElementById("testInput").addEventListener("input", () => {
                         clearTimeout(timer);
                         timer = setTimeout(() => {
+                            document.getElementById("status-llm").textContent = "Waiting for LLM Response...";
+
+                            if (llmRequestObsAdded === false) {
+                              const testTDiv = document.getElementById("testTarget-lmspelldiv");
+
+                              const testTDivObserver = new MutationObserver(() => {
+                                document.getElementById("status-llm").textContent = '\u00A0';
+                              });
+
+                              testTDivObserver.observe(testTDiv, { subtree: true, characterData: true, childList: true });
+
+                              llmRequestObsAdded = true;
+                            }
+
+
+
+
                             const x = document.getElementById("testInput").value;
                             analyze(x);
                             //language_detect(x)
