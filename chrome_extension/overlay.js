@@ -3,11 +3,30 @@ const toggleButton = document.createElement('div');
 const logo = document.createElement('img');
 const overlayContainer = document.createElement('div');
 let userEditEvent;
+let injectTextAck = true;
+
+// Element types extension should look for / Editable fields to look for user changes in.
+const valid_field_types = `
+  input[type="text"],
+  input[type="search"],
+  input:not([type]),
+  textarea
+`;
 
 let suggest_html;
 let mostRecentlyEditedField;
 
-async function createOverlayInteractable() {
+let textResponse; // LLM response
+let outputWords  = [];
+let inputWords = [];
+
+async function getSuggestHtml() {	  
+  // Get suggestionPopup.html for word popups.
+  const suggest = await fetch(chrome.runtime.getURL('suggestionPopup.html')); // fetch suggestion, get response
+  suggest_html = await suggest.text();
+}
+
+async function createMovableOverlay() {
   
   // Where the button first appears on the page
   let starting_point = 'left'
@@ -15,7 +34,7 @@ async function createOverlayInteractable() {
   // Get user selected overlay side if exists.
   chrome.storage.local.get('overlaySide', function(data) {
     if (data.overlaySide) {
-      console.log('Starting Side is Now:', data.overlaySide);
+      console.log('The Starting Side is Now:', data.overlaySide);
 	  starting_point = data.overlaySide;
     }
   });
@@ -78,11 +97,6 @@ async function createOverlayInteractable() {
   query_all_text_button.addEventListener('click', (event) => {
 	queryForWholeTextBox(event);
   });
-
-  
-  // Get suggestionPopup.html for word popups.
-  const suggest = await fetch(chrome.runtime.getURL('suggestionPopup.html')); // fetch suggestion, get response
-  suggest_html = await suggest.text();
   
   // Positions elements based on if Button appears on left or right side of screen
   switch (starting_point) {
@@ -168,29 +182,6 @@ async function createOverlayInteractable() {
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onLeftClick);
   });
-}
-
-
-// Editable fields to look for user changes in.
-const valid_field_types = `
-  input[type="text"],
-  input[type="search"],
-  input:not([type]),
-  textarea
-`;
-
-
-function findTextBoxes() {
-// Finds all valid textboxes and logs user changes.
-
-// Highlight Colours
-const highlight_colour = 'yellow'
-const found_highlight_colour = 'green' // To show that the extension has found the textbox.
-
-// Lists
-const editable_fields_list = document.querySelectorAll(valid_field_types); // List of found valid fields.
-
-
 }
 
 
@@ -286,6 +277,7 @@ document.addEventListener('keydown', () => {
 //SpellCorrectionQuery();
 
 function setupTextAreaOverlay(textarea) {
+	console.log("setupTextAreaOverlay(textarea)");
 	
 	// Create Overlay
 	const overlay = document.createElement("div");
@@ -311,9 +303,13 @@ function setupTextAreaOverlay(textarea) {
 	
 	// Update DIV text to match textarea text
 	const updateDivText = () => { //  = () => { means local to setupTextAreaOverlay!!!
+		console.log("updateDivText = ()");
 		overlay.innerHTML = "";
 		
-		const inputWords = textarea.value.match(/[a-zA-Z]+(?:'[a-zA-Z]+)?| +|[^a-zA-Z\s]+/g) || []; // splits every time a 
+		inputWords = textarea.value.match(/[a-zA-Z]+(?:'[a-zA-Z]+)?| +|[^a-zA-Z\s]+/g) || []; // splits every time a 
+
+		console.log("InputWords:",inputWords);
+		console.log("OutputWords:",outputWords)
 		
 		var currentWord = "NULL"
 		
@@ -322,6 +318,7 @@ function setupTextAreaOverlay(textarea) {
 			wordSpan.style.userSelect = '';
 			wordSpan.textContent = word;
 			wordSpan.style.whiteSpace = "pre"; // fixes "     " becoming " "
+			let correctedWord = "";
 			
 			// per word popup
 			const wordClick = () => {
@@ -366,6 +363,10 @@ function setupTextAreaOverlay(textarea) {
 					// Set result text
 					const wordCorrectResult = suggestTemp.content.querySelector('#lm-result');
 					wordCorrectResult.id = 'lm-result-' + (assignUID-1)
+
+					if (correctedWord != "") {
+
+					wordCorrectResult.textContent = correctedWord;}
 					
 					if (wordCorrectResult.textContent === "Result Placeholder ") {
 						getLLMResponse(currentWord).then(response => {
@@ -392,26 +393,41 @@ function setupTextAreaOverlay(textarea) {
 					  const result_element = document.getElementById('lm-result-'+(assignUID-1));
 					  inputWords[index] = result_element.textContent.trim();
 					  textarea.value = inputWords.join('');
-					  updateDivText();
+					  //updateDivText();
 					  alterAllWordPopUps(1);
 					  injectText(mostRecentlyEditedField);
 					  
 					});
 					document.getElementById(`scwp-${assignUID}-no-button`).addEventListener("click", () => {
 					  alterAllWordPopUps(1);
+					  outputWords[index] = word;
+					  injectText(mostRecentlyEditedField);
+					  // replace suggestion with old in output
 					});
 					
 				}
 			};
 			
+
 			
 			
 			if (/[a-zA-Z]+(?:'[a-zA-Z]+)?/.test(word)) { // if word and not char
-				wordSpan.style.backgroundColor = '#FFC0CB80';
-				wordSpan.style.color = 'green';
-				wordSpan.style.cursor = "pointer";
-				wordSpan.style.pointerEvents = "auto";
-				wordSpan.addEventListener("click", wordClick); // make clickable
+					if (outputWords.length > 0) { // won't work if one word becomes multiple.
+						if ( word && outputWords[index] )
+							{
+								if (word !== outputWords[index]) {
+									console.log("inputWords[", word, "], outputWords[",outputWords[index], "]");
+									wordSpan.style.backgroundColor = '#FFC0CB80';
+									wordSpan.style.color = 'green';
+									wordSpan.style.cursor = "pointer";
+									wordSpan.style.pointerEvents = "auto";
+									correctedWord = outputWords[index];
+									wordSpan.addEventListener("click", wordClick); // make clickable
+								}
+					}
+				}
+				
+			
 			}
 			else {
 				wordSpan.style.pointerEvents = "none";
@@ -421,6 +437,8 @@ function setupTextAreaOverlay(textarea) {
 			}
 			
 			overlay.appendChild(wordSpan);
+
+			
 		});
 	}
 	
@@ -457,6 +475,7 @@ document.querySelectorAll(valid_field_types).forEach(setupTextAreaOverlay);
 
 // Listen for changes user makes to editable text.
 document.addEventListener('input', (event) => {
+	if (!event.target.matches(valid_field_types)) return;
 	userEditEvent = event;
 	onUserTextChange(userEditEvent);
 });
@@ -465,9 +484,12 @@ document.addEventListener('input', (event) => {
 
 const existingInputsList = {};
 
+let lastfetchmessage; // might become a problem.
 
 function getLLMResponse(message) {
 	console.log("Attempting to fetch to server...");
+	if (message !== lastfetchmessage) { // Don't fetch llm if last message same as this message.
+		lastfetchmessage = message;
 	return new Promise((resolve, reject) => {
 		chrome.runtime.sendMessage(
 		  { type: "getFetchLLM", url: "http://localhost:8000", text : message },
@@ -480,9 +502,12 @@ function getLLMResponse(message) {
 		  }
 		);
 	});
+	}
 }
 
 function injectText(textbox, text) {
+	injectTextAck = false;
+	console.log("injectText(textbox, text)");
     const changed_element = textbox;
     const cursorPos = changed_element.selectionStart;
     const original_element_name = changed_element.id.replace(/-sctextbox$/, '');
@@ -499,8 +524,12 @@ function injectText(textbox, text) {
     }, 0);
 }
 
+let inactivityRequestLLM;
+let inactivityRequestLLMStop = false;
+let inputEndWaitTime = 500; // wait 500ms for no more user input getLLMResponse.
 
 function onUserTextChange(event) {
+	console.log("onUserTextChange(event)", event);
 	
 	if (event) {
 	
@@ -528,6 +557,15 @@ function onUserTextChange(event) {
 			// Print Element Id and Text to console
 			console.log("Edited Field:", changed_element.id);
 			console.log("Field Text:", changed_element.value);
+
+
+			// clear output if it has been changed			
+			if (inputWords.length !== outputWords.length) {
+				outputWords = [];
+				inactivityRequestLLMStop = false;
+			}
+			
+
 			mostRecentlyEditedField = changed_element;
 			//changed_element.style.backgroundColor = highlight_colour // Highlights the text.
 		  
@@ -581,22 +619,26 @@ function onUserTextChange(event) {
 	  }
   
 	}
-	else {
-		injectText(mostRecentlyEditedField);
-	}
-  
-  
+ 
+  /* Timer that counts time since last user input, timeout restarts if another input detected before inputEndWaitTime */
+  clearTimeout(inactivityRequestLLM);  
+  if (inactivityRequestLLMStop !== true) {
+	  inactivityRequestLLMStop = true;
+	  inactivityRequestLLM = setTimeout(() => {
+		  queryForWholeTextBox();
+	  }, inputEndWaitTime);
+  }
 
 }
 
 
 function queryForWholeTextBox() { // Eventually will automatically send text stuffs to the LLM and then add yes no boxes for the changes.
 	console.log("Pressed...",userEditEvent);
-	let textResponse;
 	getLLMResponse(mostRecentlyEditedField.value).then(response => {
 		textResponse = response.data.correctText;
-		mostRecentlyEditedField.value = textResponse;
-		injectText(mostRecentlyEditedField,textResponse);
+		outputWords = textResponse.match(/[a-zA-Z]+(?:'[a-zA-Z]+)?| +|[^a-zA-Z\s]+/g) || []; // splits every time a 
+		//mostRecentlyEditedField.value = textResponse;
+		injectText(mostRecentlyEditedField,mostRecentlyEditedField.value); // to update alerts and stuff
 	});
 }
 
@@ -607,7 +649,8 @@ function queryForWholeTextBox() { // Eventually will automatically send text stu
 chrome.storage.local.get('extensionToggleButton', function(uservar) {
     if (uservar.extensionToggleButton || uservar.extensionToggleButton === undefined) {
 		console.log('Extension Toggle Button:', uservar.extensionToggleButton);
-		createOverlayInteractable()
+		createMovableOverlay();
+		getSuggestHtml();
     }
 });
 
@@ -620,8 +663,3 @@ chrome.storage.local.get('overlayToggleButton', function(uservar) {
 
 
 
-
-
-
-
-findTextBoxes();
