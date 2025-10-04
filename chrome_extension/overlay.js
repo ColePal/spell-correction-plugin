@@ -18,6 +18,7 @@ let mostRecentlyEditedField;
 
 let textResponse; // LLM response
 let outputWords  = [];
+let inputWords = [];
 
 async function getSuggestHtml() {	  
   // Get suggestionPopup.html for word popups.
@@ -305,7 +306,7 @@ function setupTextAreaOverlay(textarea) {
 		console.log("updateDivText = ()");
 		overlay.innerHTML = "";
 		
-		const inputWords = textarea.value.match(/[a-zA-Z]+(?:'[a-zA-Z]+)?| +|[^a-zA-Z\s]+/g) || []; // splits every time a 
+		inputWords = textarea.value.match(/[a-zA-Z]+(?:'[a-zA-Z]+)?| +|[^a-zA-Z\s]+/g) || []; // splits every time a 
 
 		console.log("InputWords:",inputWords);
 		console.log("OutputWords:",outputWords)
@@ -483,9 +484,12 @@ document.addEventListener('input', (event) => {
 
 const existingInputsList = {};
 
+let lastfetchmessage; // might become a problem.
 
 function getLLMResponse(message) {
 	console.log("Attempting to fetch to server...");
+	if (message !== lastfetchmessage) { // Don't fetch llm if last message same as this message.
+		lastfetchmessage = message;
 	return new Promise((resolve, reject) => {
 		chrome.runtime.sendMessage(
 		  { type: "getFetchLLM", url: "http://localhost:8000", text : message },
@@ -498,6 +502,7 @@ function getLLMResponse(message) {
 		  }
 		);
 	});
+	}
 }
 
 function injectText(textbox, text) {
@@ -519,6 +524,9 @@ function injectText(textbox, text) {
     }, 0);
 }
 
+let inactivityRequestLLM;
+let inactivityRequestLLMStop = false;
+let inputEndWaitTime = 500; // wait 500ms for no more user input getLLMResponse.
 
 function onUserTextChange(event) {
 	console.log("onUserTextChange(event)", event);
@@ -551,10 +559,12 @@ function onUserTextChange(event) {
 			console.log("Field Text:", changed_element.value);
 
 
-			// clear output if it has been changed
-			if (injectTextAck === true) {outputWords = [];}
-			else {injectTextAck = true;}
-
+			// clear output if it has been changed			
+			if (inputWords.length !== outputWords.length) {
+				outputWords = [];
+				inactivityRequestLLMStop = false;
+			}
+			
 
 			mostRecentlyEditedField = changed_element;
 			//changed_element.style.backgroundColor = highlight_colour // Highlights the text.
@@ -609,8 +619,15 @@ function onUserTextChange(event) {
 	  }
   
 	}
-  
-  
+ 
+  /* Timer that counts time since last user input, timeout restarts if another input detected before inputEndWaitTime */
+  clearTimeout(inactivityRequestLLM);  
+  if (inactivityRequestLLMStop !== true) {
+	  inactivityRequestLLMStop = true;
+	  inactivityRequestLLM = setTimeout(() => {
+		  queryForWholeTextBox();
+	  }, inputEndWaitTime);
+  }
 
 }
 
