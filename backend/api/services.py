@@ -4,10 +4,11 @@ from django.db.models import Value, CharField
 from django.db.models.functions import Coalesce
 from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
 import torch
-import textstat
-import fasttext
-from lexicalrichness import LexicalRichness
+#import textstat
+#import fasttext
+#from lexicalrichness import LexicalRichness
 from spellcorrector import settings
+from .textstat import gunning_fog, flesch_kincaid_grade, flesch_reading_ease
 from .models import CorrectionRequest, CorrectedWord
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
@@ -35,7 +36,7 @@ def text_input(text: str, n: int):
     else:
         return text
 
-
+"""
 def language_detection(text: str, length: int = 600):
     text = text_input(text, length)
     threshold = 0.60
@@ -55,7 +56,7 @@ def language_detection(text: str, length: int = 600):
     if language == "si":
         language="Sinhala"
     return language
-
+"""
 
 def evaluate(full_text: str, length: int = 600):
     text = text_input(full_text, length)
@@ -80,11 +81,13 @@ def evaluate(full_text: str, length: int = 600):
     sorted_score_list = sorted(emotion_scores, key=lambda r: r["score"], reverse=True)
     top_emotion = sorted_score_list[:1]
 
+    lang = "en"
+
     try:
         readability = {
-            "flesch_reading_ease": 1,#float(textstat.flesch_reading_ease(text)),
-            "fk_grade": 1,#float(textstat.flesch_kincaid_grade(text)),
-            "gunning_fog": 1#float(textstat.gunning_fog(text)),
+            "flesch_reading_ease": float(flesch_reading_ease(text, lang)),
+            "fk_grade": float(flesch_kincaid_grade(text, lang)),
+            "gunning_fog": float(gunning_fog(text, lang)),
         }
     except Exception as e:
         readability = {"error": str(e)}

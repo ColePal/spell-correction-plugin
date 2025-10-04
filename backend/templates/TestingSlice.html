@@ -119,10 +119,11 @@
                         </p>
                     </div>
                 </div>
-
-                <script type="module">
-                    import { eld } from "{% static 'js/languageDetection/languageDetector.js' %}"
-
+                <script type=module >
+                    import {eld} from "{% static 'js/languageDetection/languageDetector.js' %}"
+                    window.eld = eld;
+                </script>
+                <script>
                     document.getElementById("copyButton").addEventListener("mousedown", () => {
                         const text = document.getElementById("testTarget-lmspelldiv").textContent;
                         console.log("Coying", text);
@@ -262,12 +263,9 @@
                               llmRequestObsAdded = true;
                             }
 
-
-
-
                             const x = document.getElementById("testInput").value;
                             analyze(x);
-                            //language_detect(x)
+
                             const langSpan = document.getElementById("detected-language");
                             const language = eld.detect(x).language;
                             window.queryLanguage = language;

@@ -5,7 +5,7 @@ from importlib import resources
 from .cmudict import cmudict
 from .pyphen import Pyphen
 
-def flesch_reading_ease(text: str, language: str) -> float:
+def flesch_reading_ease(text: str, language: str = "en") -> float:
     return round(flesch_reading_ease_raw(text, language))
 
 def flesch_reading_ease_raw(text, lang):
@@ -197,7 +197,7 @@ def remove_punctuation(
     return text
 
 
-def flesch_kincaid_grade(text, language):
+def flesch_kincaid_grade(text, language:str = "en"):
     return round(flesch_reading_ease_raw(text, language))
 
 def flesch_kincaid_grade_raw(text : str, language : str) -> float:
@@ -209,7 +209,7 @@ def flesch_kincaid_grade_raw(text : str, language : str) -> float:
 
         return (0.39 * sentence_length) + (11.8 * syllables) - 15.59
 
-def gunning_fog(text, language):
+def gunning_fog(text, language : str = "en"):
     return round(gunning_fog_raw(text, language))
 
 def gunning_fog_raw(text: str, lang: str) -> float:

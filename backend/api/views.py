@@ -10,8 +10,7 @@ import json
 from django.middleware.csrf import get_token
 from django.views.decorators.cache import never_cache
 
-from .services import evaluate, language_detection, all_languages, most_misspelled_word, vocab_richness, \
-    calculate_typing_speed
+from .services import evaluate,  all_languages, most_misspelled_word, vocab_richness, calculate_typing_speed#, language_detection,
 from django.contrib.auth import authenticate
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -25,7 +24,6 @@ from .forms import ContactForm
 from . import lmspell
 from .sentencebuffer import sentencebuffer
 from django.contrib import messages
-from .services import evaluate
 import uuid
 from rest_framework.permissions import IsAuthenticated
 
@@ -156,7 +154,9 @@ def analyze(request):
     if request.method != "POST":
         return JsonResponse({"detail": "POST only"}, status=405)
     data = json.loads(request.body or "{}")
-    return JsonResponse(evaluate(data.get("text", "")))
+    evaluation = evaluate(data.get("text", ""))
+    print(evaluation)
+    return JsonResponse(evaluation)
 
 
 from django.contrib.sessions.models import Session
