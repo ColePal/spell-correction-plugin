@@ -230,6 +230,9 @@ function detectFirstDifference(textA, textB) {
 Send a correction request to the server. The server will respond with corrections or with null.
  */
 async function SpellCorrectionQuery(queryText, inputId, startingIndex, sentenceIndex, loginWarning) {
+    if (queryText === "" || queryText === null) {
+        return;
+    }
     //get the csrftoken from cookies.
     function getCookie(name) {
         let cookieValue = null;
@@ -245,16 +248,21 @@ async function SpellCorrectionQuery(queryText, inputId, startingIndex, sentenceI
         }
         return cookieValue;
     }
-
-
-    let JSONQuery = JSON.stringify({
+    let query = {
         "text": queryText,
         "sentenceIndex": sentenceIndex,
         "index": startingIndex,
         "language": "en",
         "premium": document.getElementById("textSwitch").checked
-    });
+    }
+    if (query.text === "") {
+        return;
+    }
+
+
+    let JSONQuery = JSON.stringify(query);
     console.log("Sending to server", JSONQuery);
+
     const spellCheckUrl = "{% url 'spell_check' %}";
     const csrfToken = getCookie("csrftoken");
     try {

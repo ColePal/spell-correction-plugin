@@ -141,3 +141,10 @@
                 flex: 1;
             }
 
+#readability {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-align: center;
+    color: black;
+}
+

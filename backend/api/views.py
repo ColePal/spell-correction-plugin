@@ -1,24 +1,21 @@
+from django.contrib.sessions.models import Session
 from django.utils import timezone
 import datetime
-import random
 import re
 from django.db.models.aggregates import Sum, Count
 from django.db.models.functions.comparison import Coalesce
 from django.db.models.functions.datetime import TruncDate
 from django.http import JsonResponse
-from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
 import json
-from regex import regex
+from django.middleware.csrf import get_token
+from django.views.decorators.cache import never_cache
+
 from .services import evaluate, language_detection, all_languages, most_misspelled_word, vocab_richness, \
     calculate_typing_speed
 from django.contrib.auth import authenticate
-from django.contrib.auth.decorators import login_required
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
-from django.shortcuts import render, redirect
-from django.shortcuts import render
 from .models import CorrectionRequest, CorrectedWord, WordFeedback
 from django.contrib.auth.models import User
 from django.contrib.auth import login as auth_login, logout as auth_logout
@@ -29,9 +26,8 @@ from . import lmspell
 from .sentencebuffer import sentencebuffer
 from django.contrib import messages
 from .services import evaluate
-from django.utils import timezone
-
 import uuid
+from rest_framework.permissions import IsAuthenticated
 
 
 sentenceBufferMap = {}
@@ -119,12 +115,14 @@ def spell_check(request):
     identifier = 0
     if stopper:
         identifier = int(datetime.datetime.now().timestamp() * 1000)
+        user = request.user if request.user.is_authenticated else None
         correction_record = CorrectionRequest.objects.create(
+            user=user,
             session_id=session_key,
             original_text = lmspellOutput["original"],
             received_text = lmspellOutput["corrected"],
             language=language,
-            created_at=identifier,
+            word_count=len(lmspellOutput["original"].split()),
         )
         print("Logging Correction to DB", correction_record)
         correction_record.save()
@@ -160,6 +158,8 @@ def analyze(request):
     data = json.loads(request.body or "{}")
     return JsonResponse(evaluate(data.get("text", "")))
 
+
+from django.contrib.sessions.models import Session
 @api_view(['POST', 'GET'])
 def login(request):
     if request.method == "GET":
@@ -258,13 +258,18 @@ def contact_view(request):
 
     return render(request, 'contact.html', {'form': form, 'alert_message': alert_message})
 
+def fetch_csrf_token(request):
+    return JsonResponse({"csrfToken": get_token(request)})
 
 @api_view(['POST'])
 def language(request):
     text = request.data.get("text", "")
     return Response({"language": language_detection(text)})
 
+
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@never_cache
 def dashboard_languages(request):
     lang_count=list(all_languages(request))
     payload = [
@@ -275,6 +280,8 @@ def dashboard_languages(request):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@never_cache
 def misspelled_word(request):
     word,totals = most_misspelled_word(request)
     if word==[]:
@@ -283,19 +290,20 @@ def misspelled_word(request):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@never_cache
 def mistakes_percentage_timeseries(request):
 
     try:
         days = int(request.GET.get("days", 30))
     except ValueError:
         days = 30
-    user_id = request.GET.get("user_id")
 
     end = timezone.now().date()
     start = end - datetime.timedelta(days=days)
     user=request.user
-    database_query = CorrectionRequest.objects.filter(created_at__date__gte=start, created_at__date__lte=end).filter(user_id=user.id)
-    data_list  = list(database_query.annotate(day=TruncDate("created_at")).values("day").annotate(words=Coalesce(Sum("word_count"), 0), corrections=Coalesce(Count("correctedword"), 0), ).order_by("day"))
+    database_query = CorrectionRequest.objects.filter(created_at__date__gte=start, created_at__date__lte=end).filter(user=user)
+    data_list  = list(database_query.annotate(day=TruncDate("created_at")).values("day").annotate(words=Coalesce(Sum("word_count"), 0),corrections=Coalesce(Count("corrected_words"), 0), ).order_by("day"))
     rows = {
         r["day"].isoformat(): {
             "words": int(r["words"] or 0),
@@ -320,16 +328,17 @@ def mistakes_percentage_timeseries(request):
     return Response({ "labels": labels,"series": [{"user_id": user.id,"username":getattr(user, "username", "You"), "data": values}],"unit": "percent"})
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@never_cache
 def richness(request):
     return Response({"richness":vocab_richness(request)})
 
-@api_view(['GET'])
-def richness(request):
-    mark=vocab_richness(request)
-    mark=str(mark)+"/10"
-    return Response({"richness":mark})
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@never_cache
 def typing_speed(request):
     request=request._request
+    if not request.session.session_key:
+        request.session.save()
     return Response({"speed":calculate_typing_speed(request)})

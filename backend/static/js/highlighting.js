@@ -1,7 +1,11 @@
-import {executeAllChanges} from "./frontendOutput.js";
+import {executeAllChanges, CorrectionType} from "./frontendOutput.js";
+//import {CorrectionType} from "./frontendOutput";
 
 async function acceptChangeRequest(feedback, isAccepted, correction) {
     console.log("QUERYIDENTIFIER", correction.identifier)
+    if (correction.identifier === 0) {
+        return
+    }
 
         const data = JSON.stringify({
             "identifier": correction.identifier,
@@ -35,7 +39,7 @@ async function acceptChangeRequest(feedback, isAccepted, correction) {
         }
 }
 
-function createCorrectionPanel(correction, span, parent, plainText, inputId, errorMap, blackList) {
+function createCorrectionPanel(correction, span, parent, plainText, inputId, errorMap, blackList, preText, postText) {
 
     //Correction panel that holds the "corrected word", accept and reject buttons
 
@@ -46,41 +50,88 @@ function createCorrectionPanel(correction, span, parent, plainText, inputId, err
     const buttonPanel = document.createElement("div");
     buttonPanel.className = "button-panel";
 
-    //this can be changed to something more attractive
-    const correctionText = document.createElement("div")
-    correctionText.textContent = correction.correctedText
+    const correctionText = document.createElement("div");
+
+    // Pre text (grey)
+    const preSpan = document.createElement("span");
+    preSpan.textContent = preText;
+    preSpan.style.color = "grey";
+
+    // Corrected text (highlighted)
+    const correctSpan = document.createElement("span");
+    correctSpan.textContent = correction.correctedText;
+
+    // Post text (grey)
+    const postSpan = document.createElement("span");
+    postSpan.textContent = postText;
+    postSpan.style.color = "grey";
+
+    // Append in order
+    correctionText.appendChild(preSpan);
+    correctionText.appendChild(correctSpan);
+    correctionText.appendChild(postSpan);
+
+    //correctionText.textContent = preText + " " + correction.correctedText + " " + postText;
+    const feedbackButton = document.createElement("button");
+    feedbackButton.className = "feedback-button";
+    feedbackButton.textContent = "Feedback";
+
+    const feedbackBox = document.createElement("textarea");
+    feedbackBox.hidden = true;
+    feedbackBox.style.width = "100%";
+    let feedbackToggle = true;
+    feedbackButton.addEventListener("mousedown", async () => {
+        if (!feedbackToggle) {
+            feedbackBox.hidden = true;
+            feedbackToggle = !feedbackToggle;
+        } else {
+            feedbackBox.hidden = false;
+            feedbackToggle = !feedbackToggle;
+        }
+    })
+
     const acceptButton = document.createElement("button")
-    acceptButton.className = "accept-button"
-    acceptButton.textContent = "✔";
+    acceptButton.className = "accept-button bg-primary"
+    acceptButton.textContent = "Accept";
+
+    const input = document.getElementById(inputId);
 
     acceptButton.addEventListener("mousedown", async () => {
-        const newTextNode = document.createTextNode(correction.correctedText)
-        span.replaceWith(newTextNode)
+        if (correction.type !== CorrectionType.INSERTION ) {
+            const newTextNode = document.createTextNode(correction.correctedText)
+            span.replaceWith(newTextNode)
+        } else {
+            let newTextNode = null;
+            if (parent.firstChild === span) {
+                newTextNode = document.createTextNode(correction.correctedText + " ");
+            } else {
+                newTextNode = document.createTextNode(correction.correctedText);
+            }
+            const spanTextNode = document.createTextNode(span.textContent);
+
+            parent.insertBefore(newTextNode,span);
+            span.replaceWith(spanTextNode);
+        }
         errorMap.get(inputId).delete(correction.startIndex)
         //previouslySentQueries.set(inputId, plainText)
         //parent.removeChild(correctionPanel)
         document.body.removeChild(correctionPanel)
-        document.getElementById(inputId).value = parent.innerText
+        input.value = parent.innerText
         //onInputEventListener(inputId, previouslySentQueries)
-        const el = document.getElementById(inputId);
 
-        // Update the value as you already do
-        el.value = parent.innerText;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
 
-        // Trigger the input event so listeners fire
-        el.dispatchEvent(new Event("input", { bubbles: true }));
-
-        if (correction.queryIdentifier === 0) {
+        if (correction.identifier === 0) {
             return
         }
 
-        await acceptChangeRequest("", true, correction)
+        await acceptChangeRequest(feedbackBox.value, true, correction)
 
     })
 
     const rejectButton = document.createElement("button")
     rejectButton.className = "reject-button";
-    rejectButton.textContent = "✖";
+    rejectButton.textContent = "Reject";
 
     rejectButton.addEventListener("mousedown", async () => {
         correctionPanel.style.visibility = "hidden"
@@ -97,13 +148,21 @@ function createCorrectionPanel(correction, span, parent, plainText, inputId, err
             return
         }
 
-        await acceptChangeRequest("", false, correction)
+        await acceptChangeRequest(feedbackBox.value, false, correction)
     })
     correctionPanel.appendChild(correctionText)
 
-    buttonPanel.appendChild(acceptButton)
-    buttonPanel.appendChild(rejectButton)
+    buttonPanel.appendChild(feedbackButton)
+
+    const acceptRejectContainer = document.createElement("div");
+    acceptRejectContainer.appendChild(rejectButton)
+    acceptRejectContainer.appendChild(acceptButton)
+
+    buttonPanel.appendChild(acceptRejectContainer)
+
     correctionPanel.appendChild(buttonPanel)
+
+    correctionPanel.appendChild(feedbackBox)
 
     document.body.appendChild(correctionPanel);
     //parent.appendChild(correctionPanel)
@@ -148,22 +207,51 @@ export default function updateHighlightedWords(inputId, errorMap, blackList) {
           return id;
         }
 
+        let charIndex = 0;
+        for (let i = 0; i < startIndex; i++) {
+            charIndex += words[i].length + 1; // +1 for the space
+        }
+
         const span = document.createElement("span");
         span.className = correction.type;
         span.textContent = targetWords.join(" ");
         span.id = generateRandomId()
-        const correctionPanel = createCorrectionPanel(correction, span, shadowDiv, plainText, inputId, errorMap, blackList)
+
+
+
+        const preStart = Math.max(0, charIndex - 20);
+        const preText = "..."+plainText.slice(preStart, charIndex);
+
+        const postStart = charIndex + span.textContent.length;
+        const postText = plainText.slice(postStart, postStart + 20)+"...";
+
+        const correctionPanel = createCorrectionPanel(correction, span, shadowDiv, plainText, inputId, errorMap, blackList, preText, postText)
         correctionPanel.id = span.id + "-panel";
 
-        span.addEventListener("mousedown", () => {
-            if (correctionPanel.style.visibility === "visible") {
-                correctionPanel.style.visibility = "hidden"
-            } else {
-                correctionPanel.style.visibility = "visible"
-            }
+        let showTimeout, hideTimeout;
 
-        })
+        span.addEventListener("mouseenter", () => {
+            clearTimeout(hideTimeout); // cancel hiding if moving back fast
+            showTimeout = setTimeout(() => {
+                correctionPanel.style.visibility = "visible";
+            }, 500);
+        });
+        span.addEventListener("mouseleave", () => {
+            clearTimeout(showTimeout);
+            startHideTimer();
+        });
+        correctionPanel.addEventListener("mouseenter", () => {
+            clearTimeout(hideTimeout);
+        });
 
+        correctionPanel.addEventListener("mouseleave", () => {
+            startHideTimer();
+        });
+        function startHideTimer() {
+            hideTimeout = setTimeout(() => {
+                correctionPanel.style.visibility = "hidden";
+            }, 500);
+        }
         words.splice(startIndex, numberOfTargetedWords, span);
 
         spans.set(span,correctionPanel);

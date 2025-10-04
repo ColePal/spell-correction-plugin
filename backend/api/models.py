@@ -1,18 +1,24 @@
 from django.db import models
 from datetime import date, time, datetime
+
+from django.db.models.deletion import SET_NULL
+from django.db.models.fields.related import ForeignKey
 from django.utils import timezone
 from django.contrib.auth.models import User
-#from django.contrib.sessions.models import Session
+from django.contrib.sessions.models import Session
+
 
 class CorrectionRequest(models.Model):
     # keeping track of corrections
     id = models.AutoField(primary_key=True)
     #session_id = models.ForeignKey(Session, on_delete=models.CASCADE)
+    user = ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
     session_id = models.CharField(max_length=40)
     original_text = models.TextField()
     received_text = models.TextField()
     language = models.CharField(max_length=5, default='en')
     created_at = models.DateTimeField(auto_now_add=True)
+    word_count = models.IntegerField(default=0)
     #created_at = models.CharField()
 
     def __str__(self):
@@ -24,10 +30,13 @@ class CorrectionRequest(models.Model):
         permissions = [
             ("create_correction_request", "Can store user text in database")
         ]
+        indexes = [
+            models.Index(fields=["user", "created_at"]),
+        ]
 
 class CorrectedWord(models.Model):
     id = models.AutoField(primary_key=True)
-    query_id = models.ForeignKey(CorrectionRequest, on_delete=models.CASCADE)
+    query_id = models.ForeignKey(CorrectionRequest, on_delete=models.CASCADE,related_name='corrected_words')
     incorrect_word = models.CharField(max_length=30)
     corrected_word = models.CharField(max_length=30)
 
@@ -53,5 +62,4 @@ class WordFeedback(models.Model):
                 preview += "..."
             return preview
         return "No word linked"
-
 

@@ -2,7 +2,7 @@
 //#if Input has not changed, no query will be sent.
 //const previouslySentQueries = new Map();
 
-const CorrectionType = Object.freeze({
+export const CorrectionType = Object.freeze({
     INSERTION:"insertion",
     REPLACEMENT:"replacement",
     DELETION:"deletion"
