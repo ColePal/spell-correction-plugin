@@ -112,12 +112,13 @@
                             </div>
                         </div>
                         <p class="mt-2">
-                          Detected language: <span id="language" ></span>
+                          Detected language: <span id="detected-language" ></span>
                         </p>
                     </div>
                 </div>
 
-                <script>
+                <script type="module">
+                    import { eld } from "{% static 'js/languageDetection/languageDetector.js' %}"
                     function getCookie(name) {
                         const value = `; ${document.cookie}`;
                         const parts = value.split(`; ${name}=`);
@@ -163,7 +164,7 @@
                     }
                     document.addEventListener("DOMContentLoaded", initCharts);
 
-
+                    /*
                     async function language_detect(text) {
                         const response=await fetch("/api/language/",{method: "POST", headers: {"Content-Type": "application/json","X-CSRFToken": csrfToken}, body: JSON.stringify({ text })});
                         const data = await response.json();
@@ -175,6 +176,8 @@
                             document.getElementById("language").textContent = (data.language && data.language.language) ? data.language.language :"Undefined Language"
                         }
                     }
+
+                     */
 
                      async function analyze(text) {
                         document.getElementById("status").textContent = "Analyzing Input...";
@@ -227,6 +230,11 @@
                             const x = document.getElementById("testInput").value;
                             analyze(x);
                             //language_detect(x)
+                            const langSpan = document.getElementById("detected-language");
+                            const language = eld.detect(x).language;
+                            window.queryLanguage = language;
+                            langSpan.innerText = language;
+                            console.log(language);
                             ;}
                             ,500);
                     });
@@ -244,6 +252,11 @@
         <!-- Bootstrap JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 
+        <script type="module">
+
+
+
+      </script>
         <script>  window.acceptChangeUrl = "{% url 'accept_change' %}";</script>
         <script>  window.spellCheckUrl = "{% url 'spell_check' %}";</script>
         <script type="module" src="{% static 'js/pageSetup.js' %}">

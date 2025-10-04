@@ -32,6 +32,7 @@ let loginWarning = true;
 import updateHighlightedWords from "./highlighting.js"
 import {executeAllChanges} from "./frontendOutput.js"
 
+
 export default async function onInputEventListener(inputId, previouslySentQueries) {
     /*
     The eventListener is going to handle requesting different depending on which condition
@@ -188,11 +189,12 @@ Send a correction request to the server. The server will respond with correction
  */
 async function SpellCorrectionQuery(queryText, inputId, startingIndex, sentenceIndex, loginWarning) {
     //get the csrftoken from cookies.
+
     let JSONQuery = JSON.stringify({
         "text": queryText,
         "sentenceIndex": sentenceIndex,
         "index": startingIndex,
-        "language": "en",
+        "language": window.queryLanguage,
         "premium": document.getElementById("textSwitch").checked
     });
     console.log("Sending to server", JSONQuery);

@@ -6,9 +6,9 @@ from django.db.models.functions.comparison import Coalesce
 from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
 import torch
 
-import textstat
-import fasttext
-from lexicalrichness import LexicalRichness
+#import textstat
+#import fasttext
+#from lexicalrichness import LexicalRichness
 
 from spellcorrector import settings
 from .models import CorrectionRequest, CorrectedWord
@@ -27,7 +27,7 @@ lang_model_path= settings.MODEL_DIRECTORY / "lid.176.ftz"
 form_model.to("cpu")
 form_model.eval()
 mapping = form_model.config.id2label
-fasttext_cache = None
+#fasttext_cache = None
 
 
 def text_input(text: str, n: int):
@@ -45,7 +45,7 @@ def language_detection(text: str, length: int = 600):
     threshold = 0.60
     if len(text) < 3:
         return "Need more text"
-    labels, probability = fasttext.load_model(str(lang_model_path)).predict(text, k=3)
+    labels, probability = ()#fasttext.load_model(str(lang_model_path)).predict(text, k=3)
     pairs = []
     for lab, p in zip(labels, probability):
        clean = lab.replace("__label__", "")
@@ -86,9 +86,9 @@ def evaluate(full_text: str, length: int = 600):
 
     try:
         readability = {
-            "flesch_reading_ease": float(textstat.flesch_reading_ease(text)),
-            "fk_grade": float(textstat.flesch_kincaid_grade(text)),
-            "gunning_fog": float(textstat.gunning_fog(text)),
+            "flesch_reading_ease": 1,#float(textstat.flesch_reading_ease(text)),
+            "fk_grade": 1,#float(textstat.flesch_kincaid_grade(text)),
+            "gunning_fog": 1#float(textstat.gunning_fog(text)),
         }
     except Exception as e:
         readability = {"error": str(e)}
@@ -123,9 +123,9 @@ def vocab_richness(request):
     user = request.user
     text = (CorrectionRequest.objects.filter(user_id=user.id).values_list('original_text', flat=True))
     text=" ".join(t for t in text if t) or ""
-    model=LexicalRichness(text)
-    richness=model.mtld()
-    return richness
+    #model=LexicalRichness(text)
+    #richness=model.mtld()
+    #return richness
 
 
 def calculate_typing_speed(request):

@@ -17,4 +17,3 @@ requests~=2.32.5
 fasttext-wheel~=0.9.2
 pandas>=2.0.0
 lexicalrichness>=0.5.1
-textstat>=1.0
