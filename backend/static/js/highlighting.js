@@ -52,21 +52,17 @@ function createCorrectionPanel(correction, span, parent, plainText, inputId, err
 
     const correctionText = document.createElement("div");
 
-    // Pre text (grey)
     const preSpan = document.createElement("span");
     preSpan.textContent = preText;
     preSpan.style.color = "grey";
 
-    // Corrected text (highlighted)
     const correctSpan = document.createElement("span");
     correctSpan.textContent = correction.correctedText;
 
-    // Post text (grey)
     const postSpan = document.createElement("span");
     postSpan.textContent = postText;
     postSpan.style.color = "grey";
 
-    // Append in order
     correctionText.appendChild(preSpan);
     correctionText.appendChild(correctSpan);
     correctionText.appendChild(postSpan);
