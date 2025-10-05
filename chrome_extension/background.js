@@ -129,7 +129,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 	  
 	  if (csrf != null) { // if found csrf
 		  
-		fetch("http://localhost:8000/api/spell-check/", {
+		fetch("http://localhost:8000/spell-check/", {
 		  method: "POST",
 		  headers: {
 			"Content-Type": "application/json",

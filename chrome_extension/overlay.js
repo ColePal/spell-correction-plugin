@@ -305,8 +305,7 @@ function setupTextAreaOverlay(textarea) {
 	const updateDivText = () => { //  = () => { means local to setupTextAreaOverlay!!!
 		console.log("updateDivText = ()");
 		overlay.innerHTML = "";
-		
-		inputWords = textarea.value.match(/[a-zA-Z]+(?:'[a-zA-Z]+)?| +|[^a-zA-Z\s]+/g) || []; // splits every time a 
+		inputWords = textarea.value.match(/\p{L}+(?:'\p{L}+)?|\s*[^\p{L}\s]+\s*|\s+/gu) || []; // splits every time a 
 
 		console.log("InputWords:",inputWords);
 		console.log("OutputWords:",outputWords)
@@ -391,7 +390,7 @@ function setupTextAreaOverlay(textarea) {
 						
 					  // Update text on screen with change.
 					  const result_element = document.getElementById('lm-result-'+(assignUID-1));
-					  inputWords[index] = result_element.textContent.trim();
+					  inputWords[index] = result_element.textContent;
 					  textarea.value = inputWords.join('');
 					  //updateDivText();
 					  alterAllWordPopUps(1);
@@ -409,16 +408,17 @@ function setupTextAreaOverlay(textarea) {
 			};
 			
 
+			// words likethis break it, so might have to check inputWords outputWords length and, find the difference and join suggestions to be 'like this' in future.
 			
-			
-			if (/[a-zA-Z]+(?:'[a-zA-Z]+)?/.test(word)) { // if word and not char
+			if (word) { // if word and not char
 					if (outputWords.length > 0) { // won't work if one word becomes multiple.
 						if ( word && outputWords[index] )
 							{
 								if (word !== outputWords[index]) {
 									console.log("inputWords[", word, "], outputWords[",outputWords[index], "]");
-									wordSpan.style.backgroundColor = '#FFC0CB80';
-									wordSpan.style.color = 'green';
+									if (/\p{L}+(?:'\p{L}+)?/u.test(word)) { wordSpan.style.backgroundColor = '#FFC0CB80'; }
+									else { wordSpan.style.backgroundColor = '#FFFB7380'; }
+									wordSpan.style.color = getComputedStyle(mostRecentlyEditedField).color; // It gets the in use text color!!!
 									wordSpan.style.cursor = "pointer";
 									wordSpan.style.pointerEvents = "auto";
 									correctedWord = outputWords[index];
@@ -636,7 +636,7 @@ function queryForWholeTextBox() { // Eventually will automatically send text stu
 	console.log("Pressed...",userEditEvent);
 	getLLMResponse(mostRecentlyEditedField.value).then(response => {
 		textResponse = response.data.correctText;
-		outputWords = textResponse.match(/[a-zA-Z]+(?:'[a-zA-Z]+)?| +|[^a-zA-Z\s]+/g) || []; // splits every time a 
+		outputWords = textResponse.match(/\p{L}+(?:'\p{L}+)?|\s*[^\p{L}\s]+\s*|\s+/gu) || []; // splits every time a 
 		//mostRecentlyEditedField.value = textResponse;
 		injectText(mostRecentlyEditedField,mostRecentlyEditedField.value); // to update alerts and stuff
 	});
