@@ -140,13 +140,14 @@
             }
 
             .contact-form {
-                max-width: 500px;
+                max-width: 800px;
                 margin: 0 auto;
                 text-align: left;
             }
 
             .contact-form p {
                 margin-bottom: 1rem;
+                width:100%;
             }
 
             .contact-form input,
@@ -156,4 +157,14 @@
                 padding: 0.5rem;
                 border: 1px solid #ccc;
                 border-radius: 6px;
+            }
+
+            .padding-plus {
+                padding: 10% 10% 10% 10%;
+            }
+
+            .single-item {
+                display: flex;
+                align-items: flex-end;
+                justify-content: flex-end;
             }

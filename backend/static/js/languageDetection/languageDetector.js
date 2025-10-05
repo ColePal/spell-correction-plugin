@@ -43,6 +43,11 @@ let doCleanText = false
 function detect (text) {
   if (typeof text !== 'string') return new LanguageResult('', 0, 0,{})
 
+  const sinhala_regex = /[\u0D80-\u0DFF]/;
+  if (sinhala_regex.test(text)) {
+    return new LanguageResult('si', 0, 0,{})
+  }
+
   if (doCleanText) {
     // Removes Urls, emails, alphanumerical & numbers
     text = getCleanTxt(text)

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="loginStyles.css">
+    </head>
+    <body>
+        <main>
+            <div class="inline"><div onclick="enableLogin()" class="page-separator">Login</div><div onclick="enableRegister()" class="page-separator">Register</div></div>
+            <div class="auth-form login" id="login">
+                <h1>Login</h1>
+            </div>
+            <div class="auth-form register" id=register hidden>
+                <h1>Register</h1>
+            </div>
+        </main>
+        <script>
+            function enableLogin() {
+                const login = document.getElementById("login");
+                const register = document.getElementById("register");
+                login.hidden = false;
+                register.hidden = true;
+            }
+            function enableRegister() {
+                const login = document.getElementById("login");
+                const register = document.getElementById("register");
+                login.hidden = true;
+                register.hidden = false;
+            }
+        </script>
+    </body>
+</html>

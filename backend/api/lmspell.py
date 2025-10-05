@@ -178,7 +178,7 @@ def spell_correction(text: str, language: str = 'en', premium: bool = False) -> 
     if len(text) > 1024:#limit from lmspell
         return {'original': text, 'corrected': text, 'success': False}
 
-    if premium and language == 'en':
+    if premium:
         print("MODEL", "Using Gemini")
         return spell_correction_gemini(text=text)
     else:

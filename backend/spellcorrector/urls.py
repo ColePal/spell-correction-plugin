@@ -25,6 +25,4 @@ urlpatterns = [
     path('', include('api.urls.authentication_urls')),
     path('', include('api.urls.page_urls')),
     path('', include('api.urls.spell_correction_urls')),
-
-
 ]
