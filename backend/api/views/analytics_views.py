@@ -1,0 +1,91 @@
+from django.utils import timezone
+import datetime
+from django.db.models.aggregates import Sum, Count
+from django.db.models.functions.comparison import Coalesce
+from django.db.models.functions.datetime import TruncDate
+from django.http import JsonResponse
+import json
+from django.views.decorators.cache import never_cache
+from ..services import all_languages, most_misspelled_word, vocab_richness, calculate_typing_speed, evaluate
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from ..models import CorrectionRequest
+from rest_framework.permissions import IsAuthenticated
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@never_cache
+def dashboard_languages(request):
+    lang_count=list(all_languages(request))
+    payload = [
+        {"language": lc["detected_language"], "count": lc["count"]}
+        for lc in lang_count
+    ]
+    return Response({ "languages_all": payload})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@never_cache
+def misspelled_word(request):
+    word,totals = most_misspelled_word(request)
+    if word==[]:
+        return Response({"word": None, "count": 0,**totals})
+    return Response({"word": word[0]["incorrect_word"], "count": word[0]["count"],**totals})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@never_cache
+def mistakes_percentage_timeseries(request):
+    try:
+        days = int(request.GET.get("days", 30))
+    except ValueError:
+        days = 30
+    end = timezone.now().date()
+    start = end - datetime.timedelta(days=days)
+    user=request.user
+    database_query = CorrectionRequest.objects.filter(created_at__date__gte=start, created_at__date__lte=end).filter(user=user)
+    data_list  = list(database_query.annotate(day=TruncDate("created_at")).values("day").annotate(words=Coalesce(Sum("word_count"), 0),corrections=Coalesce(Count("corrected_words"), 0), ).order_by("day"))
+    rows = {
+        r["day"].isoformat(): {
+            "words": int(r["words"] or 0),
+            "corrections": int(r["corrections"] or 0),
+        }
+        for r in data_list
+    }
+    data_list=rows
+    labels = []
+    values = []
+    dates = start
+    data_list=dict(data_list)
+    while dates <= end:
+     labels.append(dates.isoformat())
+     word_count = int(data_list.get(dates.isoformat(),{}).get("words", 0))
+     corrected_count = int(data_list.get(dates.isoformat(),{}).get("corrections", 0))
+     percentage = (100.0 * corrected_count / word_count) if word_count > 0 else 0.0
+     values.append(round(percentage, 2))
+     dates += datetime.timedelta(days=1)
+    return Response({ "labels": labels,"series": [{"user_id": user.id,"username":getattr(user, "username", "You"), "data": values}],"unit": "percent"})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@never_cache
+def richness(request):
+    return Response({"richness":vocab_richness(request)})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@never_cache
+def typing_speed(request):
+    request=request._request
+    if not request.session.session_key:
+        request.session.save()
+    return Response({"speed":calculate_typing_speed(request)})
+
+def analyze(request):
+    if request.method != "POST":
+        return JsonResponse({"detail": "POST only"}, status=405)
+    data = json.loads(request.body or "{}")
+    evaluation = evaluate(data.get("text", ""))
+    print(evaluation)
+    return JsonResponse(evaluation)
+

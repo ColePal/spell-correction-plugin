@@ -1,0 +1,138 @@
+import datetime
+import re
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework import status
+from ..models import CorrectionRequest, CorrectedWord, WordFeedback
+from .. import lmspell
+from ..sentencebuffer import sentencebuffer
+
+sentenceBufferMap = {}
+
+@api_view(['POST'])
+def spell_check(request):
+    # get data from request
+    text = request.data.get('text', '')
+    language = request.data.get('language', 'en')
+    sentence_index = request.data.get('sentenceIndex', 0)
+    index = request.data.get('index', 0)
+    premium = request.data.get('premium', False)
+    print(request.data)
+    #The user cannot use spell correction unless logged in.
+    if not request.user.is_authenticated:
+        response_data = {
+            'incorrectText': text,
+            'correctText': text,
+            'index': index,
+            'correctedWords': list(),
+            'identifier': 0
+        }
+        print("Not Logged in")
+        return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+    session_key = request.session.session_key
+
+
+    if session_key not in sentenceBufferMap:
+        sentenceBufferMap.update({session_key: sentencebuffer()})
+
+    if not text:
+        print("Text is required")
+        sentenceBufferMap.get(session_key).flush()
+        return Response(
+            {'error': 'Text is required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    #sentence buffer stores unterminated strings to concat to the text,
+    #providing the language model with contextful strings.
+
+    buffer_index = sentenceBufferMap.get(session_key).get_minimum_index(index, sentence_index)
+    query = sentenceBufferMap.get(session_key).get_query(index, text)
+
+    lmspellOutput = lmspell.spell_correction(text=query, language=language, premium=premium)
+    #print(sentenceBufferMap[session_key])
+
+    corrected_words = list()
+    if (lmspellOutput["success"] == False):
+        return Response()
+    for correction in lmspellOutput["differences"]:
+        corrected_word = {
+            'original': correction["original"],
+            'corrected': correction["corrected"],
+            'startIndex': correction["original_index"],
+            'type': correction["type"],
+            'identifier': 0
+        }
+        corrected_words.append(corrected_word)
+
+    #if there is a sentence terminator in query log it to db
+    stopper = re.search(r"[.?!](?=[^?.!]*$)", query)
+    identifier = 0
+    if stopper:
+        identifier = int(datetime.datetime.now().timestamp() * 1000)
+        user = request.user if request.user.is_authenticated else None
+        correction_record = CorrectionRequest.objects.create(
+            user=user,
+            session_id=session_key,
+            original_text = lmspellOutput["original"],
+            received_text = lmspellOutput["corrected"],
+            language=language,
+            word_count=len(lmspellOutput["original"].split()),
+        )
+        print("Logging Correction to DB", correction_record)
+        correction_record.save()
+
+        print("Logging corrected Words to DB")
+        for index, correction in enumerate(corrected_words):
+            print("correction", correction)
+            corrected_word_record = CorrectedWord.objects.create(
+                query_id = correction_record,
+                incorrect_word = correction["original"],
+                corrected_word = correction["corrected"],
+            )
+            corrected_word_record.save()
+            correction["identifier"] = corrected_word_record.id
+
+
+
+    response_data = {
+        'incorrectText': lmspellOutput["original"],
+        'correctText': lmspellOutput["corrected"],
+        'index': buffer_index,
+        'correctedWords': corrected_words,
+    }
+    print(response_data)
+    return Response(response_data)
+
+
+@api_view(['POST'])
+def accept_change(request):
+    word_id = request.data.get("identifier", 0)
+    accepted = request.data.get("accepted", True)
+    feedback = request.data.get("feedback", "")
+
+
+    try:
+        corrected_word = CorrectedWord.objects.get(id=word_id)
+    except CorrectedWord.DoesNotExist:
+        print("Word does not exist", word_id)
+        return Response(
+        {"error": f"CorrectedWord with id {word_id} not found."},
+        status = 404
+        )
+
+    word_feedback_record = WordFeedback.objects.create(
+        word_id = corrected_word,
+        accepted = accepted,
+        feedback = feedback,
+    )
+
+    print("Received Feedback", word_feedback_record)
+
+    word_feedback_record.save()
+
+    return Response(
+        {"success": f"CorrectedWord with id {word_id} was found."},
+        status=200
+    )

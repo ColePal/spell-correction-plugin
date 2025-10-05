@@ -16,18 +16,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from api import views
+from spellcorrector import project_views
 
 urlpatterns = [
-    path('', views.cover_page, name='covertest'),
+    path('health/', project_views.health_check, name='health_check'),
     path('admin/', admin.site.urls),
-    path('api/', include('api.urls')),
-    path('cover/', views.cover_page, name='cover'),
-    path('experimental/', views.experimental, name='experimental'),
-    path('login/', views.login, name='login'),
-    path('logout/', views.logout, name='logout'),
-    path('register/', views.register, name='register'),
-    path('dashboard/', views.dashboard_page, name='dashboard'),
-    path('contact/', views.contact_view, name='contact'),
-    path('success/', views.success_view, name='success'),
+    path('api/', include('api.urls.analytics_urls')),
+    path('', include('api.urls.authentication_urls')),
+    path('', include('api.urls.page_urls')),
+    path('', include('api.urls.spell_correction_urls')),
+
+
 ]
