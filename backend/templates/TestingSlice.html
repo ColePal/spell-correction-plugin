@@ -44,7 +44,7 @@
                                     This webpage uses a variety of LLMs (Large Language Models) to detect user error in their writing. Providing analytics such as emotion. Start by selecting a model and language then type a sentence!
                                 </p>
                             </div>
-                            <div id="status-llm" style="margin-bottom: 8px; color: white;">&nbsp;</div>
+                            <!--<div id="status-llm" style="margin-bottom: 8px; color: white;">&nbsp;</div>-->
                             <div class="row align-items-stretch flex-grow-1">
                                 <div class="col-sm-6 d-flex">
                                     <div class="card w-100">
@@ -63,7 +63,10 @@
                                 <div class="col-sm-6 d-flex">
                                     <div class="card w-100">
                                         <div class="card-body d-flex flex-column p-2">
-                                            <h5 class="card-title mb-1">LLM Corrected Text:</h5>
+                                            <div class="d-flex flex-apart">
+                                                <h5 class="card-title mb-1">LLM Corrected Text:</h5>
+                                                <div id="status-llm" class="inline-box" hidden><div class="loader" ></div><h5>Waiting for LLM response...</h5></div>
+                                            </div>
                                             <textarea id="testTarget" class="w-100 flex-grow-1" rows="12" style="pointer-events: none"></textarea>
                                             <button class="btn btn-primary" id="copyButton"
                                                 style="position: absolute; bottom: 25px; right: 25px;">Copy
@@ -235,13 +238,15 @@
                     document.getElementById("testInput").addEventListener("input", () => {
                         clearTimeout(timer);
                         timer = setTimeout(() => {
-                            document.getElementById("status-llm").textContent = "Waiting for LLM Response...";
+                            //document.getElementById("status-llm").textContent = "Waiting for LLM Response...";
+                            document.getElementById("status-llm").hidden = false
 
                             if (llmRequestObsAdded === false) {
                               const testTDiv = document.getElementById("testTarget-lmspelldiv");
 
                               const testTDivObserver = new MutationObserver(() => {
-                                document.getElementById("status-llm").textContent = '\u00A0';
+                                //document.getElementById("status-llm").textContent = '\u00A0';
+                                  document.getElementById("status-llm").hidden = true
                               });
 
                               testTDivObserver.observe(testTDiv, { subtree: true, characterData: true, childList: true });

@@ -121,7 +121,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 	  console.log("Server Cookies: ", cookies);
 	  
 	  var csrf = null
-	  for (cookie in cookies) {
+	  for (let cookie in cookies) {
 		if (cookies[cookie].name === "csrftoken") {
 			 csrf = cookies[cookie].value;
 	    }
@@ -168,5 +168,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 	  
 	});
     return true;
+  } else if (message.type === "FETCH_CSRF_TOKEN") {
+    getCSRFToken(message.csrfTokenUrl)
   }
 });

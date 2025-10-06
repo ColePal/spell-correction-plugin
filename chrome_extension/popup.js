@@ -1,3 +1,8 @@
+const ROOT_URL = "http://localhost:8000";
+const SPELL_CHECK_URL = ROOT_URL+"/api/spell-check/";
+const ACCEPT_CHANGE_URL = ROOT_URL+"/api/accept-change/";
+const FETCH_CSRF_TOKEN_URL = ROOT_URL+"/api/fetch-csrf-token/";
+
 document.addEventListener('DOMContentLoaded', function() {
 	const leftSideButton = document.getElementById('leftSideButton');
 	const rightSideButton = document.getElementById('rightSideButton');
@@ -58,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 	
 	// Figure out if logged in to server or not, if not show login button.
-	chrome.cookies.getAll({ url: "http://localhost:8000" }, (cookies) => {
+	chrome.cookies.getAll({ url: ROOT_URL }, (cookies) => {
 		
 	  console.log("Server Cookies: ", cookies);
 	  let sessionIDExists = false;
@@ -76,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
   		  document.getElementById('loginButtonDiv').appendChild(login_button);	
 			
 		  document.getElementById('serverLoginButton').addEventListener('click', () => {
-		      chrome.tabs.create({ url: 'http://localhost:8000/login' });
+		      chrome.tabs.create({ url: ROOT_URL+'/login' });
 		  });
 	  }
 	  

@@ -1,21 +1,85 @@
+.auth-panel {
+    padding: 0px;
+    margin: 0px;
+    font-family: Arial, Geneva, Tahoma, sans-serif;
+}
 .auth-form {
-
+    background-color: white;
+    width: 250px;
+    box-shadow: 5px 5px 10px rgb(48, 48, 48);
+    border-radius: 0px 5px 5px 5px;
+    text-align: center;
+    
+    transition: all 0.5s ease-in-out;
 }
-.login {
-
+.auth-form h2 {
+    padding-top: 10px;
+    margin: 0;
 }
-.register {
 
-}
+
 .page-separator {
-
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
-
-    border-bottom: 50px solid #555;
+    border-bottom: 20px solid white;
 	border-left: 10px solid transparent;
 	border-right: 10px solid transparent;
-    width:100px;
+    width:55px;
     height: 0;
+    display: block;
+    color: black;
+    text-align: center;
+    position: relative;
+    cursor: pointer;
+}
+.page-separator span {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: black;
+    font-weight: bold;
+    font-size:small;
+}
+.inline {
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+}
+body {
+    background-color: #555;
+}
 
+#login-button {
+    border-bottom-color: white;
+}
+#register-button {
+    border-bottom-color: grey;
+}
+form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    
+    
+}
+form label {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    text-wrap:nowrap;
+    margin-top: 20px;
+}
+
+form label input {
+    height: 20px;
+    margin-left: 25px;
+    margin-right: 25px;
+    text-align: center;
+}
+
+form button {
+    margin-top: 30px;
+    margin-bottom: 30px;
+    width: 60px;
+    margin-left: auto;
+    margin-right: auto;
 }
