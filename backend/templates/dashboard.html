@@ -1,4 +1,4 @@
-<!--{% load static %}-->
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -24,7 +24,6 @@
     </head>
 
     <body class="text-center">
-
 
         <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
             {% include "partials/navbar.html" %}
@@ -60,6 +59,10 @@
 <!--    </form>-->
 <!--  </div>-->
 <!--</div>-->
+            <section id="user-section" class="flex-row d-flex justify-content-around">
+                <h1>Dashboard for {{ user_profile.username }}</h1>
+                <h1>Account Created {{ user_profile.joined_at }}</h1>
+            </section>
 
             <section id="analytic_space" class="dash-grid"></section>
             <div class="row g-3 mb-3">
@@ -157,6 +160,10 @@
 
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <!--THIS SCRIPT IS CURRENTLY EMPTY. PUT YOUR JAVASCRIPTS IN THIS FILE-->
+        <script src="{% static 'js/dashboardScript.js' %}"></script>
+
     <script>
         let languagesChart;
         function initCharts() {

@@ -6,6 +6,7 @@ from rest_framework import status
 from ..models import CorrectionRequest, CorrectedWord, WordFeedback
 from .. import lmspell
 from ..sentencebuffer import sentencebuffer
+from django.contrib.auth.models import User
 
 sentenceBufferMap = {}
 
@@ -20,6 +21,7 @@ def spell_check(request):
     print(request.data)
     #The user cannot use spell correction unless logged in.
     if not request.user.is_authenticated:
+        """
         response_data = {
             'incorrectText': text,
             'correctText': text,
@@ -29,6 +31,12 @@ def spell_check(request):
         }
         print("Not Logged in")
         return Response(response_data, status=status.HTTP_401_UNAUTHORIZED)
+        """
+        user = User.objects.get(username="GuestUser")
+    else:
+        user = request.user
+
+    print("Requesting User:", user.username)
     session_key = request.session.session_key
 
 
@@ -37,7 +45,7 @@ def spell_check(request):
 
     if not text:
         print("Text is required")
-        sentenceBufferMap.get(session_key).flush()
+        #sentenceBufferMap.get(session_key).flush()
         return Response(
             {'error': 'Text is required'},
             status=status.HTTP_400_BAD_REQUEST
@@ -70,7 +78,7 @@ def spell_check(request):
     identifier = 0
     if stopper:
         identifier = int(datetime.datetime.now().timestamp() * 1000)
-        user = request.user if request.user.is_authenticated else None
+        #user = request.user if request.user.is_authenticated else None
         correction_record = CorrectionRequest.objects.create(
             user=user,
             session_id=session_key,

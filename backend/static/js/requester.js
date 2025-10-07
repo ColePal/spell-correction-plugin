@@ -196,13 +196,17 @@ async function SpellCorrectionQuery(queryText, inputId, startingIndex, sentenceI
         return null;
     }
     //get the csrftoken from cookies.
+    let premium = false;
+    if (document.getElementById("textSwitch")) {
+        premium = document.getElementById("textSwitch").checked
+    }
 
     let JSONQuery = JSON.stringify({
         "text": queryText,
         "sentenceIndex": sentenceIndex,
         "index": startingIndex,
         "language": window.queryLanguage,
-        "premium": document.getElementById("textSwitch").checked
+        "premium": premium
     });
     console.log("Sending to server", JSONQuery);
     //const spellCheckUrl = "{% url 'spell_check' %}";
