@@ -5,13 +5,27 @@
     </head>
     <body>
         <main>
-            <div class="inline"><div onclick="enableLogin()" class="page-separator">Login</div><div onclick="enableRegister()" class="page-separator">Register</div></div>
-            <div class="auth-form login" id="login">
-                <h1>Login</h1>
+            <div class="auth-panel">
+                <div class="inline"><div onclick="enableLogin()" class="page-separator" id="login-button"><span>Login</span></div><div onclick="enableRegister()" class="page-separator" id="register-button"><span>Register</span></div></div>
+                <div class="auth-form login" id="login">
+                    <h2>Login</h2>
+                    <form id="login-form">
+                        <label>Email <input type="email" required></label>
+                        <label>Password <input type="password" required></label>
+                        <button type="submit" onclick="loginRequest()">Login</button>
+                    </form>
+                </div>
+                <div class="auth-form register" id=register hidden>
+                    <h2>Register</h2>
+                    <form id="register-form">
+                        <label><span>Email</span><input type="email" required></label>
+                        <label>Password <input type="password" required></label>
+                        <label>Confirm password <input type="password" required></label>
+                        <button type="submit" onclick="registerRequest()">Register</button>
+                    </form>
+                </div>
             </div>
-            <div class="auth-form register" id=register hidden>
-                <h1>Register</h1>
-            </div>
+  
         </main>
         <script>
             function enableLogin() {
@@ -19,13 +33,48 @@
                 const register = document.getElementById("register");
                 login.hidden = false;
                 register.hidden = true;
+
+                const loginButton = document.getElementById("login-button")
+                const registerButton = document.getElementById("register-button")
+
+                loginButton.style.borderBottomColor = "white";
+                registerButton.style.borderBottomColor = "grey";
             }
             function enableRegister() {
                 const login = document.getElementById("login");
                 const register = document.getElementById("register");
                 login.hidden = true;
                 register.hidden = false;
+
+                const loginButton = document.getElementById("login-button")
+                const registerButton = document.getElementById("register-button")
+
+                loginButton.style.borderBottomColor = "grey";
+                registerButton.style.borderBottomColor = "white";
             }
+            async function getCSRFToken() {
+                chrome.cookies.getAll({ url: ROOT_URL }, (cookies) => {
+                console.log("Server Cookies: ", cookies);
+                
+                var csrf = null;
+                for (cookie in cookies) {
+                    if (cookies[cookie].name === "csrftoken") {
+                        csrf = cookies[cookie].value;
+                    }
+                }
+                if (csrf) return csrf;
+                
+            })}
+
+
+            async function loginRequest() {
+
+            }
+            async function registerRequest() {
+
+            }
+            
+
         </script>
     </body>
 </html>
