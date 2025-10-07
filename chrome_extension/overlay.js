@@ -634,11 +634,18 @@ function onUserTextChange(event) {
 
 function queryForWholeTextBox() { // Eventually will automatically send text stuffs to the LLM and then add yes no boxes for the changes.
 	console.log("Pressed...",userEditEvent);
-	getLLMResponse(mostRecentlyEditedField.value).then(response => {
+	let oldType = mostRecentlyEditedField.value;
+	getLLMResponse(mostRecentlyEditedField.value).then(response => { 
 		textResponse = response.data.correctText;
 		outputWords = textResponse.match(/\p{L}+(?:'\p{L}+)?|\s*[^\p{L}\s]+\s*|\s+/gu) || []; // splits every time a 
 		//mostRecentlyEditedField.value = textResponse;
-		injectText(mostRecentlyEditedField,mostRecentlyEditedField.value); // to update alerts and stuff
+		
+		if (inputWords.length === outputWords.length) {
+			injectText(mostRecentlyEditedField,mostRecentlyEditedField.value);} // to update alerts and stuff}
+		else {
+			if (outputWords.length > 0 && mostRecentlyEditedField.value === oldType) {
+			injectText(mostRecentlyEditedField,textResponse);}
+		}
 	});
 }
 
