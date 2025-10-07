@@ -60,19 +60,19 @@
 <!--  </div>-->
 <!--</div>-->
             <section id="user-section" class="flex-row d-flex justify-content-around">
-                <h1>Dashboard for {{ user_profile.username }}</h1>
-                <h1>Account Created {{ user_profile.joined_at }}</h1>
+                <h4>Dashboard <!-- for {{ user_profile.email }} -->
+                | Account Created {{ user_profile.joined_at }}</h4>
             </section>
 
             <section id="analytic_space" class="dash-grid"></section>
-            <div class="row g-3 mb-3">
-                <div class="col-12 col-md-4">
+            <div class="row g-3">
+                <div class="col-md-6 col-sm-12 mb-3">
                     <div class="card">
                         <div class="card-body">Language Usage (queries per language)</div>
                         <canvas id="languages_chart"></canvas>
                     </div>
                 </div>
-                <div class="col-12 col-md-4">
+                <div class="col-md-6 col-sm-12 mb-3">
                     <div class="card h-100">
                         <div class="card-body">
                               <div>
@@ -98,12 +98,16 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-12 col-md-4">
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6 col-sm-12 mb-3">
                     <div class="card">
                         <div class="card-body">Vocabulary Richness</div>
                         <div id="vocab"></div>
                         <br><br>
                     </div>
+                </div>
+                <div class="col-md-6 col-sm-12 mb-3">
                     <div class="card">
                         <div class="card-body">Typing Speed</div>
                         <div id="tspeed"></div>
@@ -113,7 +117,7 @@
             </div>
 
             <div class="row g-3 mb-3">
-                <div class="col-12 col-md-6">
+                <div class="col-sm-12">
                     <div class="card h-100">
                       <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between mb-2">
@@ -150,15 +154,13 @@
 
             <footer class="mastfoot mt-auto">
                 <div class="inner">
-                    <p>LLMSpell</p>
+                    <p>SpellPal</p>
                 </div>
             </footer>
         </div>
 
         <!-- Bootstrap JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-
-
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
         <!--THIS SCRIPT IS CURRENTLY EMPTY. PUT YOUR JAVASCRIPTS IN THIS FILE-->
