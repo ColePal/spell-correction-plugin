@@ -32,7 +32,6 @@
                 margin: 0;
                 overflow-y: scroll;
                 scrollbar-width: none;
-
             }
 
             body::-webkit-scrollbar {
@@ -63,7 +62,7 @@
 
             .cover-container {
                 width: 100%;
-                max-width: 100%;
+                max-width: 1024px;
                 padding: 1rem;
             }
 
@@ -74,8 +73,8 @@
 
             @media (min-width: 768px) {
                 .nav-inner {
-                    width: 60%;
-                    max-width: 80%;
+                    width: 90%;
+                    max-width: 90%;
                 }
             }
 
