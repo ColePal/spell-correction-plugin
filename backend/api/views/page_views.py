@@ -3,6 +3,10 @@ from rest_framework.decorators import api_view
 from django.shortcuts import render
 from django.core.mail import send_mail
 from ..forms import ContactForm
+from django.contrib.auth.models import User
+
+from ..models import UserDashboardPreferences
+
 
 def contact_view(request):
     alert_message = None
@@ -47,10 +51,30 @@ def covertest_page(request):
     return render(request, 'covertest.html')
 
 def cover_page(request):
-    return render(request, 'TestingSlice.html')
+    if not request.user.is_authenticated:
+        user = User.objects.get(username="GuestUser")
+    else:
+        user = request.user
+    all_user_permissions = user.get_all_permissions()
+    user_permissions = {
+        "premium_access": 'auth.can_access_premium_spell_correction_models' in all_user_permissions,
+        "standard_access": 'auth.can_access_standard_spell_correction_models' in all_user_permissions,
+    }
+    return render(request, 'TestingSlice.html', context={"user_permissions": user_permissions })
 
 def dashboard_page(request):
-    return render(request, 'dashboard.html')
+    user = request.user
+    user_profile = {
+        "name": user.username,
+        "joined_at": user.date_joined,
+    }
+    preference_list, created = UserDashboardPreferences.objects.get_or_create(user=user)
+    if (created):
+        user_preferences = []
+    else:
+        user_preferences = preference_list.preferences
+
+    return render(request, 'dashboard.html', context={"user_profile":user_profile, "user_preferences": user_preferences})
 
 def success_view(request):
     return render(request, 'success.html')

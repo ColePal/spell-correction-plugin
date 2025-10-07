@@ -7,6 +7,9 @@ from django.shortcuts import render, redirect
 from django.middleware.csrf import get_token
 from django.contrib import messages
 
+from api.models import UserDashboardPreferences
+
+
 @api_view(['POST', 'GET'])
 def login(request):
     if request.method == "GET":
@@ -19,12 +22,12 @@ def login(request):
 
         if user is not None:
             auth_login(request, user)
-            return redirect("experimental")
+            return redirect("covertest")
         else:
             print("User does not exist")
             messages.error(request, "Invalid credentials")
             return redirect("login")
-    return redirect("experimental")
+    return redirect("covertest")
 
 @api_view(['POST'])
 def register(request):
@@ -44,9 +47,26 @@ def register(request):
 def logout(request):
     auth_logout(request)
     messages.success(request, "You have been logged out.")
-    return redirect("experimental")
+    return redirect("covertest")
 
 def fetch_csrf_token(request):
     return JsonResponse({"csrfToken": get_token(request)})
+
+def set_user_preferences(request):
+    if request.method == "GET":
+        return JsonResponse({"preferences": []})
+    user = request.user
+    if not user.is_authenticated:
+        return JsonResponse({"preferences": []})
+
+    if not user.user_permissions.get(codename="can_access_user_dashboard"):
+        return JsonResponse({"preferences": []})
+
+    user_preferences = request.POST.get("preferences")
+    if not user_preferences:
+        return JsonResponse({"preferences": []})
+
+    user_dashboard_pref, _ = UserDashboardPreferences.objects.get_or_create(user=user)
+    user_dashboard_pref.preferences = user_preferences
 
 
