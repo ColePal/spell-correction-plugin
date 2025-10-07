@@ -6,7 +6,7 @@ from ..forms import ContactForm
 from django.contrib.auth.models import User
 
 from ..models import UserDashboardPreferences
-
+from .authentication_views import login
 
 def contact_view(request):
     alert_message = None
@@ -64,17 +64,20 @@ def cover_page(request):
 
 def dashboard_page(request):
     user = request.user
-    user_profile = {
-        "name": user.username,
-        "joined_at": user.date_joined,
-    }
-    preference_list, created = UserDashboardPreferences.objects.get_or_create(user=user)
-    if (created):
-        user_preferences = []
-    else:
-        user_preferences = preference_list.preferences
+    if (user.is_authenticated) :
+        user_profile = {
+            "name": user.username,
+            "joined_at": user.date_joined,
+        }
+        preference_list, created = UserDashboardPreferences.objects.get_or_create(user=user)
+        if (created):
+            user_preferences = []
+        else:
+            user_preferences = preference_list.preferences
 
-    return render(request, 'dashboard.html', context={"user_profile":user_profile, "user_preferences": user_preferences})
+        return render(request, 'dashboard.html', context={"user_profile":user_profile, "user_preferences": user_preferences})
+    else:
+        return login(request)
 
 def success_view(request):
     return render(request, 'success.html')
