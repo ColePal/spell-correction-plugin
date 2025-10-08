@@ -18,7 +18,6 @@ _tokenizers = {}
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 #Need url for "API endpoints for interacting with Gemini Models"
-HUGGINGFACE_API_KEY = os.getenv('HUGGINGFACE_API_KEY', '')
 hf_token = os.getenv('HUGGINGFACE_API_KEY','')
 
 def get_model(language='en'):
@@ -122,7 +121,7 @@ def spell_correction_gemini(text: str) -> Dict[str, Any]:
         'differences': differences,
         'num_corrections': len(differences),
         'success': True,
-        'model': 'gemini-2.0-flash'#lightweight and cheapest
+        'model': 'gemini-2.5-flash-lite'#lightweight
     }
 
 def spell_correction_standard(text : str = "", language : str = 'en') -> Dict[str, Any]:
