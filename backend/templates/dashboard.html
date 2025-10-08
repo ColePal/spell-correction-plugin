@@ -18,147 +18,148 @@
 
         <!-- Custom CSS and BG Image -->
 <!--        <link href="{% static 'css/templateStyles.css' %}" rel="stylesheet"/>-->
-        <link href="{% static 'css/dashboardStyles.css' %}" rel="stylesheet"/>
         <link href="{% static 'css/navbar.css' %}" rel="stylesheet"/>
+        <link href="{% static 'css/dashboardStyles.css' %}" rel="stylesheet"/>
+
 
     </head>
 
+      <!-- New Sidebar with updated Columns -->
     <body class="text-center">
 
         <div class="cover-container d-flex h-100 p-3 mx-auto flex-column">
             {% include "partials/navbar.html" %}
 
-<!--<div class="d-flex">-->
-<!--  <div class="flex-shrink-0 p-3 bg-dark text-white" style="width: 220px;">-->
-<!--    <h5>Customize Dashboard</h5>-->
-<!--    <br>-->
-<!--    <h6>Select analytics you want to see</h6>-->
-<!--    <br>-->
-
-<!--    <form id="widget-picker" class="vstack gap-2">-->
-<!--        <ul >-->
-<!--            <li>-->
-<!--      <label class="form-check">-->
-<!--        <input class="form-check-input" type="checkbox" value="languages" />-->
-<!--        <span class="form-check-label">Language Usage</span>-->
-<!--      </label>-->
-<!--                </li>-->
-<!--            <li>-->
-<!--      <label class="form-check">-->
-<!--        <input class="form-check-input" type="checkbox" value="mistakes" />-->
-<!--        <span class="form-check-label">Mistakes Chart</span>-->
-<!--      </label>-->
-<!--            </li>-->
-<!--            <li>-->
-<!--         <label class="form-check">-->
-<!--        <input class="form-check-input" type="checkbox" value="mistakes" />-->
-<!--        <span class="form-check-label">Spelling Analytics</span>-->
-<!--      </label>-->
-<!--            </li>-->
-<!--        </ul>-->
-<!--    </form>-->
-<!--  </div>-->
-<!--</div>-->
             <section id="user-section" class="flex-row d-flex justify-content-around">
                 <h4>Dashboard <!-- for {{ user_profile.email }} -->
                 | Account Created {{ user_profile.joined_at }}</h4>
             </section>
 
-            <section id="analytic_space" class="dash-grid"></section>
-            <div class="row g-3">
-                <div class="col-md-6 col-sm-12 mb-3">
-                    <div class="card">
-                        <div class="card-body">Language Usage (queries per language)</div>
-                        <canvas id="languages_chart"></canvas>
-                    </div>
+            <div class="row  ">
+                <div class="col-md-3  mb-3" id="customMenu">
+                    <aside class="flex-shrink-0 p-3 bg-dark text-white sidebar-fixed border" >
+                      <h5 class="mb-2">Customize Dashboard</h5>
+                      <small class="text-secondary d-block mb-3">Select analytics you want to see</small>
+
+                      <form id="box-picker" class="vstack ">
+                        <ul class="m-0 p-0 list-unstyled">
+                          <li class="mb-1">
+                            <label class="form-check">
+                              <input class="form-check-input" type="checkbox" value="mistakesChart" />
+                              <span class="form-check-label">Mistakes Chart</span>
+                            </label>
+                          </li>
+                          <li class="mb-1">
+                            <label class="form-check">
+                              <input class="form-check-input" type="checkbox" value="languageQueries" />
+                              <span class="form-check-label">Language Usage</span>
+                            </label>
+                          </li>
+                          <li class="mb-1">
+                            <label class="form-check">
+                              <input class="form-check-input" type="checkbox" value="spellingDetails" />
+                              <span class="form-check-label">Spelling Analytics</span>
+                            </label>
+                          </li>
+                          <li class="mb-1">
+                            <label class="form-check">
+                              <input class="form-check-input" type="checkbox" value="vocabRichness" />
+                              <span class="form-check-label">Vocabulary Richness</span>
+                            </label>
+                          </li>
+                          <li class="mb-1">
+                            <label class="form-check">
+                              <input class="form-check-input" type="checkbox" value="typingSpeed" />
+                              <span class="form-check-label">Typing Speed</span>
+                            </label>
+                          </li>
+                        </ul>
+                      </form>
+                    </aside>
+
                 </div>
-                <div class="col-md-6 col-sm-12 mb-3">
+
+                <div class='col-md-9'>
+                    <section id="analytic_space" class="dash-grid"></section>
+                    <div class="row g-3">
+                        <div class="col-sm-12" id="mistakes_box">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <h5 class="mb-0">Mistakes % Over Time</h5>
+                                        <div class="d-flex gap-2">
+                                        <p id="pctUser" style="min-width:200px"></p>
+                                        <select id="pctRange" class="form-select form-select-sm">
+                                          <option value="30" selected>Last 30 days</option>
+                                          <option value="90">Last 90 days</option>
+                                          <option value="180">Last 180 days</option>
+                                        </select>
+                                        </div>
+                                    </div>
+                                    <canvas id="mistake_pct_chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 col-sm-12 mb-3"  id="language_distribution_box">
+                            <div class="card">
+                                <div class="card-body">Language Usage (queries per language)</div>
+                                <canvas id="languages_chart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-12 col-md-6 mb-3" id="spellings_details_box">
                     <div class="card h-100">
                         <div class="card-body">
-                              <div>
-                                 <strong>Most Misspelled Word:</strong>
-                                 <span id="most_misspelled">Loading...</span>
-                             </div>
-                            <div>
-                                 <strong>Total corrections:</strong>
-                                 <span id="total_corrections">—</span>
-                             </div>
-                              <div>
-                                  <strong>Unique misspelled:</strong>
-                                  <span id="unique_misspelled">—</span>
-                              </div>
-                             <div>
-                                 <strong>Unique corrected:</strong>
-                                 <span id="unique_corrected">—</span>
-                             </div>
-                             <div>
-                                 <strong>Total requests::</strong>
-                                 <span id="total_requests">—</span>
-                             </div>
+                            <h6 class="mb-3">Top 10 Misspelled Phrases</h6>
+                            <ul id="top_misspelled" class="list-unstyled small mb-0"></ul>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div class="row g-3">
-                <div class="col-md-6 col-sm-12 mb-3">
-                    <div class="card">
-                        <div class="card-body">Vocabulary Richness</div>
-                        <div id="vocab"></div>
-                        <br><br>
-                    </div>
-                </div>
-                <div class="col-md-6 col-sm-12 mb-3">
-                    <div class="card">
-                        <div class="card-body">Typing Speed</div>
-                        <div id="tspeed"></div>
-                        <br><br>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row g-3 mb-3">
-                <div class="col-sm-12">
-                    <div class="card h-100">
-                      <div class="card-body">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                          <h5 class="mb-0">Mistakes % Over Time</h5>
-                          <div class="d-flex gap-2">
-                            <p id="pctUser" style="min-width:200px">
-                            </p>
-                            <select id="pctRange" class="form-select form-select-sm">
-                              <option value="30" selected>Last 30 days</option>
-                              <option value="90">Last 90 days</option>
-                              <option value="180">Last 180 days</option>
-                            </select>
-                          </div>
                         </div>
-                        <canvas id="mistake_pct_chart"></canvas>
-                      </div>
+
+                        <div class="col-md-6 col-sm-12 mb-3" id="language_richness_box">
+                            <div class="card">
+                                <div class="card-body">Vocabulary Richness</div>
+                                <div id="vocab"></div>
+                                <br><br>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 col-sm-12 mb-3" id="typing_speed_box">
+                            <div class="card">
+                                <div class="card-body">Typing Speed</div>
+                                <div id="tspeed"></div>
+                                <br><br>
+                            </div>
+                        </div>
+
                     </div>
+        {#                <div class="col-12 col-md-6">#}
+        {#                    <div class="card h-100">#}
+        {#                        <div class="card-body">Did you know?</div>#}
+        {#                    </div>#}
+        {#                </div>#}
+
+                    <!--
+                    Need to add some functionality to the floating button
+                    with the sidebar
+                    -->
+                    <button class="btn btn-primary floatingbutton" onclick="toggleMenu()">
+                        <i class="bi bi-plus"></i>
+                    </button>
+
                 </div>
-{#                <div class="col-12 col-md-6">#}
-{#                    <div class="card h-100">#}
-{#                        <div class="card-body">Did you know?</div>#}
-{#                    </div>#}
-{#                </div>#}
+
             </div>
 
-            <!--
-            Need to add some functionality to the floating button
-            with the sidebar
-            -->
-
-            <button class="btn btn-primary floatingbutton">
-                <i class="bi bi-plus"></i>
-            </button>
 
             <footer class="mastfoot mt-auto">
                 <div class="inner">
                     <p>SpellPal</p>
                 </div>
             </footer>
-        </div>
 
+</div>
         <!-- Bootstrap JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -180,6 +181,15 @@
          return `rgb(${red}, ${green}, ${blue})`;
 }
 
+        function toggleMenu() {
+            var x = document.getElementById("customMenu");
+              if (x.style.display === "none") {
+                x.style.display = "block";
+              } else {
+                x.style.display = "none";
+              }
+        }
+
        async function all_languages(){
          const response = await fetch("{% url 'dashboard_languages' %}");
           const data = await response.json();
@@ -196,21 +206,26 @@
            languagesChart.update();
         }
 
-        async function misspelled(){
-             const response = await fetch("{% url 'misspelled_word' %}");
-             const data = await response.json();
-               if (data.word) {
-                   document.getElementById("most_misspelled").innerText = ` '${data.word}' (${data.count} times mispelled)`;
-               }
-               else {
-                    document.getElementById("most_misspelled").innerText = "No data yet";
-                }
-               document.getElementById("total_corrections").textContent = data.total_corrections;
-               document.getElementById("unique_misspelled").textContent = data.unique_misspelled;
-               document.getElementById("unique_corrected").textContent  = data.unique_corrected;
-               document.getElementById("total_requests").textContent    = data.total_requests;
-
+        async function misspelled() {
+            const response = await fetch("{% url 'misspelled_word' %}");
+            const data = await response.json();
+            const wordList = document.getElementById("top_misspelled");
+            const top = Array.isArray(data.top) ? data.top : [];
+            if (top.length === 0) {
+                wordList.innerHTML = `<li class="misspelled-words">No data yet</li>`;
+                return;
+            }
+            wordList.innerHTML = top.map((a, b) => `<li class="d-flex justify-content-between">
+             <span>${b + 1}. <strong>${a.word}</strong></span>
+             <span class="misspelled-words">${a.count}</span></li>`) .join("");
         }
+
+        {#document.getElementById("total_corrections").textContent = data.total_corrections;#}
+        {#document.getElementById("unique_misspelled").textContent = data.unique_misspelled;#}
+        {#document.getElementById("unique_corrected").textContent  = data.unique_corrected;#}
+        {#document.getElementById("total_requests").textContent    = data.total_requests;#}
+
+
 
         let mistakeChart;
 
@@ -266,17 +281,17 @@
             const response=await fetch("{% url 'richness' %}");
              const data = await response.json();
              let colour;
-             if (data.richness<4){
+             if (data.richness<40){
                  colour = '#dc3545'
              }
-             else if (data.richness<7){
+             else if (data.richness<70){
              colour = '#ffc107'
               }
              else{
                  colour = '#28a745'
              }
             const vocab= document.getElementById("vocab");
-             vocab.textContent = `${data.richness.toFixed(1)}/10`;
+             vocab.textContent = `${data.richness.toFixed(1) }/100`;
              vocab.style.backgroundColor = colour;
          }
 
@@ -285,22 +300,92 @@
             const data = await response.json();
              document.getElementById("tspeed").innerText = data.speed+" wpm";
 
+             }
+    document.addEventListener("DOMContentLoaded", () => {
+      const picker = document.getElementById("box-picker");
+
+      const boxMap = {
+  languageQueries: document.getElementById("language_distribution_box"),
+  mistakesChart:   document.getElementById("mistakes_box"),
+  vocabRichness:   document.getElementById("language_richness_box"),
+  spellingDetails: document.getElementById("spellings_details_box"),
+  typingSpeed:     document.getElementById("typing_speed_box"),
+};
+
+
+        const initialized = {languageQueries: false, mistakesChart: false, vocabRichness: false, spellingDetails: false, typingSpeed: false};
+        let preferences =null
+        try {
+              preferences=JSON.parse(localStorage.getItem("dashboard_boxes"));
+         }
+        catch (error){
+            console.error(error);
          }
 
-        document.addEventListener('DOMContentLoaded', async () => {
-          await renderMistakePct();
-          document.getElementById("pctUser").addEventListener("change", renderMistakePct);
-          document.getElementById("pctRange").addEventListener("change", renderMistakePct);
-         });
+         if (Array.isArray(preferences)){
+             picker.querySelectorAll('input[type="checkbox"]').forEach(checkBox => {
+                 checkBox.checked = preferences.includes(checkBox.value)
+                 ;});
+         }
+         else{
+             const allOn=Object.keys(boxMap).filter(k => boxMap[k]);
+             picker.querySelectorAll('input[type="checkbox"]').forEach(checkBox => {checkBox.checked = allOn.includes(checkBox.value);});
+             localStorage.setItem("dashboard_boxes", JSON.stringify(allOn));
+         }
 
-       document.addEventListener('DOMContentLoaded', () => {
-     initCharts();
-     all_languages();
-     misspelled();
-     richness();
-     typeSpeed();
+      apply();
 
-  });
+      picker.addEventListener("change", () => {
+        const selection= Array.from(picker.querySelectorAll('input[type="checkbox"]:checked')).map(checkBox => checkBox.value);
+        localStorage.setItem("dashboard_boxes", JSON.stringify(selection));
+         apply();
+      });
+      const percentage=document.getElementById("pctRange")
+       percentage.addEventListener("change", () => {
+    if (!document.getElementById("mistakes_box").classList.contains("d-none")) {
+      renderMistakePct();
+  }
+      });
+
+      function apply() {
+        const selected = new Set(Array.from(picker.querySelectorAll('input[type="checkbox"]:checked')).map(checkBox => checkBox.value));
+        for (const [key, box] of Object.entries(boxMap)) {
+          if (!box) {
+              continue;
+          }
+          const on = selected.has(key);
+          box.classList.toggle('d-none', !on);
+
+         if (on && !initialized[key]) {
+
+            if (key === "languageQueries") {
+              if (!window.languagesChart)
+              {
+                  initCharts();
+              }
+              all_languages();
+            }
+            if (key === "mistakesChart")
+            {
+              renderMistakePct();
+            }
+            if (key === "vocabRichness")
+            {
+              richness();
+            }
+            if (key === "spellingDetails")
+            {
+              misspelled();}
+            if (key === "typingSpeed")
+            {
+              typeSpeed();
+            }
+            initialized[key] = true;
+          }
+        }
+      }
+});
     </script>
-    </body>
-</html>
+ </div>
+ </body>
+ </html>

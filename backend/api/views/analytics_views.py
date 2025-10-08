@@ -27,10 +27,9 @@ def dashboard_languages(request):
 @permission_classes([IsAuthenticated])
 @never_cache
 def misspelled_word(request):
-    word,totals = most_misspelled_word(request)
-    if word==[]:
-        return Response({"word": None, "count": 0,**totals})
-    return Response({"word": word[0]["incorrect_word"], "count": word[0]["count"],**totals})
+    top = most_misspelled_word(request)
+    return Response({"top": top})
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -71,6 +70,7 @@ def mistakes_percentage_timeseries(request):
 @never_cache
 def richness(request):
     return Response({"richness":vocab_richness(request)})
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

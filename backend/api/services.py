@@ -1,12 +1,15 @@
+import math
 import os
 from django.db.models.aggregates import Count
 from django.db.models import Value, CharField
 from django.db.models.functions import Coalesce
+from django.db.models.functions.comparison import NullIf
+from django.db.models.functions.text import Trim
 from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
 import torch
 #import textstat
 #import fasttext
-#from lexicalrichness import LexicalRichness
+from lexicalrichness import LexicalRichness
 from spellcorrector import settings
 from .textstat import gunning_fog, flesch_kincaid_grade, flesch_reading_ease
 from .models import CorrectionRequest, CorrectedWord
@@ -101,7 +104,10 @@ def evaluate(full_text: str, length: int = 600):
 
 def all_languages(request):
     user = request.user
-    return ( CorrectionRequest.objects.annotate(detected_language=Coalesce('language', Value('undetected'),output_field=CharField())).filter(user=user)
+    return ( CorrectionRequest.objects.annotate(trimmed=Trim('language'))
+        .annotate(language_ok=NullIf('trimmed', Value('')))
+         .annotate(detected_language=Coalesce('language_ok', Value('undetected'),output_field=CharField()))
+        .filter(user=user)
         .values('detected_language')
         .annotate(count=Count('id'))
         .order_by('-count'))
@@ -109,23 +115,34 @@ def all_languages(request):
 
 def most_misspelled_word(request):
     user = request.user
-    word=list(CorrectedWord.objects.values("incorrect_word").annotate(count=Count("id")).filter(query_id__user=user).order_by("-count")[:1] )
-    totals={
-        "total_corrections": CorrectedWord.objects.filter(query_id__user=user).count(),
-        "unique_misspelled": CorrectedWord.objects.values("incorrect_word").filter(query_id__user=user).distinct().count(),
-        "unique_corrected": CorrectedWord.objects.values("corrected_word").filter(query_id__user=user).distinct().count(),
-        "total_requests": CorrectionRequest.objects.filter(user=user).count(),
-    }
-    return word, totals
+    words=list(CorrectedWord.objects.values("incorrect_word")
+          .exclude(incorrect_word__isnull=True).annotate(word=Trim('incorrect_word'))
+               .exclude(word__regex=r'^\s*$') .exclude(word__regex=r'^\W+$').values('word')
+               .filter(query_id__user=user).annotate(count=Count("id")).order_by("-count")[:10] )
+    # totals={
+    #     "total_corrections": CorrectedWord.objects.filter(query_id__user=user).count(),
+    #     "unique_misspelled": CorrectedWord.objects.values("incorrect_word").filter(query_id__user=user).distinct().count(),
+    #     "unique_corrected": CorrectedWord.objects.values("corrected_word").filter(query_id__user=user).distinct().count(),
+    #     "total_requests": CorrectionRequest.objects.filter(user=user).count(),
+    # }
+    return words
+
 
 def vocab_richness(request):
     user = request.user
     text = (CorrectionRequest.objects.filter(user=user).values_list('original_text', flat=True))
     text=" ".join(t for t in text if t) or ""
-    #model=LexicalRichness(text)
-    #richness=model.mtld()
-    #return richness
-
+    model=LexicalRichness(text)
+    richness  = model.mtld(threshold=0.72)
+    if not richness or math.isnan(richness):
+        richness=0
+    if richness>300:
+        richness=300 # mtld can go more than 300 in very large text. but it says that's rare. so i cut it from 300
+    if richness!=0:
+      score=round(richness/300*100)# from 100
+    else:
+        score=0
+    return score
 
 def calculate_typing_speed(request):
     user=request.user

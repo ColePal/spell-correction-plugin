@@ -36,7 +36,7 @@
 
 .nav-masthead .nav-link:hover,
 .nav-masthead .nav-link.active {
-  border-bottom-color: red;
+  border-bottom-color: white;
 }
 
 .nav-masthead i {
