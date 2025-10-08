@@ -118,7 +118,7 @@ async function createMovableOverlay() {
 
   chrome.storage.local.get('premiumModelButton').then(result => {
 	  if (result.premiumModelButton === undefined) {result.premiumModelButton = false;}
-	  colourButton(result,use_premium_model_button);
+	  colourButton(result.premiumModelButton,use_premium_model_button);
   });
   use_premium_model_button.addEventListener('click', function() {
 	  chrome.storage.local.get('premiumModelButton', function(userVar) {
@@ -135,7 +135,8 @@ async function createMovableOverlay() {
 
   chrome.storage.local.get('visualiseFetchButton').then(result => {
 	  if (result.visualiseFetchButton === undefined) {result.visualiseFetchButton = false;}
-	  colourButton(result,visualise_fetch_button);
+	  visualiseFetch = result.visualiseFetchButton;
+	  colourButton(result.visualiseFetchButton,visualise_fetch_button);
   });
   visualise_fetch_button.addEventListener('click', function() {
 	  chrome.storage.local.get('visualiseFetchButton', function(userVar) {
@@ -143,8 +144,8 @@ async function createMovableOverlay() {
 		chrome.storage.local.set({ visualiseFetchButton: userVar.visualiseFetchButton }, function() {
 			console.log('Fetch Toggled!', userVar.visualiseFetchButton);
 		});
-		colourButton(userVar.visualiseFetchButton,visualise_fetch_button);
 		visualiseFetch = userVar.visualiseFetchButton;
+		colourButton(userVar.visualiseFetchButton,visualise_fetch_button);
       });
   });
   
