@@ -161,7 +161,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 			  return true;
 			})
 			.catch(error => {
-			  console.error("Error:", error);
+			  console.log("Error:", error);
 			});
 
         });

@@ -116,6 +116,7 @@ async function createMovableOverlay() {
   }
 
   chrome.storage.local.get('premiumModelButton').then(result => {
+	  if (result.premiumModelButton === undefined) {result.premiumModelButton = false;}
 	  colourPremiumModelButton(result);
   });
   use_premium_model_button.addEventListener('click', function() {
@@ -541,6 +542,9 @@ function getLLMResponse(message) {
 		);
 	});
 	}
+	else {
+		return Promise.resolve(null);
+	}
 }
 
 function injectText(textbox, text) {
@@ -673,7 +677,11 @@ function onUserTextChange(event) {
 function queryForWholeTextBox() { // Eventually will automatically send text stuffs to the LLM and then add yes no boxes for the changes.
 	console.log("Pressed...",userEditEvent);
 	let oldType = mostRecentlyEditedField.value;
-	getLLMResponse(mostRecentlyEditedField.value).then(response => { 
+	getLLMResponse(mostRecentlyEditedField.value).then(response => {
+		
+		if (response && response.data != null) {
+			
+			
 		textResponse = response.data;
 		outputWords = textResponse.correctText.match(/\p{L}+(?:'\p{L}+)?|\s*[^\p{L}\s]+\s*|\s+/gu) || []; // splits every time a 
 		//mostRecentlyEditedField.value = textResponse;
@@ -733,6 +741,10 @@ function queryForWholeTextBox() { // Eventually will automatically send text stu
 			}
 			
 		}
+		
+	}
+	
+
 	});
 }
 
@@ -756,13 +768,3 @@ chrome.storage.local.get('overlayToggleButton', function(uservar) {
 		}
     }
 });
-
-chrome.storage.local.get('premiumModelButton', function(uservar) {
-	if (userVar.premiumModelButton === undefined) {userVar.premiumModelButton = false;}
-    if (uservar.premiumModelButton) {
-		console.log('Premium Model Toggle Button:', uservar.premiumModelButton);
-    }
-});
-
-
-
