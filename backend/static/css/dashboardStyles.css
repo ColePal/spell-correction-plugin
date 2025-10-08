@@ -168,7 +168,7 @@
                     float: right;
                 }
             }
-}
+
             insertion {
                 text-decoration: underline;
                 color: yellow;
@@ -183,7 +183,7 @@
             }
             .card-body{
                 text-align: center;
-                 line-height: 3;
+                 .card-body { line-height: 1.6; }
             }
             ul {
               list-style-type: none;
@@ -201,12 +201,14 @@
             color: #fff; background: #adb5bd;
           }
 
-           .sidebar-fixed {
-                  position: sticky;
-                  top: 0;
-                  height: 100%;
-                  overflow: auto;
-                  flex: 0 0 220px;}
+           .sidebar-fixed{
+              position: sticky;
+              top: 64px;
+              height: calc(100dvh - 64px);
+              overflow: auto;
+              flex: 0 0 220px;
+              z-index: 1;
+            }
 
            .dashboard .cover-container { padding-left: 220px; }
 

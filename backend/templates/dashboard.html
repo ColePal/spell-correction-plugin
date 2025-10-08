@@ -108,31 +108,13 @@
                             </div>
                         </div>
 
-                        <div class="col-md-6 col-sm-12 mb-3" id="spellings_details_box">
-                            <div class="card h-100">
-                                <div class="card-body">
-                                      <div>
-                                         <strong>Most Misspelled Word:</strong>
-                                         <span id="most_misspelled">Loading...</span>
-                                     </div>
-                                    <div>
-                                         <strong>Total corrections:</strong>
-                                         <span id="total_corrections">—</span>
-                                     </div>
-                                      <div>
-                                          <strong>Unique misspelled:</strong>
-                                          <span id="unique_misspelled">—</span>
-                                      </div>
-                                     <div>
-                                         <strong>Unique corrected:</strong>
-                                         <span id="unique_corrected">—</span>
-                                     </div>
-                                     <div>
-                                         <strong>Total requests::</strong>
-                                         <span id="total_requests">—</span>
-                                     </div>
-                                </div>
-                            </div>
+                        <div class="col-sm-12 col-md-6 mb-3" id="spellings_details_box">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h6 class="mb-3">Top 10 Misspelled Phrases</h6>
+                            <ul id="top_misspelled" class="list-unstyled small mb-0"></ul>
+                        </div>
+                    </div>
                         </div>
 
                         <div class="col-md-6 col-sm-12 mb-3" id="language_richness_box">
@@ -224,21 +206,26 @@
            languagesChart.update();
         }
 
-        async function misspelled(){
-             const response = await fetch("{% url 'misspelled_word' %}");
-             const data = await response.json();
-               if (data.word) {
-                   document.getElementById("most_misspelled").innerText = ` '${data.word}' (${data.count} times mispelled)`;
-               }
-               else {
-                    document.getElementById("most_misspelled").innerText = "No data yet";
-                }
-               document.getElementById("total_corrections").textContent = data.total_corrections;
-               document.getElementById("unique_misspelled").textContent = data.unique_misspelled;
-               document.getElementById("unique_corrected").textContent  = data.unique_corrected;
-               document.getElementById("total_requests").textContent    = data.total_requests;
-
+        async function misspelled() {
+            const response = await fetch("{% url 'misspelled_word' %}");
+            const data = await response.json();
+            const wordList = document.getElementById("top_misspelled");
+            const top = Array.isArray(data.top) ? data.top : [];
+            if (top.length === 0) {
+                wordList.innerHTML = `<li class="misspelled-words">No data yet</li>`;
+                return;
+            }
+            wordList.innerHTML = top.map((a, b) => `<li class="d-flex justify-content-between">
+             <span>${b + 1}. <strong>${a.word}</strong></span>
+             <span class="misspelled-words">${a.count}</span></li>`) .join("");
         }
+
+        {#document.getElementById("total_corrections").textContent = data.total_corrections;#}
+        {#document.getElementById("unique_misspelled").textContent = data.unique_misspelled;#}
+        {#document.getElementById("unique_corrected").textContent  = data.unique_corrected;#}
+        {#document.getElementById("total_requests").textContent    = data.total_requests;#}
+
+
 
         let mistakeChart;
 
@@ -294,17 +281,17 @@
             const response=await fetch("{% url 'richness' %}");
              const data = await response.json();
              let colour;
-             if (data.richness<4){
+             if (data.richness<40){
                  colour = '#dc3545'
              }
-             else if (data.richness<7){
+             else if (data.richness<70){
              colour = '#ffc107'
               }
              else{
                  colour = '#28a745'
              }
             const vocab= document.getElementById("vocab");
-             vocab.textContent = `${data.richness.toFixed(1) }/10`;
+             vocab.textContent = `${data.richness.toFixed(1) }/100`;
              vocab.style.backgroundColor = colour;
          }
 
@@ -325,14 +312,8 @@
   typingSpeed:     document.getElementById("typing_speed_box"),
 };
 
-        const initialized = {
-        languageQueries: false,
-        mistakesChart: false,
-        vocabRichness: false,
-        spellingDetails: false,
-        typingSpeed: false
-        };
 
+        const initialized = {languageQueries: false, mistakesChart: false, vocabRichness: false, spellingDetails: false, typingSpeed: false};
         let preferences =null
         try {
               preferences=JSON.parse(localStorage.getItem("dashboard_boxes"));
@@ -405,5 +386,6 @@
       }
 });
     </script>
-    </body>
-</html>
+ </div>
+ </body>
+ </html>
