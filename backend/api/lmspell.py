@@ -129,7 +129,7 @@ def spell_correction_standard(text : str = "", language : str = 'en') -> Dict[st
 
     model, tokenizer = get_model(language)
 
-    prefix = "grammar: " if language == 'en' else "correct: "
+    prefix = "grammar: " if language == 'en' else ""
     input_text = prefix + text
 
     inputs = tokenizer(
