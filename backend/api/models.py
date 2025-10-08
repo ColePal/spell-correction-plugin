@@ -65,8 +65,7 @@ class WordFeedback(models.Model):
 
 
 class UserDashboardPreferences(models.Model):
-    id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="dashboard_preferences")
     preferences = models.JSONField(default=list)
 
 

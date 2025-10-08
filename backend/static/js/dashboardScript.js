@@ -55,8 +55,9 @@ async function savePreferences() {
     const queryResponse = await savePreferencesQuery(preferenceList);
 }
 */
-
+const prefBox = document.getElementById("pref-message-box");
 document.getElementById('box-picker').addEventListener('submit', async function(e) {
+    prefBox.innerText = "";
     e.preventDefault();  // stop the form from changing the page
 
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -79,10 +80,15 @@ document.getElementById('box-picker').addEventListener('submit', async function(
 
         const data = await response.json();
         console.log("Server response:", data);
+
         if (data.success) {
-            alert("Preferences saved!");
+            //alert("Preferences saved!");
+            prefBox.style.color = "White";
+            prefBox.innerText = 'Successfully saved preferences!'
         } else {
-            alert("Error: " + data.error);
+            prefBox.style.color = "Red";
+            prefBox.innerText = 'Error saving preferences!'
+            //alert("Error: " + data.error);
         }
     } catch (err) {
         console.error("Fetch error:", err);
