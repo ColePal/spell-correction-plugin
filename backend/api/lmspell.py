@@ -10,22 +10,15 @@ import threading
 logger = logging.getLogger(__name__)
 _MODEL_LOCK = threading.Lock()
 
-_models = {
-    'en': None, # Vennify/Gemini
-    'si': None,
-    'hi': None,
-}
-_tokenizers = {
-    'en': None,
-    'si': None,
-    'hi': None,
-}
+_models = {}
+_tokenizers = {}
+
+
 # API keys/urls
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 #Need url for "API endpoints for interacting with Gemini Models"
-HUGGINGFACE_API_KEY = os.getenv('HUGGINGFACE_API_KEY', '')
-
+hf_token = os.getenv('HUGGINGFACE_API_KEY','')
 
 def get_model(language='en'):
  global _models, _tokenizers
@@ -47,12 +40,17 @@ def get_model(language='en'):
             if language == 'en':
                 model_name = "vennify/t5-base-grammar-correction"
                 # Build in locals first
-                new_tok = T5TokenizerFast.from_pretrained(model_name, cache_dir="./model_cache")
+                new_tok = MT5TokenizerFast.from_pretrained(model_name, cache_dir="./model_cache")
                 new_mdl = T5ForConditionalGeneration.from_pretrained(model_name, cache_dir="./model_cache")
             else:
                 model_name = "lm-spell/mt5-base-ft-ssc"
-                new_tok = MT5Tokenizer.from_pretrained(model_name, cache_dir="./model_cache")
-                new_mdl = MT5ForConditionalGeneration.from_pretrained(model_name, cache_dir="./model_cache")
+                new_tok = T5TokenizerFast.from_pretrained("google/mt5-base", cache_dir="./model_cache")
+
+                new_mdl = MT5ForConditionalGeneration.from_pretrained(model_name,token=hf_token, cache_dir="./model_cache")
+
+                new_tok.add_special_tokens({'additional_special_tokens': ['<ZWJ>']})
+
+                new_mdl = MT5ForConditionalGeneration.from_pretrained(model_name, token=hf_token, cache_dir="./model_cache")
 
             new_mdl.eval()
             _models[language], _tokenizers[language] = new_mdl, new_tok
@@ -123,7 +121,7 @@ def spell_correction_gemini(text: str) -> Dict[str, Any]:
         'differences': differences,
         'num_corrections': len(differences),
         'success': True,
-        'model': 'gemini-2.0-flash'#lightweight and cheapest
+        'model': 'gemini-2.5-flash-lite'#lightweight
     }
 
 def spell_correction_standard(text : str = "", language : str = 'en') -> Dict[str, Any]:
@@ -131,7 +129,7 @@ def spell_correction_standard(text : str = "", language : str = 'en') -> Dict[st
 
     model, tokenizer = get_model(language)
 
-    prefix = "grammar: " if language == 'en' else "correct: "
+    prefix = "grammar: " if language == 'en' else ""
     input_text = prefix + text
 
     inputs = tokenizer(

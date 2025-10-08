@@ -8,6 +8,7 @@
         <meta name="author" content="" />
         <link rel="icon" href="{% static 'favicon.ico' %}">
 
+
         <title>Dashboard</title>
 
         <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/cover/" />
@@ -31,49 +32,53 @@
             {% include "partials/navbar.html" %}
 
             <section id="user-section" class="flex-row d-flex justify-content-around">
-                <h4>Dashboard <!-- for {{ user_profile.email }} -->
-                | Account Created {{ user_profile.joined_at }}</h4>
+                <h2>Dashboard for {{ user_profile.name }}</h2>
+                <h2>Account Created {{ user_profile.joined_at }}</h2>
             </section>
-
+            <script>Window.setUserPrefURL = {% url 'set_user_preferences' %}</script>
             <div class="row  ">
                 <div class="col-md-3  mb-3" id="customMenu">
                     <aside class="flex-shrink-0 p-3 bg-dark text-white sidebar-fixed border" >
                       <h5 class="mb-2">Customize Dashboard</h5>
                       <small class="text-secondary d-block mb-3">Select analytics you want to see</small>
 
-                      <form id="box-picker" class="vstack ">
+                      <form id="box-picker" class="vstack" method="post" action="{% url 'set_user_preferences' %}">
+                        {% csrf_token %}
                         <ul class="m-0 p-0 list-unstyled">
                           <li class="mb-1">
                             <label class="form-check">
-                              <input class="form-check-input" type="checkbox" value="mistakesChart" />
+                              <input class="form-check-input" type="checkbox" value="mistakesChart" {% if 'mistakesChart' in user_preferences %}checked{% endif %} />
                               <span class="form-check-label">Mistakes Chart</span>
                             </label>
                           </li>
                           <li class="mb-1">
                             <label class="form-check">
-                              <input class="form-check-input" type="checkbox" value="languageQueries" />
+                              <input class="form-check-input" type="checkbox" value="languageQueries" {% if 'languageQueries' in user_preferences %}checked{% endif %}/>
                               <span class="form-check-label">Language Usage</span>
                             </label>
                           </li>
                           <li class="mb-1">
                             <label class="form-check">
-                              <input class="form-check-input" type="checkbox" value="spellingDetails" />
+                              <input class="form-check-input" type="checkbox" value="spellingDetails" {% if 'spellingDetails' in user_preferences %}checked{% endif %}/>
                               <span class="form-check-label">Spelling Analytics</span>
                             </label>
                           </li>
                           <li class="mb-1">
                             <label class="form-check">
-                              <input class="form-check-input" type="checkbox" value="vocabRichness" />
+                              <input class="form-check-input" type="checkbox" value="vocabRichness" {% if 'vocabRichness' in user_preferences %}checked{% endif %}/>
                               <span class="form-check-label">Vocabulary Richness</span>
                             </label>
                           </li>
                           <li class="mb-1">
                             <label class="form-check">
-                              <input class="form-check-input" type="checkbox" value="typingSpeed" />
+                              <input class="form-check-input" type="checkbox" value="typingSpeed" {% if 'typingSpeed' in user_preferences %}checked{% endif %}/>
                               <span class="form-check-label">Typing Speed</span>
                             </label>
                           </li>
                         </ul>
+
+                      <button type="submit" class="btn btn-primary" style="margin-top: 20px;">Save Preferences</button>
+                      <div id="pref-message-box"></div>
                       </form>
                     </aside>
 

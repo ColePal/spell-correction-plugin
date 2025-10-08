@@ -75,26 +75,34 @@
                                             {% endfor %}
                                         </ul>
                                         {% endif %}
-                                        <div class="form-group">
+                                        <div class="form-group d-flex flex-column">
+                                            <label>
+                                                First Name
+                                                <input type="text" name="first_name" class="form-control" required />
+                                            </label>
+                                            <label>
+                                                Last Name
+                                                <input type="text" name="last_name" class="form-control" required />
+                                            </label>
                                             <label>
                                                 Email
                                                 <input type="email" name="email" class="form-control" required />
                                             </label>
-                                        </div>
+                                        <!--</div>
 
-                                        <div class="form-group">
+                                        <div class="form-group">-->
                                             <label>
                                                 Password
                                                 <input type="password" name="password" class="form-control" required />
                                             </label>
-                                        </div>
+                                        <!--</div>
 
-                                    <div class="form-group">
+                                    <div class="form-group">-->
                                             <label>
                                                 Confirm Password
                                                 <input type="password" name="confirm-password" class="form-control" required />
                                             </label>
-                                        </div>
+                                        <!--</div>-->
                                         <div class="row mt-3">
                                             <div class="col">
                                                 <button type="submit" class="btn btn-primary w-100">Register</button>
@@ -102,6 +110,7 @@
                                             <div class="col">
                                                 <button id="toggleButton" type="button" onclick="toggleLogin()" class="btn btn-success w-100">Back</button>
                                             </div>
+                                        </div>
                                         </div>
                                     </form>
                                 </div>
