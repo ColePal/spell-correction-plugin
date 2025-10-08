@@ -44,7 +44,7 @@ def get_model(language='en'):
                 new_mdl = T5ForConditionalGeneration.from_pretrained(model_name, cache_dir="./model_cache")
             else:
                 model_name = "lm-spell/mt5-base-ft-ssc"
-                new_tok = T5TokenizerFast.from_pretrained("google/mt5-base", cache_dir="./model_cache")
+                new_tok = MT5Tokenizer.from_pretrained("google/mt5-base", cache_dir="./model_cache")
 
                 new_mdl = MT5ForConditionalGeneration.from_pretrained(model_name,token=hf_token, cache_dir="./model_cache")
 
