@@ -350,18 +350,34 @@ function setupTextAreaOverlay(textarea) {
 	overlay.style.zIndex = 12345;
 
 	// Grab textarea specific styles properties
-	let textAreaStylings = getComputedStyle(textarea); // It gets the in use style!!!
-    overlay.style.font = textAreaStylings.font;
-    overlay.style.padding = textAreaStylings.padding;
-    overlay.style.lineHeight = textAreaStylings.lineHeight;
-    overlay.style.border = textAreaStylings.border;
-    overlay.style.boxSizing = textAreaStylings.boxSizing;
+	function styleOverlay() {
+		let textAreaStylings = getComputedStyle(textarea); // It gets the in use style!!!
+		overlay.style.font = textAreaStylings.font;
+		overlay.style.padding = textAreaStylings.padding;
+		overlay.style.lineHeight = textAreaStylings.lineHeight;
+		overlay.style.border = textAreaStylings.border;
+		overlay.style.boxSizing = textAreaStylings.boxSizing;
+		overlay.style.overflow = textAreaStylings.overflow;
+	}
+	styleOverlay();
+	
+	// Put div visually on top of textarea
+	const positionOverlay = () => {
+		styleOverlay();
+		const areaBounds = textarea.getBoundingClientRect();
+		overlay.style.left = window.scrollX + areaBounds.left + 'px';
+		overlay.style.width = areaBounds.width + 'px';
+		overlay.style.top = window.scrollY + areaBounds.top + 'px';
+		overlay.style.height = areaBounds.height + 'px';
+		//alterAllWordPopUps(2);
+	};
 	
 	
 	// Update DIV text to match textarea text
 	const updateDivText = () => { //  = () => { means local to setupTextAreaOverlay!!!
 		console.log("updateDivText = ()");
 		overlay.innerHTML = "";
+		positionOverlay();
 		
 		if (useAltWords === false) { // don't split here when alt method in use.
 			inputWords = textarea.value.match(/\p{L}+(?:'\p{L}+)?|\s*[^\p{L}\s]+\s*|\s+/gu) || [];
@@ -508,16 +524,6 @@ function setupTextAreaOverlay(textarea) {
 	updateDivText();
 	textarea.addEventListener("input", updateDivText);
 	textarea.addEventListener("scroll", updateDivText);
-	
-	// Put div visually on top of textarea
-	const positionOverlay = () => {
-		const areaBounds = textarea.getBoundingClientRect();
-		overlay.style.left = window.scrollX + areaBounds.left + 'px';
-		overlay.style.width = areaBounds.width + 'px';
-		overlay.style.top = window.scrollY + areaBounds.top + 'px';
-		overlay.style.height = areaBounds.height + 'px';
-		alterAllWordPopUps(2);
-	};
 	
 	positionOverlay();
 	// Rerun positioning when window scrolled or resized.
