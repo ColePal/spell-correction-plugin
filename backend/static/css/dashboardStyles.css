@@ -149,15 +149,12 @@
             font: 600 22px system-ui, -apple-system, Segoe UI, Roboto, Arial;
             color: #fff; background: #adb5bd;
           }
-
-           .sidebar-fixed{
-              position: sticky;
-              top: 64px;
-              height: calc(100dvh - 64px);
-              overflow: auto;
-              flex: 0 0 220px;
-              z-index: 1;
-            }
+  .sidebar-fixed {
+                  position: sticky;
+                  top: 0;
+                  height: 100%;
+                  overflow: auto;
+                  flex: 0 0 220px;}
 
            .dashboard .cover-container { padding-left: 220px; }
 
