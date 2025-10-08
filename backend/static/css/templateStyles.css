@@ -88,6 +88,7 @@
             .nav-masthead .nav-link:hover,
             .nav-masthead .nav-link:focus {
                 border-bottom-color: rgb(255, 255, 255);
+                font-color: red;
             }
 
             .nav-masthead .nav-link + .nav-link {

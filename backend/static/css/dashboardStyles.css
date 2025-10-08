@@ -32,8 +32,8 @@
                 margin: 0;
                 overflow-y: scroll;
                 scrollbar-width: none;
-            }
 
+            }
             body::-webkit-scrollbar {
                 width: 0px;
                 background: transparent;
@@ -50,10 +50,16 @@
                 text-shadow: 0 0.05rem 0.1rem rgba(0, 0, 0, 0.5);
                 background: url("../faded_gallery-JEludq8wsD8-unsplash.jpg") no-repeat center fixed;
                 background-size: cover;
+
             }
 
             .row.align-items-stretch {
                 align-items: stretch;
+            }
+
+            body.dashboard {
+                display: block;
+                box-shadow: none;
             }
 
             .col-sm-3 > .card {
@@ -64,6 +70,7 @@
                 width: 100%;
                 max-width: 1024px;
                 padding: 1rem;
+                vertical-align: top;
             }
 
             .nav-inner {
@@ -74,7 +81,7 @@
             @media (min-width: 768px) {
                 .nav-inner {
                     width: 90%;
-                    max-width: 90%;
+                    max-width:1024px;
                 }
             }
 
@@ -104,4 +111,103 @@
                 justify-content: center;
                 box-shadow: 0 4px 6px rgba(0,0,0,0.3);
             }
+            .cover-container {
+                width: 100%;
+                max-width: 1024px;
+                padding: 1rem;
+            }
+
+            .nav-inner {
+                width: 100%;
+                margin: 0 auto;
+            }
+
+            @media (min-width: 768px) {
+                .nav-inner {
+                    width: 60%;
+                    max-width: 80%;
+                }
+            }
+
+            .masthead {
+                margin-bottom: 2rem;
+            }
+
+            .masthead-brand {
+                margin-bottom: 0;
+            }
+
+            .nav-masthead .nav-link {
+                padding: 0.25rem 1;
+                color: rgb(255, 255, 255);
+                background-color: transparent;
+                border-bottom: 0.25rem solid transparent;
+            }
+
+            .nav-masthead .nav-link:hover,
+            .nav-masthead .nav-link:focus {
+                border-bottom-color: red;
+            }
+
+
+            .nav-masthead .nav-link + .nav-link {
+                margin-left: 1rem;
+            }
+
+            .nav-masthead .active {
+                color: #fff;
+                border-bottom-color: red;
+            }
+
+            @media (min-width: 48em) {
+                .masthead-brand {
+                    float: left;
+                }
+
+                .nav-masthead {
+                    float: right;
+                }
+            }
+}
+            insertion {
+                text-decoration: underline;
+                color: yellow;
+            }
+            deletion {
+                text-decoration: underline;
+                color: blue;
+            }
+            replacement {
+                text-decoration: underline;
+                color: red;
+            }
+            .card-body{
+                text-align: center;
+                 line-height: 3;
+            }
+            ul {
+              list-style-type: none;
+              padding-left: 0;
+            }
+            #vocab {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            font: 600 22px system-ui, -apple-system, Segoe UI, Roboto, Arial;
+            color: #fff; background: #adb5bd;
+          }
+
+           .sidebar-fixed {
+                  position: sticky;
+                  top: 0;
+                  height: 100%;
+                  overflow: auto;
+                  flex: 0 0 220px;}
+
+           .dashboard .cover-container { padding-left: 220px; }
+
 
