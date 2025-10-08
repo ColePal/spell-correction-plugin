@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.views.decorators.cache import never_cache
 from rest_framework.decorators import api_view
 from django.shortcuts import render
 from django.core.mail import send_mail
@@ -62,7 +63,7 @@ def cover_page(request):
         "standard_access": 'auth.can_access_standard_spell_correction_models' in all_user_permissions,
     }
     return render(request, 'TestingSlice.html', context={"user_permissions": user_permissions })
-
+@never_cache
 def dashboard_page(request):
     user = request.user
     if (user.is_authenticated) :
