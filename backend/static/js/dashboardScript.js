@@ -58,11 +58,11 @@ async function savePreferences() {
 const prefBox = document.getElementById("pref-message-box");
 document.getElementById('box-picker').addEventListener('submit', async function(e) {
     prefBox.innerText = "";
-    e.preventDefault();  // stop the form from changing the page
+    e.preventDefault();
 
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-    // collect checked boxes
+
     const checkedBoxes = Array.from(this.querySelectorAll('input[type=checkbox]:checked'))
                               .map(cb => cb.value);
 

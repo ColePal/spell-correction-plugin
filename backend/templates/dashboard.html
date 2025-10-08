@@ -35,15 +35,16 @@
                 <h3>Dashboard for {{ user_profile.name }}</h3>
                 <h3>Account Created {{ user_profile.joined_at }}</h3>
             </section>
-{#            <script>Window.setUserPrefURL = {% url 'set_user_preferences' %}</script>#}
-{#        <script>#}
-{#            window.addEventListener("pageshow", function(event) {#}
-{#              if (event.persisted) return;#}
-{#              const form = document.getElementById("box-picker");#}
-{#              if (form) {#}
-{#                form.reset();#}
-{#              }#}
-{#            });#}
+            <script>Window.setUserPrefURL = {% url 'set_user_preferences' %}</script>
+
+            <script>
+            window.addEventListener("pageshow", function(event) {
+              if (event.persisted) return;
+              const form = document.getElementById("box-picker");
+              if (form) {
+                form.reset();
+              }
+            });
             </script>
             <div class="row  ">
                 <div class="col-md-3  mb-3" id="customMenu">
@@ -177,10 +178,10 @@
                     <!--
                     Need to add some functionality to the floating button
                     with the sidebar
-                    -->
+
                     <button class="btn btn-primary floatingbutton" onclick="toggleMenu()">
                         <i class="bi bi-plus"></i>
-                    </button>
+                    </button>-->
 
                 </div>
 
@@ -199,11 +200,18 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-        <!--THIS SCRIPT IS CURRENTLY EMPTY. PUT YOUR JAVASCRIPTS IN THIS FILE-->
-        <script src="{% static 'js/dashboardScript.js' %}"></script>
 
+        <script src="{% static 'js/dashboardScript.js' %}"></script>
     <script>
-        let languagesChart;
+        window.type_speed = "{% url 'type_speed' %}";
+        window.dashboard_languages = "{% url 'dashboard_languages' %}";
+        window.richness_ = "{% url 'richness' %}";
+        window.mistakes_percentage_timeseries = "{% url 'mistakes_percentage_timeseries' %}";
+        window.misspelled_word = "{% url 'misspelled_word' %}";
+    </script>
+    <!--<script src = "{% static 'js/dashboardChartScript.js' %}" defer></script>-->
+        <script>
+            let languagesChart;
         function initCharts() {
          const languages_chart = document.getElementById("languages_chart").getContext("2d");
          languagesChart = new Chart(languages_chart, {type: "doughnut", data: {labels: [], datasets: [{ data: [], borderWidth: 0,hoverOffset: 6,backgroundColor: []}]}, options: {responsive: true, plugins: { legend: { position: "bottom" } }, cutout: "60%"}}
@@ -226,7 +234,8 @@
         }
 
         async function all_languages(){
-         const response = await fetch("{% url 'dashboard_languages' %}");
+         //const response = await fetch("{% url 'dashboard_languages' %}");
+         const response = await fetch(window.dashboard_languages);
           const data = await response.json();
 
            let languages = [];
@@ -244,7 +253,8 @@
 
 
         async function misspelled() {
-            const response = await fetch("{% url 'misspelled_word' %}");
+            //const response = await fetch("{% url 'misspelled_word' %}");
+            const response = await fetch(window.misspelled_word);
             const data = await response.json();
             const wordList = document.getElementById("top_misspelled");
             const top = Array.isArray(data.top) ? data.top : [];
@@ -257,10 +267,10 @@
              <span class="misspelled-words">${a.count}</span></li>`) .join("");
         }
 
-        {#document.getElementById("total_corrections").textContent = data.total_corrections;#}
-        {#document.getElementById("unique_misspelled").textContent = data.unique_misspelled;#}
-        {#document.getElementById("unique_corrected").textContent  = data.unique_corrected;#}
-        {#document.getElementById("total_requests").textContent    = data.total_requests;#}
+        //document.getElementById("total_corrections").textContent = data.total_corrections;#}
+        //document.getElementById("unique_misspelled").textContent = data.unique_misspelled;#}
+        //document.getElementById("unique_corrected").textContent  = data.unique_corrected;#}
+        //document.getElementById("total_requests").textContent    = data.total_requests;#}
 
 
 
@@ -268,7 +278,8 @@
 
 
  async function percentage(days){
-          const query_url = new URL("{% url 'mistakes_percentage_timeseries' %}", window.location.origin);
+          //const query_url = new URL("{% url 'mistakes_percentage_timeseries' %}", window.location.origin);
+          const query_url = new URL(window.mistakes_percentage_timeseries, window.location.origin);
           query_url.searchParams.set("days", days);
             const response = await fetch(query_url);
           if (!response.ok){
@@ -318,7 +329,8 @@
 
 
          async function richness(){
-            const response=await fetch("{% url 'richness' %}");
+            //const response=await fetch("{% url 'richness' %}");
+            const response=await fetch(window.richness_);
              const data = await response.json();
              let colour;
              if (data.richness<40){
@@ -336,7 +348,8 @@
          }
 
          async function typeSpeed(){
-            const response=await fetch("{% url 'type_speed' %}");
+            //const response=await fetch("{% url 'type_speed' %}");
+            const response=await fetch(window.type_speed);
             const data = await response.json();
              document.getElementById("tspeed").innerText = data.speed+" wpm";
 
@@ -354,7 +367,8 @@
 
 
         const initialized = {languageQueries: false, mistakesChart: false, vocabRichness: false, spellingDetails: false, typingSpeed: false};
-        let preferences =null
+        //let preferences =null
+        /*
         try {
               preferences=JSON.parse(localStorage.getItem("dashboard_boxes"));
          }
@@ -371,13 +385,17 @@
              const allOn=Object.keys(boxMap).filter(k => boxMap[k]);
              picker.querySelectorAll('input[type="checkbox"]').forEach(checkBox => {checkBox.checked = allOn.includes(checkBox.value);});
              localStorage.setItem("dashboard_boxes", JSON.stringify(allOn));
-         }
+         }*/
+        //const allOn = Object.keys(boxMap).filter(k => boxMap[k]);
+        //picker.querySelectorAll('input[type="checkbox"]').forEach(checkBox => {
+        //  checkBox.checked = allOn.includes(checkBox.value);
+        //});
 
       apply();
 
       picker.addEventListener("change", () => {
-        const selection= Array.from(picker.querySelectorAll('input[type="checkbox"]:checked')).map(checkBox => checkBox.value);
-        localStorage.setItem("dashboard_boxes", JSON.stringify(selection));
+        //const selection= Array.from(picker.querySelectorAll('input[type="checkbox"]:checked')).map(checkBox => checkBox.value);
+        //localStorage.setItem("dashboard_boxes", JSON.stringify(selection));
          apply();
       });
       const percentage=document.getElementById("pctRange")
@@ -424,8 +442,7 @@
           }
         }
       }
-});
-    </script>
+});</script>
  </div>
  </body>
  </html>

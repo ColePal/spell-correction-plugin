@@ -105,9 +105,9 @@
                                 </div>
                             </div>
                         </div>
-                        <p class="mt-2">
+                        <!--<p class="mt-2">
                           Detected language: <span id="detected-language" ></span>
-                        </p>
+                        </p>-->
                     </div>
                 </div>
                 <script type=module >
@@ -254,11 +254,13 @@
 
                             const x = document.getElementById("testInput").value;
                             analyze(x);
-
+                            /*
                             const langSpan = document.getElementById("detected-language");
                             const language = eld.detect(x).language;
                             window.queryLanguage = language;
                             langSpan.innerText = language;
+                            
+                             */
                             console.log(language);
                             ;}
                             ,500);
