@@ -31,7 +31,7 @@ async function getSuggestHtml() {
   suggest_html = await suggest.text();
 }
 
-async function createMovableOverlay() {
+async function createMovableOverlay(showToggle) {
   
   // Where the button first appears on the page
   let starting_point = 'left'
@@ -68,6 +68,9 @@ async function createMovableOverlay() {
   toggleButton.style.cursor = 'pointer';
   toggleButton.style.zIndex = '12345'; // big number to always appear on top
   toggleButton.innerText = '';
+  if (showToggle === false) {toggleButton.style.display = 'none';}
+  
+  
   
   // Logo
   logo.src = chrome.runtime.getURL('./icon.png');
@@ -780,21 +783,29 @@ function queryForWholeTextBox() { // Eventually will automatically send text stu
 
 
 
-
-
-chrome.storage.local.get('extensionToggleButton', function(uservar) {
-    if (uservar.extensionToggleButton || uservar.extensionToggleButton === undefined) {
-		console.log('Extension Toggle Button:', uservar.extensionToggleButton);
-		createMovableOverlay();
-		getSuggestHtml();
-    }
-});
-
 chrome.storage.local.get('overlayToggleButton', function(uservar) {
     if (uservar.overlayToggleButton || uservar.overlayToggleButton === undefined) {
 		if (window.location.hostname !== "localhost") {
 			console.log('Overlay Toggle Button:', uservar.overlayToggleButton);
-			createOverlay()
+			createOverlay();
+			getSuggestHtml();
 		}
     }
+});
+
+chrome.storage.local.get('extensionToggleButton', function(uservar) {
+	let result;
+    if (uservar.extensionToggleButton || uservar.extensionToggleButton === undefined) {
+		console.log('Extension Toggle Button:', uservar.extensionToggleButton);
+		result = uservar.extensionToggleButton;
+		getSuggestHtml();
+    }
+	chrome.storage.local.get('overlayToggleButton', function(uservar) {
+			if ((uservar.overlayToggleButton || uservar.overlayToggleButton === undefined) && result) {
+				createMovableOverlay(true);
+			}
+			else {
+				createMovableOverlay(false);
+			}
+	});
 });
