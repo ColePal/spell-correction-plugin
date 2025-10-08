@@ -7,6 +7,8 @@ let injectTextAck = true;
 let highlightEnabled = true;
 let visualiseFetch = false;
 
+let lastFireText;
+
 
 let useAltWords = false;
 
@@ -593,7 +595,7 @@ function injectText(textbox, text) {
 
 let inactivityRequestLLM;
 let inactivityRequestLLMStop = false;
-let inputEndWaitTime = 950; // wait 500ms for no more user input getLLMResponse.
+let inputEndWaitTime = 500; // wait 500ms for no more user input getLLMResponse.
 
 function onUserTextChange(event) {
 	console.log("onUserTextChange(event)", event);
@@ -628,6 +630,7 @@ function onUserTextChange(event) {
 
 			// clear output if it has been changed			
 			if (inputWords.length !== outputWords.length) {
+				//console.log("CLEARING BECAUSE:",inputWords.length, " NOT " , outputWords.length);
 				outputWords = [];
 				inactivityRequestLLMStop = false;
 			}
@@ -701,7 +704,13 @@ function onUserTextChange(event) {
   if (inactivityRequestLLMStop !== true) {
 	  inactivityRequestLLMStop = true;
 	  inactivityRequestLLM = setTimeout(() => {
-		  queryForWholeTextBox();
+		  if (lastFireText !== mostRecentlyEditedField.value || lastFireText === undefined) {
+			queryForWholeTextBox();
+			lastFireText = mostRecentlyEditedField.value
+		  }
+		  else {
+			inactivityRequestLLMStop = true;
+		  }
 	  }, inputEndWaitTime);
   }
 
@@ -718,6 +727,7 @@ function queryForWholeTextBox() { // Eventually will automatically send text stu
 			
 		textResponse = response.data;
 		outputWords = textResponse.correctText.match(/\p{L}+(?:'\p{L}+)?|\s*[^\p{L}\s]+\s*|\s+/gu) || []; // splits every time a 
+		
 		//mostRecentlyEditedField.value = textResponse;
 		
 		if (inputWords.length === outputWords.length) {
