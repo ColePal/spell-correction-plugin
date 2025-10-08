@@ -9,7 +9,7 @@ from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassifica
 import torch
 #import textstat
 #import fasttext
-from lexicalrichness import LexicalRichness
+#from lexicalrichness import LexicalRichness
 from spellcorrector import settings
 from .textstat import gunning_fog, flesch_kincaid_grade, flesch_reading_ease
 from .models import CorrectionRequest, CorrectedWord

@@ -36,13 +36,22 @@
                 <h2>Account Created {{ user_profile.joined_at }}</h2>
             </section>
             <script>Window.setUserPrefURL = {% url 'set_user_preferences' %}</script>
+        <script>
+            window.addEventListener("pageshow", function(event) {
+              if (event.persisted) return;
+              const form = document.getElementById("box-picker");
+              if (form) {
+                form.reset();
+              }
+            });
+            </script>
             <div class="row  ">
                 <div class="col-md-3  mb-3" id="customMenu">
                     <aside class="flex-shrink-0 p-3 bg-dark text-white sidebar-fixed border" >
                       <h5 class="mb-2">Customize Dashboard</h5>
                       <small class="text-secondary d-block mb-3">Select analytics you want to see</small>
 
-                      <form id="box-picker" class="vstack" method="post" action="{% url 'set_user_preferences' %}">
+                      <form id="box-picker" class="vstack" method="post" action="{% url 'set_user_preferences' %}" autocomplete="off" data-form-autocomplete="off" onreset="this.reset();">
                         {% csrf_token %}
                         <ul class="m-0 p-0 list-unstyled">
                           <li class="mb-1">

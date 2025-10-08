@@ -77,7 +77,12 @@ def dashboard_page(request):
         else:
             user_preferences = preference_list.preferences
 
-        return render(request, 'dashboard.html', context={"user_profile":user_profile, "user_preferences": user_preferences})
+        response = render(request, 'dashboard.html', context={"user_profile":user_profile, "user_preferences": user_preferences})
+        response["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response["Pragma"] = "no-cache"
+        response["Expires"] = "0"
+
+        return response
     else:
         return login(request)
 
