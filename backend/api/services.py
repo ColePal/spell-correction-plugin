@@ -9,7 +9,7 @@ from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassifica
 import torch
 #import textstat
 #import fasttext
-#from lexicalrichness import LexicalRichness
+from lexicalrichness import LexicalRichness
 from spellcorrector import settings
 from .textstat import gunning_fog, flesch_kincaid_grade, flesch_reading_ease
 from .models import CorrectionRequest, CorrectedWord
@@ -104,13 +104,18 @@ def evaluate(full_text: str, length: int = 600):
 
 def all_languages(request):
     user = request.user
-    return ( CorrectionRequest.objects.annotate(trimmed=Trim('language'))
+    languages_count= (CorrectionRequest.objects.annotate(trimmed=Trim('language'))
         .annotate(language_ok=NullIf('trimmed', Value('')))
          .annotate(detected_language=Coalesce('language_ok', Value('undetected'),output_field=CharField()))
         .filter(user=user)
         .values('detected_language')
         .annotate(count=Count('id'))
         .order_by('-count'))
+    languages_count =list(languages_count)
+    total = sum(c['count'] for c in languages_count) or 1
+    for c in languages_count:
+        c['percentage'] = round(c['count'] * 100.0 / total)
+    return languages_count
 
 
 def most_misspelled_word(request):

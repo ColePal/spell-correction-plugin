@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.utils import timezone
 import datetime
 from django.db.models.aggregates import Sum, Count
@@ -12,13 +13,14 @@ from rest_framework.response import Response
 from ..models import CorrectionRequest
 from rest_framework.permissions import IsAuthenticated
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @never_cache
 def dashboard_languages(request):
     lang_count=list(all_languages(request))
     payload = [
-        {"language": lc["detected_language"], "count": lc["count"]}
+        {"language": lc["detected_language"], "count": lc["count"], "percentage": lc["percentage"]}
         for lc in lang_count
     ]
     return Response({ "languages_all": payload})
@@ -43,27 +45,38 @@ def mistakes_percentage_timeseries(request):
     start = end - datetime.timedelta(days=days)
     user=request.user
     database_query = CorrectionRequest.objects.filter(created_at__date__gte=start, created_at__date__lte=end).filter(user=user)
-    data_list  = list(database_query.annotate(day=TruncDate("created_at")).values("day").annotate(words=Coalesce(Sum("word_count"), 0),corrections=Coalesce(Count("corrected_words"), 0), ).order_by("day"))
+    data_list  = list(database_query.annotate(day=TruncDate("created_at")).values("day").annotate(words=Coalesce(Sum("word_count"), 0), suggested=Coalesce(Count("corrected_words"), 0),
+            accepted=Coalesce( Count("corrected_words",filter=Q(corrected_words__wordfeedback__accepted=True),),0,),).order_by("day"))
     rows = {
-        r["day"].isoformat(): {
-            "words": int(r["words"] or 0),
-            "corrections": int(r["corrections"] or 0),
+        row["day"].isoformat(): {
+            "words": int(row["words"] or 0),
+             "suggested": int(row["suggested"] or 0),
+              "accepted": int(row["accepted"] or 0),
         }
-        for r in data_list
+        for row in data_list
     }
     data_list=rows
     labels = []
-    values = []
+    suggested_values = []
+    accepted_values = []
     dates = start
     data_list=dict(data_list)
     while dates <= end:
      labels.append(dates.isoformat())
      word_count = int(data_list.get(dates.isoformat(),{}).get("words", 0))
-     corrected_count = int(data_list.get(dates.isoformat(),{}).get("corrections", 0))
-     percentage = (100.0 * corrected_count / word_count) if word_count > 0 else 0.0
-     values.append(round(percentage, 2))
+     suggested_count = int(data_list.get(dates.isoformat(),{}).get("suggested", 0))
+     accepted_count = int(data_list.get(dates.isoformat(), {}).get("accepted", 0))
+     suggested_percentage = (100.0 * suggested_count / word_count) if word_count > 0 else 0.0
+     accepted_percentage = (100.0 * accepted_count / word_count) if word_count > 0 else 0.0
+     suggested_percentage=round(suggested_percentage, 2)
+     accepted_percentage=round(accepted_percentage, 2)
+     suggested_values.append(suggested_percentage)
+     accepted_values.append(accepted_percentage)
      dates += datetime.timedelta(days=1)
-    return Response({ "labels": labels,"series": [{"user_id": user.id,"username":getattr(user, "username", "You"), "data": values}],"unit": "percent"})
+    return Response({ "labels": labels,"series": [
+        {"label": "Suggested %","user_id": user.id,"username":getattr(user, "username", "You"), "data": suggested_values},
+        {"label": "Accepted %", "user_id": user.id, "username": getattr(user, "username", "You"), "data": accepted_values},
+    ],"unit": "percent"})
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
