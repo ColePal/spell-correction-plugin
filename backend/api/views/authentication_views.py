@@ -49,6 +49,10 @@ def logout(request):
     messages.success(request, "You have been logged out.")
     return redirect("covertest")
 
+def logout_extension(request):
+    auth_logout(request)
+    return JsonResponse({'extension logged out': True})
+
 def fetch_csrf_token(request):
     return JsonResponse({"csrfToken": get_token(request)})
 

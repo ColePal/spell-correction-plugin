@@ -171,4 +171,37 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   } else if (message.type === "FETCH_CSRF_TOKEN") {
     getCSRFToken(message.csrfTokenUrl)
   }
+  else if (message.type === "logOut") {
+	  
+	  chrome.cookies.getAll({ url: "http://localhost:8000" }, (cookies) => {
+	  
+	  var csrf = null
+	  for (let cookie in cookies) {
+		if (cookies[cookie].name === "csrftoken") {
+			 csrf = cookies[cookie].value;
+	    }
+	  }
+	  
+	  if (csrf != null) { // if found csrf
+	  
+	  fetch("http://localhost:8000/logout_extension/", {
+		  method: "GET",
+		  headers: {
+			"Content-Type": "application/json",
+			"X-CSRFToken": csrf,
+			"sec-fetch-site": "same-origin",
+		  },
+		  referrer: "http://localhost:8000/experimental/",
+		  referrerPolicy: "strict-origin-when-cross-origin",
+		  credentials: "include",
+		})
+	  
+	  }
+	  
+	  });
+	  return true;
+	  
+	  
+	  
+  }
 });
