@@ -102,6 +102,33 @@ async function createMovableOverlay() {
 	queryForWholeTextBox(event);
   });
   
+  
+  // Premium Button Toggle
+  const use_premium_model_button = await overlayContainer.querySelector('button#use-premium-model');
+  
+  function colourPremiumModelButton(result) {
+	  if (result.premiumModelButton === true) {
+		  use_premium_model_button.style.backgroundColor = "#95B309";
+	  }
+	  else {
+		  use_premium_model_button.style.backgroundColor = "#AB3232";
+	  }
+  }
+
+  chrome.storage.local.get('premiumModelButton').then(result => {
+	  colourPremiumModelButton(result);
+  });
+  use_premium_model_button.addEventListener('click', function() {
+	  chrome.storage.local.get('premiumModelButton', function(userVar) {
+		userVar.premiumModelButton = !userVar.premiumModelButton
+		chrome.storage.local.set({ premiumModelButton: userVar.premiumModelButton }, function() {
+			console.log('Premium Toggled!', userVar.premiumModelButton);
+		});
+		colourPremiumModelButton(userVar);
+      });
+  });
+  
+  
   // Positions elements based on if Button appears on left or right side of screen
   switch (starting_point) {
 	  case 'left':
@@ -727,6 +754,13 @@ chrome.storage.local.get('overlayToggleButton', function(uservar) {
 			console.log('Overlay Toggle Button:', uservar.overlayToggleButton);
 			createOverlay()
 		}
+    }
+});
+
+chrome.storage.local.get('premiumModelButton', function(uservar) {
+	if (userVar.premiumModelButton === undefined) {userVar.premiumModelButton = false;}
+    if (uservar.premiumModelButton) {
+		console.log('Premium Model Toggle Button:', uservar.premiumModelButton);
     }
 });
 

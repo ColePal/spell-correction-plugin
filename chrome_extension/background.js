@@ -129,38 +129,43 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 	  
 	  if (csrf != null) { // if found csrf
 		  
-		fetch("http://localhost:8000/spell-check/", {
-		  method: "POST",
-		  headers: {
-			"Content-Type": "application/json",
-			"X-CSRFToken": csrf,
-			"sec-fetch-site": "same-origin",
-		  },
-		  referrer: "http://localhost:8000/experimental/",
-		  referrerPolicy: "strict-origin-when-cross-origin",
-		  credentials: "include",
-		  body: JSON.stringify({
-			text: message.text,
-			sentenceIndex: 0,
-			index: 0,
-			language: "en",
-            premium: true
-		  })
-		})
-		.then(response => {
-		  if (!response.ok) {
-			throw new Error(`Response Failure: ${response.status}`);
-		  }
-		  return response.json();
-		})
-		.then(data => {
-		  console.log("Data Received:", data);
-		  sendResponse({ data });
-		  return true;
-		})
-		.catch(error => {
-		  console.error("Error:", error);
-		});
+		chrome.storage.local.get('premiumModelButton').then(result => {
+
+			fetch("http://localhost:8000/spell-check/", {
+			  method: "POST",
+			  headers: {
+				"Content-Type": "application/json",
+				"X-CSRFToken": csrf,
+				"sec-fetch-site": "same-origin",
+			  },
+			  referrer: "http://localhost:8000/experimental/",
+			  referrerPolicy: "strict-origin-when-cross-origin",
+			  credentials: "include",
+			  body: JSON.stringify({
+				text: message.text,
+				sentenceIndex: 0,
+				index: 0,
+				language: "en",
+				premium: result.premiumModelButton
+			  })
+			})
+			.then(response => {
+			  if (!response.ok) {
+				throw new Error(`Response Failure: ${response.status}`);
+			  }
+			  return response.json();
+			})
+			.then(data => {
+			  console.log("Data Received:", data);
+			  sendResponse({ data });
+			  return true;
+			})
+			.catch(error => {
+			  console.error("Error:", error);
+			});
+
+        });
+
 
 	  }
 	  
