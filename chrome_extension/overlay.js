@@ -102,6 +102,34 @@ async function createMovableOverlay() {
 	queryForWholeTextBox(event);
   });
   
+  
+  // Premium Button Toggle
+  const use_premium_model_button = await overlayContainer.querySelector('button#use-premium-model');
+  
+  function colourPremiumModelButton(result) {
+	  if (result.premiumModelButton === true) {
+		  use_premium_model_button.style.backgroundColor = "#95B309";
+	  }
+	  else {
+		  use_premium_model_button.style.backgroundColor = "#AB3232";
+	  }
+  }
+
+  chrome.storage.local.get('premiumModelButton').then(result => {
+	  if (result.premiumModelButton === undefined) {result.premiumModelButton = false;}
+	  colourPremiumModelButton(result);
+  });
+  use_premium_model_button.addEventListener('click', function() {
+	  chrome.storage.local.get('premiumModelButton', function(userVar) {
+		userVar.premiumModelButton = !userVar.premiumModelButton
+		chrome.storage.local.set({ premiumModelButton: userVar.premiumModelButton }, function() {
+			console.log('Premium Toggled!', userVar.premiumModelButton);
+		});
+		colourPremiumModelButton(userVar);
+      });
+  });
+  
+  
   // Positions elements based on if Button appears on left or right side of screen
   switch (starting_point) {
 	  case 'left':
@@ -514,6 +542,9 @@ function getLLMResponse(message) {
 		);
 	});
 	}
+	else {
+		return Promise.resolve(null);
+	}
 }
 
 function injectText(textbox, text) {
@@ -646,7 +677,11 @@ function onUserTextChange(event) {
 function queryForWholeTextBox() { // Eventually will automatically send text stuffs to the LLM and then add yes no boxes for the changes.
 	console.log("Pressed...",userEditEvent);
 	let oldType = mostRecentlyEditedField.value;
-	getLLMResponse(mostRecentlyEditedField.value).then(response => { 
+	getLLMResponse(mostRecentlyEditedField.value).then(response => {
+		
+		if (response && response.data != null) {
+			
+			
 		textResponse = response.data;
 		outputWords = textResponse.correctText.match(/\p{L}+(?:'\p{L}+)?|\s*[^\p{L}\s]+\s*|\s+/gu) || []; // splits every time a 
 		//mostRecentlyEditedField.value = textResponse;
@@ -706,6 +741,10 @@ function queryForWholeTextBox() { // Eventually will automatically send text stu
 			}
 			
 		}
+		
+	}
+	
+
 	});
 }
 
@@ -729,6 +768,3 @@ chrome.storage.local.get('overlayToggleButton', function(uservar) {
 		}
     }
 });
-
-
-
