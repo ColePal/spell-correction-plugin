@@ -5,6 +5,7 @@ const overlayContainer = document.createElement('div');
 let userEditEvent;
 let injectTextAck = true;
 let highlightEnabled = true;
+let visualiseFetch = false;
 
 
 let useAltWords = false;
@@ -99,25 +100,25 @@ async function createMovableOverlay() {
   // Make Query for All Text Button on Overlay.html functional
   const query_all_text_button = await  overlayContainer.querySelector('button#query-all-text-button');
   query_all_text_button.addEventListener('click', (event) => {
-	queryForWholeTextBox(event);
+	queryForWholeTextBox();
   });
   
   
   // Premium Button Toggle
   const use_premium_model_button = await overlayContainer.querySelector('button#use-premium-model');
   
-  function colourPremiumModelButton(result) {
-	  if (result.premiumModelButton === true) {
-		  use_premium_model_button.style.backgroundColor = "#95B309";
+  function colourButton(result, button) {
+	  if (result === true) {
+		  button.style.backgroundColor = "#95B309";
 	  }
 	  else {
-		  use_premium_model_button.style.backgroundColor = "#AB3232";
+		  button.style.backgroundColor = "#AB3232";
 	  }
   }
 
   chrome.storage.local.get('premiumModelButton').then(result => {
 	  if (result.premiumModelButton === undefined) {result.premiumModelButton = false;}
-	  colourPremiumModelButton(result);
+	  colourButton(result,use_premium_model_button);
   });
   use_premium_model_button.addEventListener('click', function() {
 	  chrome.storage.local.get('premiumModelButton', function(userVar) {
@@ -125,7 +126,25 @@ async function createMovableOverlay() {
 		chrome.storage.local.set({ premiumModelButton: userVar.premiumModelButton }, function() {
 			console.log('Premium Toggled!', userVar.premiumModelButton);
 		});
-		colourPremiumModelButton(userVar);
+		colourButton(userVar.premiumModelButton,use_premium_model_button);
+      });
+  });
+  
+  // Visualise Fetch Toggle
+  const visualise_fetch_button = await overlayContainer.querySelector('button#visualise-fetch');
+
+  chrome.storage.local.get('visualiseFetchButton').then(result => {
+	  if (result.visualiseFetchButton === undefined) {result.visualiseFetchButton = false;}
+	  colourButton(result,visualise_fetch_button);
+  });
+  visualise_fetch_button.addEventListener('click', function() {
+	  chrome.storage.local.get('visualiseFetchButton', function(userVar) {
+		userVar.visualiseFetchButton = !userVar.visualiseFetchButton
+		chrome.storage.local.set({ visualiseFetchButton: userVar.visualiseFetchButton }, function() {
+			console.log('Fetch Toggled!', userVar.visualiseFetchButton);
+		});
+		colourButton(userVar.visualiseFetchButton,visualise_fetch_button);
+		visualiseFetch = userVar.visualiseFetchButton;
       });
   });
   
@@ -466,9 +485,11 @@ function setupTextAreaOverlay(textarea) {
 			
 			}
 			else {
-				wordSpan.style.pointerEvents = "none";
-				wordSpan.style.backgroundColor = 'transparent';
-				wordSpan.style.color = "pink";
+				if (visualiseFetch) {
+					wordSpan.style.pointerEvents = "none";
+					wordSpan.style.backgroundColor = 'transparent';
+					wordSpan.style.color = "pink";
+				}
 				console.log("Current: [", word, "]");
 			}
 			
@@ -568,7 +589,7 @@ function injectText(textbox, text) {
 
 let inactivityRequestLLM;
 let inactivityRequestLLMStop = false;
-let inputEndWaitTime = 500; // wait 500ms for no more user input getLLMResponse.
+let inputEndWaitTime = 950; // wait 500ms for no more user input getLLMResponse.
 
 function onUserTextChange(event) {
 	console.log("onUserTextChange(event)", event);
@@ -623,6 +644,14 @@ function onUserTextChange(event) {
 						// Title
 						const changed_title = document.createElement('h3');
 						changed_title.id = changed_element.id + '-title';
+						
+						changed_title.style.backgroundColor = "#e6e6e6";
+						changed_title.style.width = "100%";
+						changed_title.style.textAlign = "center";
+						changed_title.style.paddingTop = "5px";
+						changed_title.style.paddingBottom = "5px";
+						
+						
 						changed_title.textContent = changed_element.id;
 						changed_title.className = "fancy-textbox-name" 
 						changed_title.style.userSelect = 'none';
