@@ -575,7 +575,7 @@ function getLLMResponse(message) {
 function injectText(textbox, text) {
 	injectTextAck = false;
 	console.log("injectText(textbox, text)");
-    const changed_element = textbox;
+    const changed_element = mostRecentlyEditedField;
     const cursorPos = changed_element.selectionStart;
     const original_element_name = changed_element.id.replace(/-sctextbox$/, '');
     const original_changed_element_textbox = existingInputsList[original_element_name];
@@ -666,6 +666,7 @@ function onUserTextChange(event) {
 						changed_textbox.id = changed_element.id + '-sctextbox';
 						changed_textbox.textContent = changed_element.value;
 						changed_textbox.className = "fancy-textbox" 
+						changed_textbox.readOnly = true; // make it not editable :/
 
 						// Add Elements to field-elements Div
 						field_elements_div.appendChild(changed_title);	
