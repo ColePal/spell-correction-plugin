@@ -4,6 +4,10 @@ const logo = document.createElement('img');
 const overlayContainer = document.createElement('div');
 let userEditEvent;
 let injectTextAck = true;
+let highlightEnabled = true;
+
+
+let useAltWords = false;
 
 // Element types extension should look for / Editable fields to look for user changes in.
 const valid_field_types = `
@@ -305,7 +309,11 @@ function setupTextAreaOverlay(textarea) {
 	const updateDivText = () => { //  = () => { means local to setupTextAreaOverlay!!!
 		console.log("updateDivText = ()");
 		overlay.innerHTML = "";
-		inputWords = textarea.value.match(/\p{L}+(?:'\p{L}+)?|\s*[^\p{L}\s]+\s*|\s+/gu) || []; // splits every time a 
+		
+		if (useAltWords === false) { // don't split here when alt method in use.
+			inputWords = textarea.value.match(/\p{L}+(?:'\p{L}+)?|\s*[^\p{L}\s]+\s*|\s+/gu) || [];
+		} // splits every time a 
+		useAltWords = false;
 
 		console.log("InputWords:",inputWords);
 		console.log("OutputWords:",outputWords)
@@ -410,7 +418,7 @@ function setupTextAreaOverlay(textarea) {
 
 			// words likethis break it, so might have to check inputWords outputWords length and, find the difference and join suggestions to be 'like this' in future.
 			
-			if (word) { // if word and not char
+			if (word && highlightEnabled) { // if word and not char
 					if (outputWords.length > 0) { // won't work if one word becomes multiple.
 						if ( word && outputWords[index] )
 							{
@@ -488,12 +496,15 @@ let lastfetchmessage; // might become a problem.
 
 function getLLMResponse(message) {
 	console.log("Attempting to fetch to server...");
+	highlightEnabled = false;
+	injectText(mostRecentlyEditedField,mostRecentlyEditedField.value);
 	if (message !== lastfetchmessage) { // Don't fetch llm if last message same as this message.
 		lastfetchmessage = message;
 	return new Promise((resolve, reject) => {
 		chrome.runtime.sendMessage(
 		  { type: "getFetchLLM", url: "http://localhost:8000", text : message },
 		  (response) => {
+			highlightEnabled = true;
 			if (chrome.runtime.lastError) {
 			  reject(chrome.runtime.lastError.message);
 			} else {
@@ -636,15 +647,64 @@ function queryForWholeTextBox() { // Eventually will automatically send text stu
 	console.log("Pressed...",userEditEvent);
 	let oldType = mostRecentlyEditedField.value;
 	getLLMResponse(mostRecentlyEditedField.value).then(response => { 
-		textResponse = response.data.correctText;
-		outputWords = textResponse.match(/\p{L}+(?:'\p{L}+)?|\s*[^\p{L}\s]+\s*|\s+/gu) || []; // splits every time a 
+		textResponse = response.data;
+		outputWords = textResponse.correctText.match(/\p{L}+(?:'\p{L}+)?|\s*[^\p{L}\s]+\s*|\s+/gu) || []; // splits every time a 
 		//mostRecentlyEditedField.value = textResponse;
 		
 		if (inputWords.length === outputWords.length) {
+			useAltWords = false;
 			injectText(mostRecentlyEditedField,mostRecentlyEditedField.value);} // to update alerts and stuff}
 		else {
 			if (outputWords.length > 0 && mostRecentlyEditedField.value === oldType) {
-			injectText(mostRecentlyEditedField,textResponse);}
+				console.log("Origin",mostRecentlyEditedField.value);
+				console.log("Response",textResponse);
+				
+				// Split using the same method as the website version in cases where one word becomes two.
+				
+				function theSplitter(originalString, responseString, mode) {
+					const sentenceString = originalString.split(" ");
+					let origin = [];
+					let i = 0;
+					while (i < sentenceString.length) {
+						const correction = responseString.correctedWords.find(function(corWord) {
+						  return corWord.startIndex === i;
+						});
+						
+						if (correction) {
+							let crt = "";
+							
+							if (mode === 1) { crt = correction.original; }
+							else { crt = correction.corrected; }
+							
+							origin.push(crt);
+							let originSize = crt.split(" ").length;
+							i += originSize;
+							
+					    } 
+						else {
+				  		  origin.push(sentenceString[i]);
+				  		  i++;
+					    }
+						
+						if (i < sentenceString.length) {origin.push(" ");} 
+					}
+					
+					return origin;
+				}
+				
+				let origin = theSplitter(mostRecentlyEditedField.value,textResponse,1);
+				let dest = theSplitter(textResponse.correctText,textResponse,2);
+
+				//console.log("NEWFANGLED ORIGIN", origin);
+				//console.log("NEWFANGLED DESTINATION", dest);
+
+				inputWords = origin;
+				outputWords = dest;
+				useAltWords = true;
+				injectText(mostRecentlyEditedField,mostRecentlyEditedField.value);
+				
+			}
+			
 		}
 	});
 }
@@ -663,8 +723,10 @@ chrome.storage.local.get('extensionToggleButton', function(uservar) {
 
 chrome.storage.local.get('overlayToggleButton', function(uservar) {
     if (uservar.overlayToggleButton || uservar.overlayToggleButton === undefined) {
-		console.log('Overlay Toggle Button:', uservar.overlayToggleButton);
-		createOverlay()
+		if (window.location.hostname !== "localhost") {
+			console.log('Overlay Toggle Button:', uservar.overlayToggleButton);
+			createOverlay()
+		}
     }
 });
 
