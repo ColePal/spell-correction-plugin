@@ -1,3 +1,19 @@
+/*
+function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
 async function savePreferencesQuery(listOfPreferences) {
     let JSONQuery = JSON.stringify({
         "preferences" : listOfPreferences
@@ -36,5 +52,39 @@ async function savePreferences() {
             preferenceList.push(input.value)
         }
     })
-    savePreferencesQuery(preferenceList);
+    const queryResponse = await savePreferencesQuery(preferenceList);
 }
+*/
+
+document.getElementById('box-picker').addEventListener('submit', async function(e) {
+    e.preventDefault();  // stop the form from changing the page
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // collect checked boxes
+    const checkedBoxes = Array.from(this.querySelectorAll('input[type=checkbox]:checked'))
+                              .map(cb => cb.value);
+
+    try {
+        const response = await fetch(Window.setUserPrefURL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken,
+
+            },
+            body: JSON.stringify({ preferences: checkedBoxes }),
+            credentials: "include"  // ensures cookies are sent
+        });
+
+        const data = await response.json();
+        console.log("Server response:", data);
+        if (data.success) {
+            alert("Preferences saved!");
+        } else {
+            alert("Error: " + data.error);
+        }
+    } catch (err) {
+        console.error("Fetch error:", err);
+    }
+});

@@ -63,5 +63,6 @@ class Command(BaseCommand):
                 guest_user.groups.add(guest_user_group)
             else:
                 user.groups.add(auth_user_group)
+            user.save()
 
 

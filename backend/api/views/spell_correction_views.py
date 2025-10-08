@@ -58,6 +58,8 @@ def spell_check(request):
     query = sentenceBufferMap.get(session_key).get_query(index, text)
 
     lmspellOutput = lmspell.spell_correction(text=query, language=language, premium=premium)
+
+    print("TESTING FOR SINHALA", lmspellOutput)
     #print(sentenceBufferMap[session_key])
 
     corrected_words = list()
