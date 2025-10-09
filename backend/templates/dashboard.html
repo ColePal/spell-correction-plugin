@@ -35,7 +35,7 @@
                 <h3>Dashboard for {{ user_profile.name }}</h3>
                 <h3>Account Created {{ user_profile.joined_at }}</h3>
             </section>
-            <script>Window.setUserPrefURL = {% url 'set_user_preferences' %}</script>
+            <script>Window.setUserPrefURL = "{% url 'set_user_preferences' %}"</script>
 
             <script>
             window.addEventListener("pageshow", function(event) {
