@@ -102,7 +102,7 @@
                                  <i class="bi bi-info-circle info-corner"
                                     data-bs-toggle="tooltip"
                                      data-bs-placement="right"
-                                    title="shows percentage of suggested corrections by SpellPal and accepted words by the user each day"></i>
+                                    data-bs-title="shows percentage of suggested corrections by SpellPal and accepted words by the user each day"></i>
                                 <div class="card-body">
                                     <div class="d-flex align-items-center justify-content-between mb-2">
                                         <h5 class="mb-0">Mistakes % Over Time</h5>
@@ -125,7 +125,7 @@
                                 <i class="bi bi-info-circle info-corner"
                                     data-bs-toggle="tooltip"
                                      data-bs-placement="right"
-                                    title="based on number of queries sent to us"></i>
+                                    data-bs-title="based on number of queries sent to us"></i>
                                 <span class="fw-semibold">Language Usage (%)</span>
                                 <canvas id="languages_chart"></canvas>
                             </div>
@@ -136,7 +136,7 @@
                         <i class="bi bi-info-circle info-corner"
                                     data-bs-toggle="tooltip"
                                      data-bs-placement="right"
-                                    title=" shows for all languages with the number of occurrence"></i>
+                                     data-bs-title=" shows for all languages with the number of occurrence"></i>
                         <div class="card-body">
                             <h6 class="mb-3">Top 10 Misspelled Phrases</h6>
                             <ul id="top_misspelled" class="list-unstyled small mb-0"></ul>
@@ -148,8 +148,8 @@
                             <div class="card">
                                 <i class="bi bi-info-circle info-corner"
                                     data-bs-toggle="tooltip"
-                                     data-bs-placement="right"
-                                    title="Try to nail 100"></i>
+                                    data-bs-placement="right"
+                                    data-bs-title="Try to nail 100"></i>
                                 <div class="card-body">Vocabulary Richness</div>
                                 <div id="vocab"></div>
                                 <br><br>
@@ -160,8 +160,8 @@
                             <div class="card">
                                 <i class="bi bi-info-circle info-corner"
                                     data-bs-toggle="tooltip"
-                                     data-bs-placement="right"
-                                    title="under improvement"></i>
+                                    data-bs-placement="right"
+                                    data-bs-="undergoing improvements. wpm refers to words per minute"></i>
                                 <div class="card-body">Typing Speed</div>
                                 <div id="tspeed"></div>
                                 <br><br>
@@ -442,7 +442,15 @@
           }
         }
       }
-});</script>
+});
+   document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(box =>
+  {
+    new bootstrap.Tooltip(box);
+  }
+  );
+});
+        </script>
  </div>
  </body>
  </html>
