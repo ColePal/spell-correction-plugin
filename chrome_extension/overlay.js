@@ -36,7 +36,7 @@ async function getSuggestHtml() {
 async function createMovableOverlay(showToggle) {
   
   // Where the button first appears on the page
-  let starting_point = 'left'
+  let starting_point = 'right'
   
   // Get user selected overlay side if exists.
   chrome.storage.local.get('overlaySide', function(data) {
