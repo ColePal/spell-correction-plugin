@@ -160,7 +160,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 """This line of code will be made false. (=True : during development & Testing)"""
 
 CSRF_TRUSTED_ORIGINS = ["https://spellpal.compose.co.nz","chrome-extension://cbbolmghglpmikipongjjadakkmajmek",
-    "chrome-extension://cpocjnikbjfienmniladcgdhgjcfhgkc"]
+    "chrome-extension://cpocjnikbjfienmniladcgdhgjcfhgkc", "chrome-extension://ekmiedcpdglnigodlglheggggpidmefo"]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React default

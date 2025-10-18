@@ -139,7 +139,7 @@ async function createMovableOverlay(showToggle) {
   const visualise_fetch_button = await overlayContainer.querySelector('button#visualise-fetch');
 
   chrome.storage.local.get('visualiseFetchButton').then(result => {
-	  if (result.visualiseFetchButton === undefined) {result.visualiseFetchButton = false;}
+	  if (result.visualiseFetchButton === undefined) {result.visualiseFetchButton = true;}
 	  visualiseFetch = result.visualiseFetchButton;
 	  colourButton(result.visualiseFetchButton,visualise_fetch_button);
   });
@@ -799,11 +799,10 @@ function queryForWholeTextBox() { // Eventually will automatically send text stu
 }
 
 
-
 chrome.storage.local.get('overlayToggleButton', function(uservar) {
+	console.log('Overlay Toggle Button:', uservar.overlayToggleButton);
     if (uservar.overlayToggleButton || uservar.overlayToggleButton === undefined) {
-		if (window.location.hostname !== "localhost") {
-			console.log('Overlay Toggle Button:', uservar.overlayToggleButton);
+		if (window.location.hostname !== "localhost"  && !window.location.hostname.endsWith("spellpal.compose.co.nz")) {
 			createOverlay();
 			getSuggestHtml();
 		}
@@ -811,18 +810,11 @@ chrome.storage.local.get('overlayToggleButton', function(uservar) {
 });
 
 chrome.storage.local.get('extensionToggleButton', function(uservar) {
-	let result;
+	console.log('Pop Up Toggle Button:', uservar.extensionToggleButton);
     if (uservar.extensionToggleButton || uservar.extensionToggleButton === undefined) {
-		console.log('Extension Toggle Button:', uservar.extensionToggleButton);
-		result = uservar.extensionToggleButton;
-		getSuggestHtml();
+		createMovableOverlay(true);
     }
-	chrome.storage.local.get('overlayToggleButton', function(uservar) {
-			if ((uservar.overlayToggleButton || uservar.overlayToggleButton === undefined) && result) {
-				createMovableOverlay(true);
-			}
-			else {
-				createMovableOverlay(false);
-			}
-	});
+	else {
+		createMovableOverlay(false);
+	}
 });

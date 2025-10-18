@@ -49,21 +49,22 @@ document.addEventListener('DOMContentLoaded', function() {
 			// if value has been set before
 			if (typeof userVar.extensionToggleButton !== 'undefined') {
 				if (toggle) {userVar.extensionToggleButton = !userVar.extensionToggleButton}
-				extensionToggleButton.textContent = 'Pop Up Enabled';
-				extensionToggleButton.style.color = "white";
-				extensionToggleButton.style.fontWeight = "bold";
-				if (userVar.extensionToggleButton === false) {extensionToggleButton.style.backgroundColor = "#AB3232";}
-				else {extensionToggleButton.style.backgroundColor = "#95B309";}
-				chrome.storage.local.set({ extensionToggleButton: userVar.extensionToggleButton }, function() {
-					console.log('Extension Toggled!', userVar.extensionToggleButton);
-				});
 			}
 			else {
 				chrome.storage.local.set({ extensionToggleButton: 'true' }, function() {
 					console.log('Extension First Time Toggled!');
-					extensionToggleButton.textContent = ('Popup Enabled: true');
 				});
 			}
+			
+			extensionToggleButton.textContent = 'Pop Up Enabled';
+			extensionToggleButton.style.color = "white";
+			extensionToggleButton.style.fontWeight = "bold";
+			if (userVar.extensionToggleButton === false) {extensionToggleButton.style.backgroundColor = "#AB3232";}
+			else {extensionToggleButton.style.backgroundColor = "#95B309";}
+			chrome.storage.local.set({ extensionToggleButton: userVar.extensionToggleButton }, function() {
+				console.log('Extension Toggled!', userVar.extensionToggleButton);
+			});
+			
 		});
 	}
 
@@ -79,21 +80,22 @@ document.addEventListener('DOMContentLoaded', function() {
 			// if value has been set before
 			if (typeof userVar.overlayToggleButton !== 'undefined') {
 				if (toggle) {userVar.overlayToggleButton = !userVar.overlayToggleButton;}
-				overlayToggleButton.textContent = 'Overlay Enabled';
-				overlayToggleButton.style.color = "white";
-				overlayToggleButton.style.fontWeight = "bold";
-				if (userVar.overlayToggleButton === false) {overlayToggleButton.style.backgroundColor = "#AB3232";}
-				else {overlayToggleButton.style.backgroundColor = "#95B309";}
-				chrome.storage.local.set({ overlayToggleButton: userVar.overlayToggleButton }, function() {
-					console.log('Overlay Toggled!', userVar.overlayToggleButton);
-				});
 			}
 			else {
 				chrome.storage.local.set({ overlayToggleButton: 'true' }, function() {
 					console.log('Overlay First Time Toggled!');
-					overlayToggleButton.textContent = ('Overlay Enabled: true');
 				});
 			}
+			
+			overlayToggleButton.textContent = 'Overlay Enabled';
+			overlayToggleButton.style.color = "white";
+			overlayToggleButton.style.fontWeight = "bold";
+			if (userVar.overlayToggleButton === false) {overlayToggleButton.style.backgroundColor = "#AB3232";}
+			else {overlayToggleButton.style.backgroundColor = "#95B309";}
+			chrome.storage.local.set({ overlayToggleButton: userVar.overlayToggleButton }, function() {
+				console.log('Overlay Toggled!', userVar.overlayToggleButton);
+			});
+			
 		});
 	}
 	
