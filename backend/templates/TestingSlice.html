@@ -277,10 +277,17 @@
    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
         <!-- Bootstrap JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-      </script>
+
         <script>  window.acceptChangeUrl = "{% url 'accept_change' %}";</script>
         <script>  window.spellCheckUrl = "{% url 'spell_check' %}";</script>
-        <script type="module" src="{% static 'js/pageSetup.js' %}">
-        </script>
+        {% if debug %}
+        <!-- Vite dev client (for hot reloading) -->
+          <script type="module" src="http://localhost:5173/@vite/client"></script>
+          <!-- Your Vite entry file -->
+          <script type="module" src="http://localhost:5173/src/main.ts"></script>
+
+        {% else %}
+        <script type="module" src="{% static 'js/pageSetup.js' %}"></script>
+        {% endif %}
     </body>
 </html>

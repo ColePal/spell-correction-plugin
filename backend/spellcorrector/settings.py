@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+'django_vite',
     'django.contrib.staticfiles',
     # Other apps
     'rest_framework',
@@ -165,12 +166,21 @@ CSRF_TRUSTED_ORIGINS = ["https://spellpal.compose.co.nz","chrome-extension://cbb
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React default
     "http://localhost:8000",
+    "http://localhost:5173"   # Vite default
 ]
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',  # Will be changed
     ]
+}
+
+DJANGO_VITE = {
+    "default": {
+        "dev_mode": DEBUG,
+        #"dev_server_url": "http://localhost:5173",
+        "manifest_path": BASE_DIR / "static" / ".vite" / "manifest.json",
+    }
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
