@@ -1,5 +1,5 @@
 import unittest
-from sentencebuffer import sentencebuffer
+from .sentencebuffer import sentencebuffer
 
 
 class SenetenceBufferTestCase(unittest.TestCase):
