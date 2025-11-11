@@ -96,7 +96,7 @@ if not tmpPostgres:
         'password':"PASSWORD",
         'hostname':"None",
         'query': {},
-        'path':"None",
+        'path':b"None",
     }
 
 db_name = tmpPostgres.path.lstrip('/')
