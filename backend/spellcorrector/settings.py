@@ -86,18 +86,14 @@ WSGI_APPLICATION = 'spellcorrector.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-# Code provided by Neon
-tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
+if os.environ.get('GITHUB_ACTIONS'):
+    db_url = os.environ.get('DATABASE_URL', 'postgres://ci:ci@localhost:5432/test_db')
+else:
+    db_url = os.environ.get('DATABASE_URL')
 
-if not tmpPostgres:
-    tmpPostgres = {
-        'username':"None",
-        'password':"PASSWORD",
-        'hostname':"None",
-        'query': {},
-        'path':b"None",
-    }
+tmpPostgres = urlparse(db_url)
+
+
 
 db_name = tmpPostgres.path.lstrip('/')
 if isinstance(db_name, bytes):  # Defensive: sometimes comes out as bytes
