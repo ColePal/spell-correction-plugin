@@ -1,3 +1,6 @@
+To Run this program in dev mode, make sure you have npm installed for the vite server
+
+
 # spell-correction-plugin
 Project: Implement a user interface for a spell correction system, and a web plugin  
 Supervisor: Dr Surangika Ranathunga (s.ranathunga@massey.ac.nz)  
