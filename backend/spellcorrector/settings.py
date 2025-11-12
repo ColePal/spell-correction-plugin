@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Other apps
+    'django_vite',
     'rest_framework',
     'corsheaders',
     'api',
@@ -164,18 +165,31 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = True
 """This line of code will be made false. (=True : during development & Testing)"""
 
-CSRF_TRUSTED_ORIGINS = ["https://spellpal.compose.co.nz","chrome-extension://cbbolmghglpmikipongjjadakkmajmek",
-    "chrome-extension://cpocjnikbjfienmniladcgdhgjcfhgkc", "chrome-extension://ekmiedcpdglnigodlglheggggpidmefo"]
+CSRF_TRUSTED_ORIGINS = [
+    "https://spellpal.compose.co.nz",
+    "chrome-extension://cbbolmghglpmikipongjjadakkmajmek",
+    "chrome-extension://cpocjnikbjfienmniladcgdhgjcfhgkc",
+    "chrome-extension://ekmiedcpdglnigodlglheggggpidmefo",
+]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React default
     "http://localhost:8000",
+    "http://localhost:5173" # Vite default
 ]
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',  # Will be changed
     ]
+}
+
+DJANGO_VITE = {
+    "default": {
+        "dev_mode": DEBUG,
+        #"dev_server_url": "http://localhost:5173",
+        "manifest_path": BASE_DIR / "static" / ".vite" / "manifest.json",
+    }
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
