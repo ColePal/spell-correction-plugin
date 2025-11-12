@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+// @ts-ignore
 import path from 'path';
 
 export default defineConfig({
@@ -7,7 +8,7 @@ export default defineConfig({
     emptyOutDir: false, // don't delete existing static assets
     manifest: true,
     rolldownOptions: {
-      input: path.resolve(__dirname, 'main.ts'),
+      input: path.resolve(__dirname, 'src/main.ts'),
       output: {
         entryFileNames: 'js/[name]-[hash].js',
         chunkFileNames: 'js/[name]-[hash].js',
